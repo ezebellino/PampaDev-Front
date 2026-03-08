@@ -1,13 +1,10 @@
 import AppLayout from "../components/layout/AppLayout";
-import { AuthProvider } from "../lib/auth/AuthContext";
-import { UIProvider } from "../lib/ui/UIContext";
+import Protected from "../lib/auth/Protected";
 
 export default function AppRouteLayout() {
   return (
-    <AuthProvider>
-      <UIProvider>
-        <AppLayout />
-      </UIProvider>
-    </AuthProvider>
+    <Protected>
+      <AppLayout />
+    </Protected>
   );
 }

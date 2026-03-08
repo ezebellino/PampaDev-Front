@@ -25,7 +25,7 @@ export default function RubroDetailPage() {
   const { id } = useParams(); // 👈 /app/rubros/:id
   const { user } = useAuth();
   const isBackOffice =
-    user?.role === ROLES.DEV ||
+    user?.role === ROLES.DEVS ||
     user?.role === ROLES.ADMIN ||
     user?.role === ROLES.INSTRUCTOR;
 

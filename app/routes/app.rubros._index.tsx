@@ -1,6 +1,4 @@
-import { useMemo } from "react";
 import { Link } from "react-router";
-
 import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
 
@@ -8,181 +6,227 @@ import { PageHeader } from "../components/ui/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
+import ScreenLoader from "../components/ui/ScreenLoader";
 
-import { mockRubros } from "../lib/rubros/mockRubros";
-import { useTenantConfig } from "../lib/tenant/useTenantConfig";
-
+import { useDisciplines } from "../lib/disciplines/useDisciplines";
+import { useBranchDisciplineConfig } from "../lib/disciplines/useBranchDisciplineConfig";
+import { useBranch } from "../lib/branches/BranchContext";
 
 function formatARS(n: number) {
-    // simple y sin Intl para evitar configs; si querés lo pasamos a Intl luego
-    return `$ ${n.toLocaleString("es-AR")}`;
+  return `$ ${n.toLocaleString("es-AR")}`;
 }
 
 export default function RubrosPage() {
-    const { user } = useAuth();
-    const isDev = user?.role === ROLES.DEV;
-    const canManage = user?.role === ROLES.ADMIN || isDev;
+  const { user } = useAuth();
+  const isDevs = user?.role === ROLES.DEVS;
 
-    const { config, hydrated, toggleRubro, enableAll, disableAll } = useTenantConfig();
+  const { branchId } = useBranch();
+  const { disciplines, loading, error, refresh } = useDisciplines();
 
-    const allIds = useMemo(() => mockRubros.map((r) => r.id), [mockRubros.length]);
+  // ✅ Sentinel estable para no romper types ni Rules of Hooks
+  const NO_BRANCH = "__none__" as const;
 
-    const rubros = useMemo(() => {
-        const enabled = new Set(config.enabledRubroIds);
-        return mockRubros.filter(r => enabled.has(r.id));
-    }, [config.enabledRubroIds]);
+  const hasBranch = branchId !== null;
+  const safeBranchId: number | string = branchId ?? NO_BRANCH;
 
+  // ✅ Hook SIEMPRE se ejecuta (nunca condicional)
+  const { hydrated, byId, toggleEnabled, updateField } =
+    useBranchDisciplineConfig(safeBranchId, disciplines);
 
-    if (!hydrated) {
-        return (
-            <div className="space-y-6">
-                <PageHeader title="Cargando rubros..." subtitle="Por favor, espere." />
-                <Card>
-                    <CardContent className="py-6 text-sm text-zinc-400">
-                        Preparando la vista...
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
+  // ✅ Cuando no hay branch real, tratamos como no hidratado
+  const hydratedSafe = hasBranch ? hydrated : false;
+
+  /* ---------------------------
+     LOADERS / ERRORES
+  --------------------------- */
+
+  // 1) Loader API
+  if (loading) {
+    return <ScreenLoader label="Cargando rubros (Disciplines) desde la API…" />;
+  }
+
+  // 2) Error API
+  if (error) {
     return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Rubros"
-                subtitle="Catálogo de actividades y espacios disponibles."
-                right={
-                    canManage ? (
-                        <Button variant="secondary">+ Nuevo rubro</Button>
-                    ) : (
-                        <Button variant="secondary">Mis reservas</Button>
-                    )
-                }
-            />
-            {isDev && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Configuración del cliente (Dev)</CardTitle>
-                        <CardDescription>
-                            Activá los rubros que este cliente va a ver. Esto simula un feature-flag por tenant.
-                        </CardDescription>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4">
-                        <div className="flex flex-wrap gap-2">
-                            {mockRubros.map((r) => {
-                                const checked = config.enabledRubroIds.includes(r.id);
-                                return (
-                                    <label
-                                        key={r.id}
-                                        className={[
-                                            "flex items-center gap-2 rounded-xl border px-3 py-2 text-sm cursor-pointer",
-                                            checked ? "border-zinc-700 bg-zinc-900/40" : "border-zinc-800 bg-zinc-950",
-                                            "hover:bg-zinc-900/30 transition",
-                                        ].join(" ")}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={checked}
-                                            onChange={() => toggleRubro(r.id)}
-                                            className="accent-zinc-200"
-                                        />
-                                        <span className="font-medium">{r.name}</span>
-                                        <span className="text-zinc-500 text-xs">({r.id})</span>
-                                    </label>
-                                );
-                            })}
-                        </div>
-
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="text-sm text-zinc-400">
-                                Habilitados: <span className="text-zinc-200">{config.enabledRubroIds.length}</span>
-                            </div>
-                            <div className="flex gap-2">
-                                <Button size="sm" variant="secondary" onClick={() => enableAll(allIds)}>
-                                    Habilitar todos
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={disableAll}>
-                                    Deshabilitar todos
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-            {rubros.length === 0 ? (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>No hay rubros habilitados</CardTitle>
-                        <CardDescription>
-                            {isDev
-                                ? "Seleccioná al menos un rubro para este cliente."
-                                : "Contactá al administrador para habilitar rubros."}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {isDev && (
-                            <Badge tone="warning">
-                                ⚠️ Dev: activá rubros desde el panel de arriba
-                            </Badge>
-                        )}
-                    </CardContent>
-                </Card>
-            ) : (
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {rubros.map((r) => (
-                        <Card key={r.id} className="hover:bg-zinc-900/35 transition">
-                            <CardHeader>
-                                <div className="flex items-start justify-between gap-3">
-                                    <div>
-                                        <CardTitle>{r.name}</CardTitle>
-                                        <CardDescription>{r.description}</CardDescription>
-                                    </div>
-                                    <Badge className="shrink-0">⏱️ {r.durationMin}m</Badge>
-                                </div>
-                            </CardHeader>
-
-                            <CardContent className="space-y-3">
-                                <div className="flex flex-wrap gap-2">
-                                    {r.tags.map((t) => (
-                                        <Badge key={t} tone="neutral" className="text-zinc-400">
-                                            #{t}
-                                        </Badge>
-                                    ))}
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <div className="text-sm text-zinc-400">Precio base</div>
-                                    <div className="text-base font-semibold">{formatARS(r.basePrice)}</div>
-                                </div>
-                            </CardContent>
-
-                            <CardFooter className="flex items-center justify-between gap-3">
-                                <Link to={`/app/rubros/${r.id}`} className="w-full sm:w-auto">
-                                    <Button size="sm" variant="primary" className="w-full">
-                                        Ver horarios
-                                    </Button>
-                                </Link>
-
-
-                                {canManage ? (
-                                    <div className="flex gap-2">
-                                        <Button size="sm" variant="ghost">
-                                            Editar
-                                        </Button>
-                                        <Button size="sm" variant="ghost" className="text-red-300 hover:text-red-200">
-                                            Eliminar
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <Button size="sm" variant="secondary">
-                                        Reservar
-                                    </Button>
-                                )}
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
-            )}
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Rubros" subtitle="Error cargando disciplines" />
+        <Card>
+          <CardContent className="py-6 text-sm text-zinc-300">
+            <div className="text-red-300">{error}</div>
+            <div className="mt-3">
+              <Button variant="secondary" onClick={refresh}>Reintentar</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
+  }
+
+  // 3) No branch seleccionado (necesario para configurar/habilitar por sucursal)
+  if (!hasBranch) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Rubros" subtitle="Elegí una sucursal para ver y configurar rubros." />
+        <Card>
+          <CardContent className="py-6 text-sm text-zinc-400">
+            No hay sucursal seleccionada.
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link to="/app/branches">
+                <Button variant="secondary">Ver sucursales</Button>
+              </Link>
+              <Button variant="ghost" onClick={refresh}>↻ Refrescar Disciplines</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // 4) Loader hidratación local (config por sucursal)
+  if (!hydratedSafe) {
+    return <ScreenLoader label="Cargando configuración por sucursal (localStorage)…" />;
+  }
+
+  /* ---------------------------
+     LISTA VISIBLE
+  --------------------------- */
+
+  // Visible list: solo enabled (para no-dev)
+  const visible = isDevs
+    ? disciplines
+    : disciplines.filter((d) => byId.get(d.idDiscipline)?.enabled);
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Rubros"
+        subtitle={`Catálogo real desde backend (Disciplines) · Branch ${branchId}`}
+        right={
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={refresh}>↻ Refrescar API</Button>
+          </div>
+        }
+      />
+
+      {isDevs && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Configuración por sucursal (mock)</CardTitle>
+            <CardDescription>
+              Esto simula la entidad futura BranchDiscipline: habilitado, duración y precio por sucursal.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="text-sm text-zinc-400">
+              Tip: si el backend cambia, seguís mostrando Disciplines, y solo migrás esta config al endpoint real.
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {visible.length === 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>No hay rubros habilitados</CardTitle>
+            <CardDescription>
+              {isDevs ? "Habilitá al menos uno desde el panel por sucursal." : "Contactá al administrador."}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {visible.map((d) => {
+            const cfg = byId.get(d.idDiscipline);
+
+            // ✅ defaults razonables para cuando falta config
+            const enabled = cfg?.enabled ?? (isDevs ? true : false);
+            const durationMin = cfg?.durationMin ?? 60;
+            const basePrice = cfg?.basePrice ?? 0;
+
+            return (
+              <Card key={d.idDiscipline} className="hover:bg-zinc-900/35 transition">
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <CardTitle>{d.name}</CardTitle>
+                      <CardDescription>Discipline #{d.idDiscipline}</CardDescription>
+                    </div>
+                    <Badge className="shrink-0">{enabled ? "✅ Habilitado" : "🚫 Oculto"}</Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-zinc-400">Duración</div>
+                    <div className="text-sm font-medium">{durationMin} min</div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-zinc-400">Precio base</div>
+                    <div className="text-base font-semibold">{formatARS(basePrice)}</div>
+                  </div>
+
+                  {isDevs && !cfg && (
+                    <div className="text-xs text-amber-300">Config missing: usando defaults</div>
+                  )}
+
+                  {isDevs && (
+                    <div className="space-y-2 pt-2 border-t border-zinc-800">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={enabled}
+                          onChange={() => toggleEnabled(d.idDiscipline)}
+                          className="accent-zinc-200"
+                        />
+                        Habilitado en esta sucursal
+                      </label>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          value={durationMin}
+                          onChange={(e) =>
+                            updateField(d.idDiscipline, { durationMin: Number(e.target.value) })
+                          }
+                          className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                          placeholder="Duración"
+                        />
+                        <input
+                          type="number"
+                          value={basePrice}
+                          onChange={(e) =>
+                            updateField(d.idDiscipline, { basePrice: Number(e.target.value) })
+                          }
+                          className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                          placeholder="Precio"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter className="flex items-center justify-between gap-3">
+                  <Link to={`/app/rubros/${d.idDiscipline}`} className="w-full sm:w-auto">
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      className="w-full"
+                      disabled={!enabled && !isDevs}
+                    >
+                      Ver horarios
+                    </Button>
+                  </Link>
+
+                  {!isDevs && (
+                    <Button size="sm" variant="secondary">Reservar</Button>
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }

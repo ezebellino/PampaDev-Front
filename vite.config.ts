@@ -8,4 +8,14 @@ export default defineConfig({
     tailwindcss(), 
     reactRouter(), 
     tsconfigPaths()],
+    server: {
+      proxy: { 
+        "/api": {
+          target: "https://turnos.pampadev.ar",
+          changeOrigin: true,
+          secure: true,
+          followRedirects: true,
+        },
+      },
+    },
 });

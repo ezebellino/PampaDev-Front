@@ -3,7 +3,7 @@ import { ROLES } from "../lib/auth/roles";
 
 export default function Instructor() {
   return (
-    <Protected allowRoles={[ROLES.INSTRUCTOR, ROLES.DEV]}>
+    <Protected allowRoles={[ROLES.INSTRUCTOR, ROLES.DEVS]}>
       <div className="space-y-3">
         <h1 className="text-2xl font-semibold">📅 Panel Instructor</h1>
         <p className="text-zinc-400">

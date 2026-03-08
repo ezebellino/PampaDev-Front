@@ -1,32 +1,146 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
-import type { Role } from "./roles";
-import { ROLES } from "./roles";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { loginApi } from "../api/services/auth";
+import { saveToken, getToken, clearToken, saveUser, getSavedUser, clearUser } from "./authStorage";
+import { getRoleFromJwt } from "./jwt";
+import { ROLES, type Role } from "./roles";
+import { getMe } from "../api/services/users";
 
-type User = { name: string; role: Role; coins: number };
-type AuthValue = {
-  user: User | null;
-  isAuthed: boolean;
-  loginAs: (role: Role) => void;
-  logout: () => void;
+export type User = {
+  id: string;
+  name: string;
+  role: Role;
+  email: string;
+  avatarUrl?: string;
 };
 
-const AuthContext = createContext<AuthValue | null>(null);
+type AuthContextValue = {
+  user: User | null;
+  token: string | null;
+  isAuthed: boolean;
+  bootstrapped: boolean;
+  updateProfile: (patch: { name?: string; avatarUrl?: string }) => void;
+  loginWithApi: (payload: { email: string; password: string }) => Promise<void>;
+  logout: () => void;
+  refreshMe: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>({
-    name: "Zeqe",
-    role: ROLES.ADMIN,
-    coins: 120,
-  });
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [bootstrapped, setBootstrapped] = useState(false);
 
-  const value = useMemo<AuthValue>(
+  function normalizeRole(apiRole: string): Role {
+    const r = (apiRole || "").trim().toLowerCase();
+    if (r === "dev" || r === "devs" || r === "developer") return ROLES.DEVS;
+    if (r === "admin" || r === "admins") return ROLES.ADMIN;
+    if (r === "instructor" || r === "instructors") return ROLES.INSTRUCTOR;
+    return ROLES.USER;
+  }
+
+  async function refreshMe() {
+    const t = getToken();
+    if (!t) return;
+
+    const me = await getMe();
+
+    const u: User = {
+      id: String(me.idUser),
+      name: `${me.firstName} ${me.lastname}`.trim(),
+      role: normalizeRole(me.roleName),
+      email: me.email,
+    };
+
+    saveUser(u);
+    setUser(u);
+  }
+
+  // ✅ Bootstrap correcto: si no hay token, no hay sesión.
+  useEffect(() => {
+    const t = getToken();
+
+    if (!t) {
+      // Sin token => forzamos estado “logged out”
+      clearUser();
+      setToken(null);
+      setUser(null);
+      setBootstrapped(true);
+      return;
+    }
+
+    // Hay token => podemos restaurar user (opcional) y luego refrescar /me
+    setToken(t);
+
+    const savedUser = getSavedUser<User>();
+    if (savedUser) setUser(savedUser);
+
+    refreshMe()
+      .catch(() => {
+        clearToken();
+        clearUser();
+        setToken(null);
+        setUser(null);
+      })
+      .finally(() => setBootstrapped(true));
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function updateProfile(patch: { name?: string; avatarUrl?: string }) {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next: User = {
+        ...prev,
+        name: patch.name ?? prev.name,
+        avatarUrl: patch.avatarUrl ?? prev.avatarUrl,
+      };
+      saveUser(next);
+      return next;
+    });
+  }
+
+  async function loginWithApi(payload: { email: string; password: string }) {
+    const res = await loginApi(payload);
+    if (!res.token) throw new Error("La API no devolvió token");
+
+    saveToken(res.token);
+    setToken(res.token);
+
+    // set “rápido” para UI inmediata
+    const u: User = {
+      id: res.email,
+      name: `${res.firstName} ${res.lastname}`.trim(),
+      role: normalizeRole(getRoleFromJwt(res.token) ?? ""),
+      email: res.email,
+    };
+
+    saveUser(u);
+    setUser(u);
+
+    // luego /me lo deja 100% consistente
+    await refreshMe();
+  }
+
+  function logout() {
+    clearToken();
+    clearUser();
+    setToken(null);
+    setUser(null);
+  }
+
+  const value = useMemo(
     () => ({
       user,
-      isAuthed: !!user,
-      loginAs: (role) => setUser((prev) => (prev ? { ...prev, role } : { name: "Zeqe", role, coins: 120 })),
-      logout: () => setUser(null),
+      token,
+      isAuthed: !!token,
+      bootstrapped,
+      updateProfile,
+      loginWithApi,
+      logout,
+      refreshMe,
     }),
-    [user]
+    [user, token, bootstrapped]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

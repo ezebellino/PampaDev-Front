@@ -1,20 +1,46 @@
 import { NavLink, useLocation } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useAuth } from "../../lib/auth/AuthContext";
 import { ROLES } from "../../lib/auth/roles";
 import { useUI } from "../../lib/ui/UIContext";
-// "../../../public/branding/pampadev-icon.png";
 
-function navByRole(role: string) {
-  const common = [
-  { to: "/app", label: "Dashboard", icon: "🏠" },
-  { to: "/app/rubros", label: "Rubros", icon: "🧾" },
-];
+import BranchPicker from "../branches/BranchPicker";
+import CompanyPicker from "~/lib/companies/CompanyPicker";
 
+import { useBranches } from "../../lib/api/hooks/useBranches";
+import { useCompany } from "../../lib/companies/CompanyContext";
+import { useCompanyBranches } from "../../lib/api/hooks/useCompanyBranches";
 
-  if (role === ROLES.DEV) return [...common, { to: "/app/dev", label: "Dev Panel", icon: "🧪" }];
-  if (role === ROLES.ADMIN) return [...common, { to: "/app/admin", label: "Admin", icon: "🛠️" }];
-  if (role === ROLES.INSTRUCTOR) return [...common, { to: "/app/instructor", label: "Turnos", icon: "📅" }];
+type NavItem = { to: string; label: string; icon: string };
+
+function navByRole(role: string, opts: { canSeeBranches: boolean }) {
+  const common: NavItem[] = [
+    { to: "/app", label: "Dashboard", icon: "🏠" },
+    { to: "/app/rubros", label: "Rubros", icon: "🧩" },
+  ];
+
+  if (role === ROLES.DEVS) {
+    return [
+      ...common,
+      { to: "/app/branches", label: "Sucursales", icon: "🏢" },
+      { to: "/app/dev", label: "Dev Panel", icon: "🧪" },
+      { to: "/app/disciplines", label: "Disciplinas", icon: "🏷️" },
+    ];
+  }
+
+  if (role === ROLES.ADMIN) {
+    return [
+      ...common,
+      ...(opts.canSeeBranches ? [{ to: "/app/branches", label: "Sucursales", icon: "🏢" }] : []),
+      { to: "/app/admin", label: "Admin", icon: "🛠️" },
+      // ⚠️ Disciplinas globales: por ahora lo dejamos fuera para admin
+    ];
+  }
+
+  if (role === ROLES.INSTRUCTOR) {
+    return [...common, { to: "/app/instructor", label: "Turnos", icon: "📅" }];
+  }
+
   return [...common, { to: "/app/user", label: "Mis Turnos", icon: "👤" }];
 }
 
@@ -28,7 +54,24 @@ function SidebarContent({
   onNavigate?: () => void;
 }) {
   const { user } = useAuth();
-  const items = navByRole(user?.role ?? ROLES.USER);
+  const role = user?.role ?? ROLES.USER;
+
+  const { companyId } = useCompany();
+  const { data: branches, loading: branchesLoading } = useBranches();
+
+  const companyBranches = useCompanyBranches(branches, companyId);
+
+  // ✅ Regla actual:
+  // - Devs: siempre pueden ver "Sucursales"
+  // - Admin: solo si su company (seleccionada) tiene >1 sucursal
+  // - Otros: no
+  const canSeeBranches = useMemo(() => {
+    if (role === ROLES.DEVS) return true;
+    if (role === ROLES.ADMIN) return !branchesLoading && companyBranches.length > 1;
+    return false;
+  }, [role, branchesLoading, companyBranches.length]);
+
+  const items = useMemo(() => navByRole(role, { canSeeBranches }), [role, canSeeBranches]);
 
   return (
     <div className="flex w-full flex-col">
@@ -36,7 +79,7 @@ function SidebarContent({
         className={[
           "relative h-16 border-b border-zinc-800",
           "flex items-center",
-          collapsed ? "px-2" : "justify-between px-4",
+          collapsed ? "px-1.5" : "justify-between px-4",
         ].join(" ")}
       >
         {/* Brand */}
@@ -50,7 +93,7 @@ function SidebarContent({
             alt="PampaDev"
             className={[
               "object-contain shrink-0",
-              collapsed ? "h-9 w-9" : "h-8 w-8",
+              "h-12 w-12",
               "brightness-110 contrast-110",
               "drop-shadow-[0_0_10px_rgba(255,255,255,0.12)]",
             ].join(" ")}
@@ -72,13 +115,11 @@ function SidebarContent({
           )}
         </NavLink>
 
-
-        {/* Botón colapsar: absoluto para no “pisar” el logo */}
         {onToggleCollapsed && (
           <button
             onClick={onToggleCollapsed}
             className={[
-              "absolute right-2 top-1/2 -translate-y-1/2",
+              "right-2 top-1/2 -translate-y-1/2",
               "rounded-lg border border-zinc-800 px-2 py-1 hover:bg-zinc-900",
             ].join(" ")}
             aria-label="Toggle sidebar"
@@ -88,7 +129,6 @@ function SidebarContent({
           </button>
         )}
       </div>
-
 
       <nav className="p-2 space-y-1">
         {items.map((it) => (
@@ -105,7 +145,6 @@ function SidebarContent({
             }
           >
             <span className="text-lg">{it.icon}</span>
-            {/* en mobile siempre mostramos label; en desktop depende collapsed */}
             {collapsed === undefined ? (
               <span className="text-sm">{it.label}</span>
             ) : (
@@ -128,13 +167,11 @@ export default function Sidebar({
   const { mobileMenuOpen, closeMobileMenu } = useUI();
   const location = useLocation();
 
-  // Cierra el menú mobile al navegar
   useEffect(() => {
     if (mobileMenuOpen) closeMobileMenu();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  // Cierra con ESC
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") closeMobileMenu();
@@ -159,7 +196,6 @@ export default function Sidebar({
 
       {/* Mobile drawer */}
       <div className={`md:hidden ${mobileMenuOpen ? "" : "pointer-events-none"}`}>
-        {/* overlay */}
         <div
           onClick={closeMobileMenu}
           className={[
@@ -168,7 +204,6 @@ export default function Sidebar({
           ].join(" ")}
         />
 
-        {/* panel */}
         <aside
           className={[
             "fixed left-0 top-0 z-50 h-full w-72",
@@ -177,6 +212,19 @@ export default function Sidebar({
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
           ].join(" ")}
         >
+          {/* Header mobile del drawer */}
+          <div className="p-3 border-b border-zinc-800">
+            <div className="text-xs text-zinc-400 uppercase tracking-wide">Empresa activa</div>
+            <CompanyPicker onPick={closeMobileMenu} hideIfSingle />
+
+            <div className="mt-3 text-xs text-zinc-400 uppercase tracking-wide">Sucursal activa</div>
+            <BranchPicker onPick={closeMobileMenu} />
+
+            <div className="mt-2 text-[11px] text-zinc-500">
+              Tip: elegí empresa → sucursal antes de configurar rubros/horarios.
+            </div>
+          </div>
+
           <SidebarContent onNavigate={closeMobileMenu} />
         </aside>
       </div>
