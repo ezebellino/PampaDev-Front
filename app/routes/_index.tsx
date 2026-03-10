@@ -5,6 +5,7 @@ import { useBranches } from "../lib/api/hooks/useBranches";
 import { useEffect, useState } from "react";
 import { apiGetPublic } from "../lib/api/api"; // ajustá el path si tu api.ts está en otro lado
 import type { ApiError } from "../lib/api/api";
+import StatCardSkeleton from "~/components/ui/StatCardSkeleton";
 
 
 type Discipline = { idDiscipline: number; name: string };
@@ -92,25 +93,34 @@ export default function Home() {
 
           {/* Stats reales (suaves) */}
           <section className="mt-10 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
-              <div className="text-xs text-zinc-400">Sucursales</div>
-              <div className="mt-2 text-2xl font-semibold">
-                {branchesLoading ? "…" : branchesCount}
-              </div>
-              <div className="mt-2 text-sm text-zinc-500">
-                Datos reales desde /api/Branches
-              </div>
-            </div>
+            {branchesLoading || disciplinesLoading ? (
+              <>
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+              </>
+            ) : (
+              <>
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+                  <div className="text-xs text-zinc-400">Sucursales</div>
+                  <div className="mt-2 text-2xl font-semibold">{branchesCount}</div>
+                  <div className="mt-2 text-sm text-zinc-500">
+                    Datos reales desde /api/Branches
+                  </div>
+                </div>
 
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
-              <div className="text-xs text-zinc-400">Rubros</div>
-              <div className="mt-2 text-2xl font-semibold">
-                {disciplinesLoading ? "…" : disciplinesForbidden ? "🔒" : disciplinesCount}
-              </div>
-              <div className="mt-2 text-sm text-zinc-500">
-                {disciplinesForbidden ? "Disponible al iniciar sesión" : "Datos reales desde /api/Disciplines"}
-              </div>
-            </div>
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+                  <div className="text-xs text-zinc-400">Rubros</div>
+                  <div className="mt-2 text-2xl font-semibold">
+                    {disciplinesForbidden ? "🔒" : disciplinesCount}
+                  </div>
+                  <div className="mt-2 text-sm text-zinc-500">
+                    {disciplinesForbidden
+                      ? "Disponible al iniciar sesión"
+                      : "Datos reales desde /api/Disciplines"}
+                  </div>
+                </div>
+              </>
+            )}
           </section>
 
           {/* Feature cards */}
