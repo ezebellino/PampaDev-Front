@@ -1,10 +1,15 @@
-import { useEffect, useState } from "react";
-import type { Discipline } from "../api/services/disciplines"; // o tu types si querés, abajo te digo
-import { getDisciplines } from "../api/services/disciplines";
-import { logInfo, logError, logSystem } from "../utils/logger";
+﻿import { useEffect, useState } from "react";
+import {
+  createDiscipline,
+  deleteDiscipline,
+  getDisciplines,
+  updateDiscipline,
+  type Discipline,
+} from "../api/services/disciplines";
+import { logError, logInfo } from "../utils/logger";
 
 export function useDisciplines() {
-  const [data, setData] = useState<Discipline[]>([]);
+  const [disciplines, setDisciplines] = useState<Discipline[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,13 +18,13 @@ export function useDisciplines() {
     setError(null);
 
     try {
-      const res = await getDisciplines();
-      setData(res);
-      logSystem("info", "Disciplines loaded", { count: res.length });
+      const result = await getDisciplines();
+      setDisciplines(result);
+      logInfo("Disciplines loaded", { count: result.length }, { layer: "hook", feature: "disciplines" });
     } catch (e: any) {
-      const msg = e?.message || "Error cargando disciplinas";
-      setError(msg);
-      logSystem("error", "Disciplines load failed", { msg });
+      const message = e?.message || "Error cargando disciplinas";
+      setError(message);
+      logError("Disciplines load failed", { message }, { layer: "hook", feature: "disciplines" });
     } finally {
       setLoading(false);
     }
@@ -30,5 +35,33 @@ export function useDisciplines() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { disciplines: data, loading, error, refresh };
+  async function create(name: string) {
+    const trimmed = name.trim();
+    if (!trimmed) throw new Error("El nombre es obligatorio.");
+
+    await createDiscipline({ name: trimmed });
+    logInfo("Discipline created", { name: trimmed }, { layer: "hook", feature: "disciplines" });
+    await refresh();
+  }
+
+  async function update(id: number, name: string) {
+    const trimmed = name.trim();
+    if (!trimmed) throw new Error("El nombre es obligatorio.");
+
+    await updateDiscipline(id, { name: trimmed });
+    logInfo("Discipline updated", { id, name: trimmed }, { layer: "hook", feature: "disciplines" });
+    await refresh();
+  }
+
+  async function remove(discipline: Discipline) {
+    await deleteDiscipline(discipline.idDiscipline);
+    logInfo(
+      "Discipline deleted",
+      { id: discipline.idDiscipline, name: discipline.name },
+      { layer: "hook", feature: "disciplines" }
+    );
+    await refresh();
+  }
+
+  return { disciplines, loading, error, refresh, create, update, remove };
 }

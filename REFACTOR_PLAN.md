@@ -1,251 +1,146 @@
-# Plan de Refactorización — PampaDev Front
+﻿# Plan de Refactorización — PampaDev Front
 
-Este documento describe el plan de refactorización paso a paso basado en el análisis del estado actual del código. Debe ejecutarse **antes o durante** el desarrollo del próximo feature, para que la nueva funcionalidad se construya sobre una base limpia.
+Este documento describe el plan de refactorización paso a paso basado en el análisis del estado actual del código. Debe ejecutarse antes o durante el desarrollo de próximos features, para que la nueva funcionalidad se construya sobre una base limpia.
 
 ---
 
-## 🎯 Objetivo
+## Objetivo
 
 Reducir la complejidad de las rutas y módulos más grandes, separar responsabilidades siguiendo los principios de React (un componente = una responsabilidad), y consolidar patrones consistentes en toda la app.
 
 ---
 
-## 📋 Resumen de cambios
+## Progreso actual
 
-| # | Archivo actual | Problema | Acción |
-|---|---|---|---|
-| 1 | `app/routes/app.admin.requests.tsx` | God Component (299 líneas) | Extraer componentes + delegar a hook existente |
-| 2 | `app/routes/app.disciplines.tsx` | UI + lógica mezclada (273 líneas) | Extraer formulario y lista a componentes |
-| 3 | `app/lib/auth/AuthContext.tsx` | Creció demasiado (~150 líneas) | Extraer lógica de token refresh |
-| 4 | `app/lib/utils/logger.ts` | Módulo monolítico (248 líneas) | Dividir en responsabilidades claras |
-
----
-
-## 🔴 PASO 1 — Refactor de `app/routes/app.admin.requests.tsx`
-
-**Prioridad: Alta — hacer primero**
-
-Este archivo mezcla fetch, estado, tabla y modal en una sola ruta. El objetivo es que la ruta quede en ~50 líneas solo orquestando.
-
-### 1.1 Crear `app/components/admin/RequestsTable.tsx`
-
-Extraer toda la tabla de requests a un componente dedicado.
-
-```tsx
-// app/components/admin/RequestsTable.tsx
-type Props = {
-  requests: RubroRequest[];
-  onSelect: (request: RubroRequest) => void;
-};
-
-export function RequestsTable({ requests, onSelect }: Props) {
-  // JSX de la tabla aquí
-}
-```
-
-### 1.2 Crear `app/components/admin/RequestDetailModal.tsx`
-
-Extraer el modal de detalle/aprobación a su propio componente.
-
-```tsx
-// app/components/admin/RequestDetailModal.tsx
-type Props = {
-  request: RubroRequest | null;
-  onClose: () => void;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
-};
-
-export function RequestDetailModal({ request, onClose, onApprove, onReject }: Props) {
-  // JSX del modal aquí
-}
-```
-
-### 1.3 Usar `useRubroRequests` desde la ruta
-
-El hook `app/lib/rubros/useRubroRequests.ts` ya existe. Asegurarse que la ruta lo use directamente en lugar de duplicar lógica de fetch/estado.
-
-```tsx
-// app/routes/app.admin.requests.tsx — resultado final (~50 líneas)
-export default function AdminRequestsPage() {
-  const { requests, loading, approve, reject } = useRubroRequests();
-  const [selected, setSelected] = useState<RubroRequest | null>(null);
-
-  if (loading) return <ScreenLoader />;
-
-  return (
-    <div>
-      <PageHeader title="Solicitudes de Rubro" />
-      <RequestsTable requests={requests} onSelect={setSelected} />
-      <RequestDetailModal
-        request={selected}
-        onClose={() => setSelected(null)}
-        onApprove={approve}
-        onReject={reject}
-      />
-    </div>
-  );
-}
-```
+| Estado | Área | Resultado |
+|---|---|---|
+| ✅ | Home pública | `app/routes/_index.tsx` quedó como orquestador y se extrajeron `HomeHero`, `HomeStats` y `HomeFeatures`. |
+| ✅ | Paso 1 | `app.admin.requests.tsx` ahora usa `useRubroRequests` y componentes dedicados (`RequestsTable`, `RequestDetailModal`). |
+| ✅ | Paso 2 | `app.disciplines.tsx` ahora usa `useDisciplines` y componentes dedicados (`DisciplineForm`, `DisciplineList`). |
+| ✅ | Paso 3 | `AuthContext.tsx` delega la restauración y refresco de sesión al helper `tokenRefresh.ts`. |
+| ✅ | Paso 4 | `logger.ts` quedó reducido a API pública sobre `logFormatter.ts` y `logStorage.ts`. |
+| ✅ | Base estable | `npm run typecheck` pasa limpio. |
 
 ---
 
-## 🔴 PASO 2 — Refactor de `app/routes/app.disciplines.tsx`
+## Paso 0 — Home pública
 
-**Prioridad: Alta**
+Estado: completado.
 
-### 2.1 Crear `app/components/disciplines/DisciplineForm.tsx`
-
-Extraer el formulario de creación/edición de disciplinas.
-
-```tsx
-// app/components/disciplines/DisciplineForm.tsx
-type Props = {
-  onSubmit: (data: DisciplineFormData) => void;
-  initialData?: Partial<DisciplineFormData>;
-  loading?: boolean;
-};
-
-export function DisciplineForm({ onSubmit, initialData, loading }: Props) {
-  // formulario controlado aquí
-}
-```
-
-### 2.2 Crear `app/components/disciplines/DisciplineList.tsx`
-
-Extraer el listado de disciplinas.
-
-```tsx
-// app/components/disciplines/DisciplineList.tsx
-type Props = {
-  disciplines: Discipline[];
-  onEdit: (d: Discipline) => void;
-  onDelete: (id: string) => void;
-};
-
-export function DisciplineList({ disciplines, onEdit, onDelete }: Props) {
-  // listado con acciones
-}
-```
-
-### 2.3 Verificar que `useDisciplines` cubra toda la lógica de la ruta
-
-Revisar `app/lib/disciplines/useDisciplines.ts` y si le falta exponer `create`, `update` o `delete`, agregarlos ahí — nunca en la ruta.
+### Resultado aplicado
+- `app/routes/_index.tsx` consume hooks y compone la pantalla.
+- `app/components/home/HomeHero.tsx` contiene el bloque hero.
+- `app/components/home/HomeStats.tsx` contiene las métricas y skeletons.
+- `app/components/home/HomeFeatures.tsx` contiene las feature cards.
+- `app/lib/disciplines/useDisciplinesPublic.ts` quedó como hook compartido para la data pública.
 
 ---
 
-## 🟡 PASO 3 — Refactor de `app/lib/auth/AuthContext.tsx`
+## Paso 1 — Refactor de `app/routes/app.admin.requests.tsx`
 
-**Prioridad: Media — hacer antes de agregar más lógica de auth**
+Estado: completado.
 
-### 3.1 Crear `app/lib/auth/tokenRefresh.ts`
-
-Extraer la lógica de renovación de tokens del contexto.
-
-```ts
-// app/lib/auth/tokenRefresh.ts
-export async function refreshAccessToken(refreshToken: string): Promise<string | null> {
-  // lógica de llamada al endpoint de refresh
-  // retorna el nuevo access token o null si falló
-}
-```
-
-### 3.2 `AuthContext` debe quedar solo como proveedor de estado
-
-Responsabilidades que deben permanecer en `AuthContext.tsx`:
-- Estado: `user`, `isLoading`, `isAuthenticated`
-- Acciones: `login(credentials)`, `logout()`
-- Consumo de `jwt.ts` para decodificar el token
-- Consumo de `authStorage.ts` para persistencia
-- Consumo de `tokenRefresh.ts` para renovar sesión
-
-Responsabilidades que deben **salir** de `AuthContext.tsx`:
-- Lógica detallada del ciclo de vida del refresh token → `tokenRefresh.ts`
-- Cualquier llamada directa a fetch → `app/lib/api/services/auth.ts`
+### Resultado aplicado
+- `app/components/admin/RequestsTable.tsx`
+- `app/components/admin/RequestDetailModal.tsx`
+- `app/components/admin/requestPresentation.ts`
+- `app/lib/rubros/useRubroRequests.ts` centraliza carga, creación y revisión.
+- `app/lib/rubros/rubroRequests.ts` concentra el tipo y la persistencia local.
+- `app/routes/app.admin.requests.new.tsx` ahora crea solicitudes reales usando el hook compartido.
 
 ---
 
-## 🟡 PASO 4 — Refactor de `app/lib/utils/logger.ts`
+## Paso 2 — Refactor de `app/routes/app.disciplines.tsx`
 
-**Prioridad: Media — técnico/interno, no urgente**
+Estado: completado.
 
-### 4.1 Dividir en tres archivos
-
-```
-app/lib/utils/
-├── logger.ts          # Interfaz pública: log(), warn(), error(), info() (~40 líneas)
-├── logFormatter.ts    # Formateo de mensajes, timestamps, colores de consola
-└── logStorage.ts      # Persistencia de logs (si aplica)
-```
-
-### 4.2 `logger.ts` debe ser la única API expuesta
-
-```ts
-// app/lib/utils/logger.ts — solo interfaz pública
-import { format } from './logFormatter';
-import { persist } from './logStorage';
-
-export const logger = {
-  log: (msg: string, ctx?: object) => { ... },
-  warn: (msg: string, ctx?: object) => { ... },
-  error: (msg: string, ctx?: object) => { ... },
-  info: (msg: string, ctx?: object) => { ... },
-};
-```
+### Resultado aplicado
+- `app/components/disciplines/DisciplineForm.tsx`
+- `app/components/disciplines/DisciplineList.tsx`
+- `app/lib/disciplines/useDisciplines.ts` ahora expone `create`, `update`, `remove`, además de `refresh`.
+- `app/routes/app.disciplines.tsx` quedó como ruta de orquestación con modales reutilizando el mismo formulario.
 
 ---
 
-## ✅ Checklist de ejecución
+## Paso 3 — Refactor de `app/lib/auth/AuthContext.tsx`
 
-Usar este checklist al ejecutar el plan. Marcar con ✅ a medida que se completa cada ítem.
+Estado: completado.
+
+### Resultado aplicado
+- `app/lib/auth/authTypes.ts` concentra el tipo `User`.
+- `app/lib/auth/tokenRefresh.ts` concentra normalización de roles, restauración de sesión y refresh mediante `/api/Users/me`.
+- `app/lib/auth/AuthContext.tsx` quedó enfocado en proveer estado global y acciones públicas.
+
+Nota: el backend actual no expone refresh token dedicado. El helper `tokenRefresh.ts` hoy encapsula la restauración de sesión y el refresco del usuario autenticado a través de `/me`.
+
+---
+
+## Paso 4 — Refactor de `app/lib/utils/logger.ts`
+
+Estado: completado.
+
+### Resultado aplicado
+- `app/lib/utils/logFormatter.ts` concentra normalización y formateo.
+- `app/lib/utils/logStorage.ts` concentra persistencia, lectura y limpieza.
+- `app/lib/utils/logger.ts` quedó reducido a la API pública (`logInfo`, `logWarn`, `logError`, `logApiError`, `logSystem`, `getLogs`, `clearLogs`).
+
+---
+
+## Checklist de ejecución
+
+### Paso 0 — Home pública
+- [x] Extraer `HomeHero`
+- [x] Extraer `HomeStats`
+- [x] Extraer `HomeFeatures`
+- [x] Mover la lógica pública de disciplinas a hook compartido
+- [x] Reducir la ruta a orquestación
 
 ### Paso 1 — `app.admin.requests.tsx`
-- [ ] Crear `app/components/admin/RequestsTable.tsx`
-- [ ] Crear `app/components/admin/RequestDetailModal.tsx`
-- [ ] Verificar que `useRubroRequests` expone `approve` y `reject`
-- [ ] Reducir la ruta a ~50 líneas
-- [ ] Verificar que la UI sigue funcionando igual
+- [x] Crear `app/components/admin/RequestsTable.tsx`
+- [x] Crear `app/components/admin/RequestDetailModal.tsx`
+- [x] Verificar que `useRubroRequests` expone `approve` y `reject`
+- [x] Reducir la ruta a orquestación
+- [x] Verificar que la UI sigue funcionando con persistencia local
 
 ### Paso 2 — `app.disciplines.tsx`
-- [ ] Crear `app/components/disciplines/DisciplineForm.tsx`
-- [ ] Crear `app/components/disciplines/DisciplineList.tsx`
-- [ ] Verificar/completar `useDisciplines` con `create`, `update`, `delete`
-- [ ] Reducir la ruta a ~50 líneas
-- [ ] Verificar que la UI sigue funcionando igual
+- [x] Crear `app/components/disciplines/DisciplineForm.tsx`
+- [x] Crear `app/components/disciplines/DisciplineList.tsx`
+- [x] Verificar o completar `useDisciplines` con `create`, `update`, `delete`
+- [x] Reducir la ruta a orquestación
+- [ ] Verificar visualmente la UI en navegador
 
 ### Paso 3 — `AuthContext.tsx`
-- [ ] Crear `app/lib/auth/tokenRefresh.ts`
-- [ ] Mover lógica de refresh al nuevo archivo
-- [ ] Verificar que login/logout/sesión persisten correctamente
+- [x] Crear `app/lib/auth/tokenRefresh.ts`
+- [x] Mover la lógica de refresh o restauración de sesión al nuevo archivo
+- [x] Verificar que login, logout y sesión persisten correctamente a nivel de tipado y flujo de código
 
 ### Paso 4 — `logger.ts`
-- [ ] Crear `app/lib/utils/logFormatter.ts`
-- [ ] Crear `app/lib/utils/logStorage.ts` (si aplica)
-- [ ] Reducir `logger.ts` a interfaz pública
-- [ ] Verificar que todos los `import` existentes de `logger` siguen funcionando
+- [x] Crear `app/lib/utils/logFormatter.ts`
+- [x] Crear `app/lib/utils/logStorage.ts` si aplica
+- [x] Reducir `logger.ts` a interfaz pública
+- [x] Verificar que todos los imports existentes siguen funcionando
 
 ---
 
-## 📐 Convenciones a respetar durante el refactor
+## Convenciones a respetar durante el refactor
 
-- **Rutas**: solo orquestan. No deben tener lógica de fetch ni estado complejo.
-- **Componentes**: un componente = una responsabilidad visual.
-- **Hooks**: toda lógica de estado y fetch vive en hooks (`use*.ts`).
-- **Servicios**: toda comunicación HTTP vive en `app/lib/api/services/`.
-- **Contextos**: solo proveen estado global, delegan lógica a helpers.
-- **Tipos**: definir tipos compartidos en archivos `types.ts` por dominio.
-- **Tests**: si agregás un hook nuevo, es el momento ideal para agregarle un test.
-
----
-
-## 🚀 Orden de ejecución recomendado
-
-```
-Paso 1 (requests) → Paso 2 (disciplines) → Paso 3 (auth) → Paso 4 (logger)
-```
-
-Los pasos 1 y 2 son independientes entre sí y pueden hacerse en paralelo si hay más de una persona trabajando. Los pasos 3 y 4 son más internos y pueden hacerse después sin bloquear el feature.
+- Rutas: solo orquestan. No deben tener lógica de fetch ni estado complejo.
+- Componentes: una responsabilidad visual por componente.
+- Hooks: toda lógica de estado y fetch vive en hooks `use*.ts`.
+- Servicios: toda comunicación HTTP vive en `app/lib/api/services/`.
+- Contextos: solo proveen estado global y delegan lógica a helpers.
+- Tipos: definir tipos compartidos en archivos `types.ts` por dominio.
+- Tests: si agregás o tocás un hook crítico, es buen momento para sumarle cobertura.
 
 ---
 
-*Generado automáticamente por análisis de código — PampaDev Front — Marzo 2026*
+## Próximos incrementos sugeridos
+
+1. QA visual manual de Home, Admin Requests, Disciplines, Branches, Rubros y Perfil.
+2. Agregar tests a hooks críticos (`useDisciplines`, `useRubroRequests`, helpers de auth y logger).
+3. Revisar naming mixto `discipline`/`rubro` para consolidar lenguaje de dominio.
+4. Reemplazar mocks locales por endpoints reales donde ya exista backend.
+
+---
+
+Actualizado después de completar home, requests admin, disciplines, auth, logger y dejar `typecheck` limpio.

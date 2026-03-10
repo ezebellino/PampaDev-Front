@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate } from "react-router";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
@@ -21,13 +21,19 @@ export default function CreateRubroPage() {
       description,
       durationMin,
       basePrice,
-      tags: tags.split(",").map(t => t.trim()),
+      tags: tags.split(",").map((tag) => tag.trim()),
       active: true,
     };
 
-    logSystem("info", "Nuevo rubro creado por Dev", newRubro);
+    logSystem({
+      level: "info",
+      origin: "frontend",
+      layer: "ui",
+      feature: "rubros",
+      message: "Nuevo rubro creado por Dev",
+      meta: newRubro,
+    });
 
-    // TODO: enviar a API o guardar mock
     nav("/app/rubros");
   }
 
@@ -40,17 +46,16 @@ export default function CreateRubroPage() {
           <CardTitle>Datos del rubro</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-
           <input
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(event) => setName(event.target.value)}
             placeholder="Nombre"
             className="input"
           />
 
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(event) => setDescription(event.target.value)}
             placeholder="Descripción"
             className="input"
           />
@@ -58,7 +63,7 @@ export default function CreateRubroPage() {
           <input
             type="number"
             value={durationMin}
-            onChange={(e) => setDurationMin(Number(e.target.value))}
+            onChange={(event) => setDurationMin(Number(event.target.value))}
             placeholder="Duración en minutos"
             className="input"
           />
@@ -66,22 +71,20 @@ export default function CreateRubroPage() {
           <input
             type="number"
             value={basePrice}
-            onChange={(e) => setBasePrice(Number(e.target.value))}
+            onChange={(event) => setBasePrice(Number(event.target.value))}
             placeholder="Precio base"
             className="input"
           />
 
           <input
             value={tags}
-            onChange={(e) => setTags(e.target.value)}
+            onChange={(event) => setTags(event.target.value)}
             placeholder="Tags separados por coma"
             className="input"
           />
 
           <div className="flex justify-end">
-            <Button onClick={handleSubmit}>
-              Crear
-            </Button>
+            <Button onClick={handleSubmit}>Crear</Button>
           </div>
         </CardContent>
       </Card>

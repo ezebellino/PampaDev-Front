@@ -1,40 +1,66 @@
-import { useEffect, useMemo, useState } from "react";
-import { loadRequests, saveRequests, type RubroRequest, makeId } from "./rubroRequests";
+﻿import { useEffect, useState } from "react";
+import { loadRequests, makeId, saveRequests, type RubroRequest } from "./rubroRequests";
 
 export function useRubroRequests() {
-  const [hydrated, setHydrated] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<RubroRequest[]>([]);
 
   useEffect(() => {
     setRequests(loadRequests());
-    setHydrated(true);
+    setLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    saveRequests(requests);
-  }, [requests, hydrated]);
+  function updateRequests(updater: (current: RubroRequest[]) => RubroRequest[]) {
+    setRequests((current) => {
+      const next = updater(current);
+      saveRequests(next);
+      return next;
+    });
+  }
 
-  const api = useMemo(() => ({
-    hydrated,
-    requests,
-    createRequest: (payload: Omit<RubroRequest, "id" | "createdAt" | "status">) => {
-      const req: RubroRequest = {
-        ...payload,
-        id: makeId(),
-        createdAt: new Date().toISOString(),
-        status: "pending",
-      };
-      setRequests(prev => [req, ...prev]);
-      return req;
-    },
-    approve: (id: string, devNotes?: string) => {
-      setRequests(prev => prev.map(r => r.id === id ? { ...r, status: "approved", devNotes } : r));
-    },
-    reject: (id: string, devNotes?: string) => {
-      setRequests(prev => prev.map(r => r.id === id ? { ...r, status: "rejected", devNotes } : r));
-    },
-  }), [requests, hydrated]);
+  function createRequest(payload: Omit<RubroRequest, "id" | "createdAt" | "status">) {
+    const request: RubroRequest = {
+      ...payload,
+      id: makeId(),
+      createdAt: new Date().toISOString(),
+      status: "pending",
+    };
 
-  return api;
+    updateRequests((current) => [request, ...current]);
+    return request;
+  }
+
+  function approve(id: string, devNotes?: string, reviewedBy?: string) {
+    updateRequests((current) =>
+      current.map((request) =>
+        request.id === id
+          ? {
+              ...request,
+              status: "approved",
+              devNotes,
+              reviewedBy: reviewedBy ?? request.reviewedBy,
+              reviewedAt: new Date().toISOString(),
+            }
+          : request
+      )
+    );
+  }
+
+  function reject(id: string, devNotes?: string, reviewedBy?: string) {
+    updateRequests((current) =>
+      current.map((request) =>
+        request.id === id
+          ? {
+              ...request,
+              status: "rejected",
+              devNotes,
+              reviewedBy: reviewedBy ?? request.reviewedBy,
+              reviewedAt: new Date().toISOString(),
+            }
+          : request
+      )
+    );
+  }
+
+  return { requests, loading, createRequest, approve, reject };
 }

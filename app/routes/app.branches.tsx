@@ -1,34 +1,30 @@
+﻿import { Badge } from "../components/ui/Badge";
+import { Button } from "~/components/ui/Button";
+import { Card, CardContent } from "../components/ui/Card";
 import { PageHeader } from "../components/ui/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/Card";
-import { Badge } from "../components/ui/Badge";
+import ScreenLoader from "../components/ui/ScreenLoader";
 import { useBranches } from "../lib/api/hooks/useBranches";
 import { useBranch } from "../lib/branches/BranchContext";
-import { Button } from "~/components/ui/Button";
-import ScreenLoader from "../components/ui/ScreenLoader";
 
 export default function BranchesPage() {
   const { data, loading, error } = useBranches();
   const { branchId, setBranchId } = useBranch();
 
-  // ✅ Loader pantalla completa
   if (loading) {
-    return <ScreenLoader label="Cargando sucursales desde la API…" />;
+    return <ScreenLoader title="Cargando sucursales…" subtitle="Estamos preparando tu red de operación." />;
   }
 
-  // ✅ Error consistente
   if (error) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Sucursales" subtitle="Datos reales desde la API (GET /api/Branches)." />
+        <PageHeader
+          title="Sucursales"
+          subtitle="Elegí desde qué sede querés trabajar y mantené el contexto de operación siempre visible."
+        />
         <Card>
-          <CardHeader>
-            <CardTitle>Error al cargar</CardTitle>
-            <CardDescription className="text-zinc-400">
-              Status: {error.status} — {error.message}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm text-zinc-400">
-            Tip: si querés botón “Reintentar”, hacemos que useBranches exponga refresh().
+          <CardContent className="space-y-3 py-6">
+            <div className="text-sm font-medium text-red-300">No pudimos cargar las sucursales.</div>
+            <div className="text-sm text-zinc-400">{error.message}</div>
           </CardContent>
         </Card>
       </div>
@@ -38,10 +34,13 @@ export default function BranchesPage() {
   if ((data?.length ?? 0) === 0) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Sucursales" subtitle="Datos reales desde la API (GET /api/Branches)." />
+        <PageHeader
+          title="Sucursales"
+          subtitle="Todavía no hay sedes configuradas para operar desde este entorno."
+        />
         <Card>
           <CardContent className="py-6 text-sm text-zinc-400">
-            No hay sucursales todavía.
+            Cuando exista al menos una sucursal, vas a poder seleccionarla desde acá.
           </CardContent>
         </Card>
       </div>
@@ -52,43 +51,69 @@ export default function BranchesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Sucursales"
-        subtitle="Datos reales desde la API (GET /api/Branches)."
+        subtitle="Elegí la sede activa para filtrar la operación, los rubros y la configuración disponible."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {data!.map((b) => {
-          const active = branchId === b.idBranch;
+        {data!.map((branch) => {
+          const active = branchId === branch.idBranch;
+
           return (
-            <Card
-              key={b.idBranch}
-              className={`hover:bg-zinc-900/35 transition ${active ? "ring-2 ring-zinc-500" : ""}`}
+            <article
+              key={branch.idBranch}
+              className={`relative overflow-hidden rounded-[1.75rem] border bg-zinc-950/70 transition duration-200 ${
+                active
+                  ? "border-cyan-400/40 shadow-[0_20px_50px_rgba(34,211,238,0.10)]"
+                  : "border-zinc-800 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/70"
+              }`}
             >
-              <CardHeader>
+              <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(135deg,rgba(56,189,248,0.14),transparent_55%)]" />
+              <div className="relative p-5">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <CardTitle>{b.companyName}</CardTitle>
-                    <CardDescription>{b.cityName}</CardDescription>
+                  <div className="space-y-1">
+                    <div className="text-lg font-semibold text-zinc-100">{branch.companyName}</div>
+                    <div className="text-sm text-zinc-400">{branch.cityName}</div>
                   </div>
-                  <Badge className="shrink-0">#{b.idBranch}</Badge>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-2">
-                <div className="text-sm text-zinc-300">{b.address}</div>
-                <div className="text-sm text-zinc-400">{b.description}</div>
-                <div className="text-xs text-zinc-500">
-                  Creado: {new Date(b.createdAt).toLocaleString("es-AR")}
+                  <Badge className="shrink-0 border-zinc-700 bg-zinc-900/80 text-zinc-300">
+                    #{branch.idBranch}
+                  </Badge>
                 </div>
 
-                <Button
-                  variant={active ? "primary" : "secondary"}
-                  size="sm"
-                  onClick={() => setBranchId(b.idBranch)}
-                >
-                  {active ? "✅ Sucursal activa" : "Usar esta sucursal"}
-                </Button>
-              </CardContent>
-            </Card>
+                <div className="mt-5 space-y-3">
+                  <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-300">
+                    {branch.address}
+                  </div>
+
+                  <p className="text-sm leading-6 text-zinc-400">
+                    {branch.description || "Esta sucursal ya está lista para usarse dentro del flujo operativo."}
+                  </p>
+
+                  <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
+                    <span>Creada {new Date(branch.createdAt).toLocaleDateString("es-AR")}</span>
+                    <span
+                      className={`rounded-full px-3 py-1 ${
+                        active
+                          ? "border border-cyan-500/20 bg-cyan-500/10 text-cyan-200"
+                          : "border border-zinc-800 bg-zinc-900/70 text-zinc-400"
+                      }`}
+                    >
+                      {active ? "Sucursal activa" : "Disponible"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    variant={active ? "primary" : "secondary"}
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setBranchId(branch.idBranch)}
+                  >
+                    {active ? "Trabajando en esta sucursal" : "Usar esta sucursal"}
+                  </Button>
+                </div>
+              </div>
+            </article>
           );
         })}
       </div>

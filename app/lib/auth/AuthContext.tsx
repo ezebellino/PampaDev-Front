@@ -1,17 +1,15 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+﻿import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { loginApi } from "../api/services/auth";
-import { saveToken, getToken, clearToken, saveUser, getSavedUser, clearUser } from "./authStorage";
-import { getRoleFromJwt } from "./jwt";
-import { ROLES, type Role } from "./roles";
-import { getMe } from "../api/services/users";
+import type { User } from "./authTypes";
+import {
+  buildUserFromLoginResponse,
+  clearSession,
+  getStoredSession,
+  persistSession,
+  refreshCurrentUser,
+} from "./tokenRefresh";
 
-export type User = {
-  id: string;
-  name: string;
-  role: Role;
-  email: string;
-  avatarUrl?: string;
-};
+export type { User } from "./authTypes";
 
 type AuthContextValue = {
   user: User | null;
@@ -31,100 +29,91 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [bootstrapped, setBootstrapped] = useState(false);
 
-  function normalizeRole(apiRole: string): Role {
-    const r = (apiRole || "").trim().toLowerCase();
-    if (r === "dev" || r === "devs" || r === "developer") return ROLES.DEVS;
-    if (r === "admin" || r === "admins") return ROLES.ADMIN;
-    if (r === "instructor" || r === "instructors") return ROLES.INSTRUCTOR;
-    return ROLES.USER;
-  }
-
   async function refreshMe() {
-    const t = getToken();
-    if (!t) return;
-
-    const me = await getMe();
-
-    const u: User = {
-      id: String(me.idUser),
-      name: `${me.firstName} ${me.lastname}`.trim(),
-      role: normalizeRole(me.roleName),
-      email: me.email,
-    };
-
-    saveUser(u);
-    setUser(u);
+    const refreshedUser = await refreshCurrentUser();
+    if (refreshedUser) {
+      setUser(refreshedUser);
+    }
   }
 
-  // ✅ Bootstrap correcto: si no hay token, no hay sesión.
   useEffect(() => {
-    const t = getToken();
+    let alive = true;
 
-    if (!t) {
-      // Sin token => forzamos estado “logged out”
-      clearUser();
-      setToken(null);
-      setUser(null);
-      setBootstrapped(true);
-      return;
-    }
+    async function bootstrapSession() {
+      const stored = getStoredSession();
 
-    // Hay token => podemos restaurar user (opcional) y luego refrescar /me
-    setToken(t);
-
-    const savedUser = getSavedUser<User>();
-    if (savedUser) setUser(savedUser);
-
-    refreshMe()
-      .catch(() => {
-        clearToken();
-        clearUser();
+      if (!stored.token) {
+        clearSession();
+        if (!alive) return;
         setToken(null);
         setUser(null);
-      })
-      .finally(() => setBootstrapped(true));
+        setBootstrapped(true);
+        return;
+      }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      if (!alive) return;
+      setToken(stored.token);
+      if (stored.user) {
+        setUser(stored.user);
+      }
+
+      try {
+        const refreshedUser = await refreshCurrentUser();
+        if (!alive) return;
+        setUser(refreshedUser);
+      } catch {
+        clearSession();
+        if (!alive) return;
+        setToken(null);
+        setUser(null);
+      } finally {
+        if (alive) {
+          setBootstrapped(true);
+        }
+      }
+    }
+
+    void bootstrapSession();
+
+    return () => {
+      alive = false;
+    };
   }, []);
 
   function updateProfile(patch: { name?: string; avatarUrl?: string }) {
-    setUser((prev) => {
-      if (!prev) return prev;
-      const next: User = {
-        ...prev,
-        name: patch.name ?? prev.name,
-        avatarUrl: patch.avatarUrl ?? prev.avatarUrl,
+    setUser((previousUser) => {
+      if (!previousUser) return previousUser;
+
+      const nextUser: User = {
+        ...previousUser,
+        name: patch.name ?? previousUser.name,
+        avatarUrl: patch.avatarUrl ?? previousUser.avatarUrl,
       };
-      saveUser(next);
-      return next;
+
+      if (token) {
+        persistSession(token, nextUser);
+      }
+
+      return nextUser;
     });
   }
 
   async function loginWithApi(payload: { email: string; password: string }) {
-    const res = await loginApi(payload);
-    if (!res.token) throw new Error("La API no devolvió token");
+    const response = await loginApi(payload);
+    if (!response.token) {
+      throw new Error("La API no devolvió token");
+    }
 
-    saveToken(res.token);
-    setToken(res.token);
+    const quickUser = buildUserFromLoginResponse(response);
+    persistSession(response.token, quickUser);
+    setToken(response.token);
+    setUser(quickUser);
 
-    // set “rápido” para UI inmediata
-    const u: User = {
-      id: res.email,
-      name: `${res.firstName} ${res.lastname}`.trim(),
-      role: normalizeRole(getRoleFromJwt(res.token) ?? ""),
-      email: res.email,
-    };
-
-    saveUser(u);
-    setUser(u);
-
-    // luego /me lo deja 100% consistente
     await refreshMe();
   }
 
   function logout() {
-    clearToken();
-    clearUser();
+    clearSession();
     setToken(null);
     setUser(null);
   }
