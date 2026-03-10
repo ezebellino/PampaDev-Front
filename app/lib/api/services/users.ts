@@ -1,4 +1,4 @@
-import { apiGet, apiPut } from "../api";
+﻿import { api, apiGet, apiPut } from "../api";
 
 export type MeResponse = {
   idUser: number;
@@ -10,6 +10,15 @@ export type MeResponse = {
   idCity: number;
   cityName: string;
   createdAt: string;
+};
+
+export type CreateUserPayload = {
+  firstName: string;
+  lastname: string;
+  email: string;
+  password: string;
+  idRole: number;
+  idCity: number;
 };
 
 export type UpdateUserPayload = {
@@ -28,6 +37,14 @@ export type ChangePasswordPayload = {
 
 export function getMe() {
   return apiGet<MeResponse>("/api/Users/me");
+}
+
+export function createUserPublic(payload: CreateUserPayload) {
+  return api<void>("/api/Users", {
+    method: "POST",
+    body: payload,
+    auth: false,
+  });
 }
 
 export function updateUser(id: number, payload: UpdateUserPayload) {
