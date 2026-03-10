@@ -1,4 +1,6 @@
 ﻿import { Link } from "react-router";
+import { useAuth } from "../lib/auth/AuthContext";
+import { ROLES } from "../lib/auth/roles";
 import { Card, CardContent } from "../components/ui/Card";
 import { useBranch } from "../lib/branches/BranchContext";
 import { useCompany } from "../lib/companies/CompanyContext";
@@ -40,10 +42,12 @@ function AdminTile({
 }
 
 export default function AdminIndex() {
+  const { user } = useAuth();
   const { companyId } = useCompany();
   const { branchId } = useBranch();
 
   const needBranch = branchId == null;
+  const isDev = user?.role === ROLES.DEVS;
 
   return (
     <div className="space-y-6">
@@ -92,7 +96,11 @@ export default function AdminIndex() {
 
           <AdminTile
             title="Solicitudes de rubros"
-            desc="Creá y gestioná solicitudes para incorporar nuevos rubros o ajustar los existentes."
+            desc={
+              isDev
+                ? "Revisá la bandeja completa de solicitudes enviadas por administración."
+                : "Creá solicitudes para nuevos rubros y seguí su estado con Devs."
+            }
             to="/app/admin/solicitudes"
           />
         </div>
@@ -103,16 +111,20 @@ export default function AdminIndex() {
         <CardContent className="relative -mt-2 space-y-3 py-5">
           <div className="text-sm font-semibold text-zinc-100">Acciones rápidas</div>
           <div className="text-sm leading-6 text-zinc-400">
-            Podés crear una nueva solicitud, revisar el listado actual o volver al catálogo activo.
+            {isDev
+              ? "Podés revisar el listado completo de solicitudes y volver al catálogo activo para seguir operando."
+              : "Podés crear una nueva solicitud, revisar el listado actual o volver al catálogo activo."}
           </div>
 
           <div className="flex flex-wrap gap-2 pt-2">
-            <Link
-              to="/app/admin/solicitudes/nueva"
-              className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-white"
-            >
-              + Nueva solicitud
-            </Link>
+            {!isDev ? (
+              <Link
+                to="/app/admin/solicitudes/nueva"
+                className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-white"
+              >
+                + Nueva solicitud
+              </Link>
+            ) : null}
 
             <Link
               to="/app/admin/solicitudes"

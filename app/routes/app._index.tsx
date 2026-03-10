@@ -1,9 +1,12 @@
-﻿import { Link } from "react-router";
+﻿import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router";
 import { Card, CardContent } from "../components/ui/Card";
 import { useAuth } from "../lib/auth/AuthContext";
+import { ROLES } from "../lib/auth/roles";
 import { useBranch } from "../lib/branches/BranchContext";
 import { useCompany } from "../lib/companies/CompanyContext";
-import { ROLES } from "../lib/auth/roles";
+import { useRubroRequests } from "../lib/rubros/useRubroRequests";
+import { getLogs, LOGS_EVENT, type LogEntry } from "../lib/utils/logger";
 
 function ActionCard({
   title,
@@ -18,13 +21,12 @@ function ActionCard({
   cta: string;
   disabled?: boolean;
 }) {
-  const base =
-    "relative overflow-hidden rounded-[1.75rem] border bg-zinc-950/75 p-5 transition duration-200";
+  const base = "relative overflow-hidden rounded-3xl border bg-zinc-950/75 p-5 transition duration-200";
 
   if (disabled) {
     return (
       <div className={`${base} border-zinc-800 opacity-65`}>
-        <div className="absolute inset-x-0 top-0 h-20 bg-[linear-gradient(135deg,rgba(255,255,255,0.03),transparent_60%)]" />
+        <div className="absolute inset-x-0 top-0 h-20 bg-linear-to-r from-white/5 to-transparent" />
         <div className="relative">
           <div className="text-base font-semibold tracking-tight text-zinc-100">{title}</div>
           <div className="mt-2 text-sm leading-6 text-zinc-400">{desc}</div>
@@ -38,7 +40,7 @@ function ActionCard({
 
   return (
     <Link to={to} className={`${base} border-zinc-800 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/75`}>
-      <div className="absolute inset-x-0 top-0 h-20 bg-[linear-gradient(135deg,rgba(56,189,248,0.12),transparent_60%)]" />
+      <div className="absolute inset-x-0 top-0 h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
       <div className="relative">
         <div className="text-base font-semibold tracking-tight text-zinc-100">{title}</div>
         <div className="mt-2 text-sm leading-6 text-zinc-400">{desc}</div>
@@ -53,8 +55,31 @@ function ActionCard({
 function ContextBadge({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
-      <div className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">{label}</div>
+      <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
       <div className="mt-1 text-sm font-medium text-zinc-200">{value}</div>
+    </div>
+  );
+}
+
+function DevMiniBars({ values }: { values: { label: string; value: number }[] }) {
+  const max = Math.max(...values.map((item) => item.value), 1);
+
+  return (
+    <div className="space-y-3">
+      {values.map((item) => (
+        <div key={item.label} className="space-y-1">
+          <div className="flex items-center justify-between text-xs text-zinc-500">
+            <span>{item.label}</span>
+            <span className="text-zinc-300">{item.value}</span>
+          </div>
+          <div className="h-2 rounded-full bg-zinc-900">
+            <div
+              className="h-2 rounded-full bg-linear-to-r from-cyan-400/80 to-cyan-300/50"
+              style={{ width: `${Math.max((item.value / max) * 100, item.value > 0 ? 12 : 0)}%` }}
+            />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -63,6 +88,8 @@ export default function AppDashboard() {
   const { user } = useAuth();
   const { companyId } = useCompany();
   const { branchId } = useBranch();
+  const { requests } = useRubroRequests();
+  const [logsTick, setLogsTick] = useState(0);
 
   const role = user?.role ?? ROLES.USER;
   const isAdmin = role === ROLES.ADMIN;
@@ -71,13 +98,43 @@ export default function AppDashboard() {
   const needsBranch = isAdmin;
   const branchSelected = branchId != null;
 
+  useEffect(() => {
+    if (!isDev) return;
+
+    const onLogsChanged = () => setLogsTick((current) => current + 1);
+    window.addEventListener(LOGS_EVENT, onLogsChanged);
+    return () => window.removeEventListener(LOGS_EVENT, onLogsChanged);
+  }, [isDev]);
+
+  const devMetrics = useMemo(() => {
+    const logs = isDev ? (getLogs() as LogEntry[]) : [];
+    let warning = 0;
+    let error = 0;
+
+    for (const log of logs) {
+      if (log.level === "warning") warning += 1;
+      if (log.level === "error") error += 1;
+    }
+
+    const pendingRequests = requests.filter((request) => request.status === "pending").length;
+    const approvedRequests = requests.filter((request) => request.status === "approved").length;
+
+    return {
+      totalLogs: logs.length,
+      warning,
+      error,
+      pendingRequests,
+      approvedRequests,
+    };
+  }, [isDev, logsTick, requests]);
+
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-[2rem] border border-zinc-800 bg-linear-to-br from-zinc-950 via-zinc-950 to-zinc-900 p-6 md:p-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_26%),linear-gradient(135deg,rgba(255,255,255,0.02),transparent_55%)]" />
+      <section className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-linear-to-br from-zinc-950 via-zinc-950 to-zinc-900 p-6 md:p-8">
+        <div className="absolute inset-0 bg-zinc-900/20" />
 
         <div className="relative space-y-4">
-          <div className="text-xs uppercase tracking-[0.24em] text-zinc-500">Panel principal</div>
+          <div className="text-xs uppercase tracking-widest text-zinc-500">Panel principal</div>
 
           <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
             Bienvenido{user?.name ? `, ${user.name}` : ""}.
@@ -91,8 +148,8 @@ export default function AppDashboard() {
 
         <div className="relative mt-6 grid gap-3 sm:grid-cols-3">
           <ContextBadge label="Rol" value={role} />
-          <ContextBadge label="Company activa" value={companyId ?? "—"} />
-          <ContextBadge label="Sucursal activa" value={branchId ?? "—"} />
+          <ContextBadge label="Empresa activa" value={companyId ?? "Sin seleccionar"} />
+          <ContextBadge label="Sucursal activa" value={branchId ?? "Sin seleccionar"} />
         </div>
       </section>
 
@@ -115,7 +172,11 @@ export default function AppDashboard() {
           {(isAdmin || isDev) && (
             <ActionCard
               title="Solicitudes de rubros"
-              desc="Revisá propuestas nuevas, dejá feedback y seguí su estado de avance."
+              desc={
+                isDev
+                  ? "Revisá todas las solicitudes enviadas por administración y definí su estado."
+                  : "Consultá el estado de tus solicitudes y enviá nuevos pedidos a Devs."
+              }
               to="/app/admin/solicitudes"
               cta="Ver solicitudes"
             />
@@ -124,7 +185,7 @@ export default function AppDashboard() {
           {(isAdmin || isDev) && (
             <ActionCard
               title="Horarios base"
-              desc="Definí la disponibilidad semanal para ordenar turnos y operación." 
+              desc="Definí la disponibilidad semanal para ordenar turnos y operación."
               to="/app/admin/horarios"
               cta={needsBranch && !branchSelected ? "Elegí sucursal primero" : "Configurar horarios"}
               disabled={needsBranch && !branchSelected}
@@ -145,12 +206,12 @@ export default function AppDashboard() {
       {(isAdmin || isDev) && (
         <section className="grid gap-4 lg:grid-cols-2">
           <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
-            <div className="h-20 bg-[linear-gradient(135deg,rgba(56,189,248,0.12),transparent_55%)]" />
+            <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
             <CardContent className="relative -mt-2 space-y-3 py-5">
               <div className="text-sm font-semibold text-zinc-100">Estado del entorno</div>
               <div className="space-y-2 text-sm text-zinc-400">
                 <div className="flex items-center justify-between">
-                  <span>Company seleccionada</span>
+                  <span>Empresa seleccionada</span>
                   <span className="text-zinc-200">{companyId ?? "No"}</span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -166,36 +227,60 @@ export default function AppDashboard() {
           </Card>
 
           <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
-            <div className="h-20 bg-[linear-gradient(135deg,rgba(245,158,11,0.12),transparent_55%)]" />
-            <CardContent className="relative -mt-2 space-y-3 py-5">
-              <div className="text-sm font-semibold text-zinc-100">Próximo paso recomendado</div>
-              <div className="text-sm leading-6 text-zinc-400">
-                {isAdmin
-                  ? "Configurá horarios base o generá una nueva solicitud de rubro para seguir avanzando."
-                  : isDev
-                  ? "Revisá solicitudes pendientes o abrí el Dev Panel para monitorear el sistema."
-                  : "Explorá rubros y comenzá a navegar por el sistema."}
+            <div className={`h-20 bg-linear-to-r ${isDev ? "from-cyan-500/14 to-transparent" : "from-amber-500/12 to-transparent"}`} />
+            <CardContent className="relative -mt-2 space-y-4 py-5">
+              <div className="text-sm font-semibold text-zinc-100">
+                {isDev ? "Resumen técnico" : "Próximo paso recomendado"}
               </div>
 
-              <div className="flex flex-wrap gap-2 pt-2">
-                {(isAdmin || isDev) && (
-                  <Link
-                    to="/app/admin/solicitudes/nueva"
-                    className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-white"
-                  >
-                    + Nueva solicitud
-                  </Link>
-                )}
+              {isDev ? (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                      <div className="text-xs uppercase tracking-wider text-zinc-500">Logs registrados</div>
+                      <div className="mt-2 text-2xl font-semibold text-zinc-100">{devMetrics.totalLogs}</div>
+                    </div>
+                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                      <div className="text-xs uppercase tracking-wider text-zinc-500">Solicitudes pendientes</div>
+                      <div className="mt-2 text-2xl font-semibold text-zinc-100">{devMetrics.pendingRequests}</div>
+                    </div>
+                  </div>
 
-                {(isAdmin || isDev) && (
-                  <Link
-                    to="/app/admin"
-                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
-                  >
-                    Ir al módulo admin
-                  </Link>
-                )}
-              </div>
+                  <DevMiniBars
+                    values={[
+                      { label: "Warnings", value: devMetrics.warning },
+                      { label: "Errores", value: devMetrics.error },
+                      { label: "Aprobadas", value: devMetrics.approvedRequests },
+                    ]}
+                  />
+
+                  <div className="text-sm leading-6 text-zinc-400">
+                    Vista rápida para detectar señales del sistema y revisar la carga operativa sin salir del dashboard.
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-sm leading-6 text-zinc-400">
+                    Generá una nueva solicitud de rubro o revisá el estado de los pedidos ya enviados a Devs.
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    <Link
+                      to="/app/admin/solicitudes/nueva"
+                      className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-white"
+                    >
+                      + Nueva solicitud
+                    </Link>
+
+                    <Link
+                      to="/app/admin"
+                      className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                    >
+                      Ir al módulo admin
+                    </Link>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </section>

@@ -9,9 +9,10 @@ import { buildRequestSearchText, formatRequestDate, statusLabel, statusTone } fr
 type RequestsTableProps = {
   requests: RubroRequest[];
   onSelect: (request: RubroRequest) => void;
+  canCreate?: boolean;
 };
 
-export default function RequestsTable({ requests, onSelect }: RequestsTableProps) {
+export default function RequestsTable({ requests, onSelect, canCreate = false }: RequestsTableProps) {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -40,7 +41,7 @@ export default function RequestsTable({ requests, onSelect }: RequestsTableProps
     {
       label: "Solicitudes",
       value: counts.total,
-      helper: "Total recibidas",
+      helper: "Total registradas",
       accent: "from-cyan-400/18 via-cyan-400/6 to-transparent",
     },
     {
@@ -69,11 +70,11 @@ export default function RequestsTable({ requests, onSelect }: RequestsTableProps
         {metricCards.map((card) => (
           <article
             key={card.label}
-            className="relative overflow-hidden rounded-[1.5rem] border border-zinc-800 bg-zinc-950/75 p-5"
+            className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/75 p-5"
           >
-            <div className={`absolute inset-x-0 top-0 h-20 bg-gradient-to-br ${card.accent}`} />
+            <div className={`absolute inset-x-0 top-0 h-20 bg-linear-to-r ${card.accent}`} />
             <div className="relative">
-              <div className="text-xs uppercase tracking-[0.24em] text-zinc-500">{card.label}</div>
+              <div className="text-xs uppercase tracking-widest text-zinc-500">{card.label}</div>
               <div className="mt-3 text-3xl font-semibold text-zinc-100">{card.value}</div>
               <div className="mt-2 text-sm text-zinc-400">{card.helper}</div>
             </div>
@@ -84,7 +85,9 @@ export default function RequestsTable({ requests, onSelect }: RequestsTableProps
       <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
         <CardHeader>
           <CardTitle>Listado de solicitudes</CardTitle>
-          <CardDescription>Buscá, abrí el detalle y tomá decisiones sobre cada propuesta.</CardDescription>
+          <CardDescription>
+            Buscá, abrí el detalle y seguí el estado de cada propuesta enviada a Devs.
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -93,12 +96,14 @@ export default function RequestsTable({ requests, onSelect }: RequestsTableProps
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Buscar por nombre, estado, notas o solicitante…"
-              className="w-full sm:w-96 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+              className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600 sm:w-96"
             />
 
-            <Link to="/app/admin/solicitudes/nueva">
-              <Button>+ Nueva solicitud</Button>
-            </Link>
+            {canCreate ? (
+              <Link to="/app/admin/solicitudes/nueva">
+                <Button>+ Nueva solicitud</Button>
+              </Link>
+            ) : null}
           </div>
 
           {filtered.length === 0 ? (
@@ -110,13 +115,13 @@ export default function RequestsTable({ requests, onSelect }: RequestsTableProps
               {filtered.map((request) => (
                 <article
                   key={request.id}
-                  className="relative overflow-hidden rounded-[1.5rem] border border-zinc-800 bg-zinc-950/85 p-4 transition hover:border-zinc-700 hover:bg-zinc-900/75"
+                  className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/85 p-4 transition hover:border-zinc-700 hover:bg-zinc-900/75"
                 >
-                  <div className="absolute inset-x-0 top-0 h-16 bg-[linear-gradient(135deg,rgba(255,255,255,0.03),transparent_60%)]" />
+                  <div className="absolute inset-x-0 top-0 h-16 bg-linear-to-r from-white/5 to-transparent" />
                   <div className="relative flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <div className="text-base font-semibold text-zinc-100 break-words">{request.title}</div>
+                        <div className="break-words text-base font-semibold text-zinc-100">{request.title}</div>
                         <Badge tone={statusTone(request.status)} className="shrink-0">
                           {statusLabel(request.status)}
                         </Badge>
@@ -129,27 +134,27 @@ export default function RequestsTable({ requests, onSelect }: RequestsTableProps
                       </div>
 
                       {request.description ? (
-                        <div className="text-sm leading-6 text-zinc-300 break-words">{request.description}</div>
+                        <div className="break-words text-sm leading-6 text-zinc-300">{request.description}</div>
                       ) : null}
 
                       {request.exampleServices ? (
-                        <div className="text-xs text-zinc-400 break-words">
+                        <div className="break-words text-xs text-zinc-400">
                           Servicios sugeridos: {request.exampleServices}
                         </div>
                       ) : null}
 
                       {request.notes ? (
-                        <div className="text-xs text-zinc-500 break-words">Notas: {request.notes}</div>
+                        <div className="break-words text-xs text-zinc-500">Notas: {request.notes}</div>
                       ) : null}
 
                       {request.devNotes ? (
-                        <div className="rounded-xl border border-zinc-800 bg-zinc-900/55 px-3 py-2 text-xs text-zinc-300 break-words">
+                        <div className="break-words rounded-xl border border-zinc-800 bg-zinc-900/55 px-3 py-2 text-xs text-zinc-300">
                           {request.devNotes}
                         </div>
                       ) : null}
 
                       {request.reviewedBy && request.reviewedAt ? (
-                        <div className="text-[11px] text-zinc-600">
+                        <div className="text-xs text-zinc-600">
                           Revisado por {request.reviewedBy} · {formatRequestDate(request.reviewedAt)}
                         </div>
                       ) : null}

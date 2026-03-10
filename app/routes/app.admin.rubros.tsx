@@ -1,37 +1,45 @@
 ﻿import { Link } from "react-router";
+import { useAuth } from "../lib/auth/AuthContext";
+import { ROLES } from "../lib/auth/roles";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
 import { useBranch } from "../lib/branches/BranchContext";
 import { useCompany } from "../lib/companies/CompanyContext";
 
-const MANAGEMENT_ACTIONS = [
-  {
-    title: "Catálogo por sucursal",
-    description:
-      "Revisá qué rubros están visibles, ajustá precio base y mantené una configuración consistente por sede.",
-    to: "/app/rubros",
-    cta: "Abrir catálogo operativo",
-  },
-  {
-    title: "Nuevas solicitudes",
-    description:
-      "Canalizá pedidos para incorporar rubros o actualizar los existentes sin perder trazabilidad.",
-    to: "/app/admin/solicitudes/nueva",
-    cta: "Crear solicitud",
-  },
-  {
-    title: "Bandeja administrativa",
-    description: "Seguimiento centralizado de solicitudes, estados y próximos pasos del equipo.",
-    to: "/app/admin/solicitudes",
-    cta: "Ver solicitudes",
-  },
-];
-
 export default function AdminRubrosPage() {
+  const { user } = useAuth();
   const { companyId } = useCompany();
   const { branchId } = useBranch();
   const hasBranch = branchId !== null;
+  const isDev = user?.role === ROLES.DEVS;
+
+  const managementActions = [
+    {
+      title: "Catálogo por sucursal",
+      description:
+        "Revisá qué rubros están visibles, ajustá precio base y mantené una configuración consistente por sede.",
+      to: "/app/rubros",
+      cta: "Abrir catálogo operativo",
+    },
+    !isDev
+      ? {
+          title: "Nueva solicitud",
+          description:
+            "Canalizá pedidos para incorporar rubros o actualizar los existentes sin perder trazabilidad.",
+          to: "/app/admin/solicitudes/nueva",
+          cta: "Crear solicitud",
+        }
+      : null,
+    {
+      title: "Bandeja administrativa",
+      description: isDev
+        ? "Seguimiento centralizado de todas las solicitudes enviadas por administración."
+        : "Seguimiento centralizado de las solicitudes enviadas y sus próximos pasos.",
+      to: "/app/admin/solicitudes",
+      cta: "Ver solicitudes",
+    },
+  ].filter(Boolean) as { title: string; description: string; to: string; cta: string }[];
 
   return (
     <div className="space-y-6">
@@ -84,9 +92,11 @@ export default function AdminRubrosPage() {
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
               Ajustar visibilidad y parámetros por sucursal.
             </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-              Crear solicitudes para nuevos servicios o cambios operativos.
-            </div>
+            {!isDev ? (
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+                Crear solicitudes para nuevos servicios o cambios operativos.
+              </div>
+            ) : null}
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
               Coordinar horarios y publicación desde un flujo más claro.
             </div>
@@ -94,8 +104,8 @@ export default function AdminRubrosPage() {
         </Card>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        {MANAGEMENT_ACTIONS.map((action) => (
+      <section className={`grid gap-4 ${managementActions.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
+        {managementActions.map((action) => (
           <Card
             key={action.title}
             className="border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/70"
@@ -125,13 +135,16 @@ export default function AdminRubrosPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-2xl leading-6">
-            Si necesitás habilitar un nuevo rubro, primero registrá la solicitud. Después revisá el catálogo
-            por sucursal y ajustá precio, duración y visibilidad en el flujo operativo principal.
+            {isDev
+              ? "Desde acá podés revisar el catálogo por sucursal y controlar la bandeja completa de solicitudes enviadas por administración."
+              : "Si necesitás habilitar un nuevo rubro, primero registrá la solicitud. Después revisá el catálogo por sucursal y ajustá precio, duración y visibilidad en el flujo operativo principal."}
           </p>
           <div className="flex flex-wrap gap-2">
-            <Link to="/app/admin/solicitudes/nueva">
-              <Button variant="primary">Solicitar nuevo rubro</Button>
-            </Link>
+            {!isDev ? (
+              <Link to="/app/admin/solicitudes/nueva">
+                <Button variant="primary">Solicitar nuevo rubro</Button>
+              </Link>
+            ) : null}
             <Link to="/app/rubros">
               <Button variant="ghost">Ir a catálogo por sucursal</Button>
             </Link>

@@ -10,6 +10,7 @@ type RequestDetailModalProps = {
   onClose: () => void;
   onApprove: (id: string, notes?: string) => void;
   onReject: (id: string, notes?: string) => void;
+  canReview?: boolean;
 };
 
 export default function RequestDetailModal({
@@ -17,6 +18,7 @@ export default function RequestDetailModal({
   onClose,
   onApprove,
   onReject,
+  canReview = false,
 }: RequestDetailModalProps) {
   const [notes, setNotes] = useState("");
 
@@ -27,7 +29,7 @@ export default function RequestDetailModal({
   if (!request) return null;
 
   const trimmedNotes = notes.trim() || undefined;
-  const canReview = request.status === "pending";
+  const canAct = canReview && request.status === "pending";
 
   return (
     <Modal open={!!request} title={`Solicitud: ${request.title}`} onClose={onClose}>
@@ -37,7 +39,7 @@ export default function RequestDetailModal({
           <span className="text-xs text-zinc-500">{formatRequestDate(request.createdAt)}</span>
         </div>
 
-        <div className="grid gap-3 rounded-[1.25rem] border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm text-zinc-300">
+        <div className="grid gap-3 rounded-3xl border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm text-zinc-300">
           <div>
             <span className="text-zinc-500">Solicitó:</span> {request.requestedBy}
           </div>
@@ -67,12 +69,13 @@ export default function RequestDetailModal({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm text-zinc-300">Feedback interno</label>
+          <label className="text-sm text-zinc-300">Feedback de Devs</label>
           <textarea
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
-            className="w-full min-h-32 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
-            placeholder="Dejá una observación para aprobación o rechazo"
+            disabled={!canReview}
+            className="min-h-32 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600 disabled:cursor-default disabled:opacity-80"
+            placeholder={canReview ? "Dejá una observación para aprobación o rechazo" : "El feedback interno va a aparecer acá cuando Devs revise la solicitud"}
           />
         </div>
 
@@ -80,7 +83,7 @@ export default function RequestDetailModal({
           <Button variant="secondary" onClick={onClose}>
             Cerrar
           </Button>
-          {canReview ? (
+          {canAct ? (
             <>
               <Button variant="secondary" onClick={() => onReject(request.id, trimmedNotes)}>
                 Rechazar
