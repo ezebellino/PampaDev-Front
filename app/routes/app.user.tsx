@@ -8,6 +8,12 @@ import { useCompany } from "../lib/companies/CompanyContext";
 
 const USER_ACTIONS = [
   {
+    title: "Membresías",
+    description: "Compará planes disponibles y consultá si esta sucursal ofrece clase particular.",
+    to: "/app/memberships",
+    cta: "Ver planes",
+  },
+  {
     title: "Mi perfil",
     description: "Actualizá tus datos personales y mantené tu cuenta al día.",
     to: "/app/profile",
@@ -72,8 +78,8 @@ export default function User() {
                 Hola{user?.name ? `, ${user.name}` : ""}.
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 md:text-base">
-                Este panel concentra los accesos principales para revisar tu cuenta, explorar servicios y
-                mantener tu experiencia ordenada desde cualquier dispositivo.
+                Este panel concentra los accesos principales para revisar tu cuenta, explorar servicios,
+                comparar membresías y mantener tu experiencia ordenada desde cualquier dispositivo.
               </p>
             </div>
           </div>
@@ -94,7 +100,7 @@ export default function User() {
           </div>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-3">
+        <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {USER_ACTIONS.map((action) => (
             <UserActionCard key={action.title} {...action} />
           ))}
@@ -110,7 +116,7 @@ export default function User() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm leading-6 text-zinc-400">
               <p>
-                Podés revisar tus datos, entrar al catálogo de servicios y ubicar rápidamente la sucursal con
+                Podés revisar tus datos, comparar planes de membresía, entrar al catálogo de servicios y ubicar rápidamente la sucursal con
                 la que querés operar.
               </p>
               <p>
@@ -124,21 +130,21 @@ export default function User() {
             <CardHeader>
               <CardTitle>Siguiente paso recomendado</CardTitle>
               <CardDescription>
-                Si recién ingresaste, empezá por completar tu perfil y después explorá los rubros disponibles.
+                Si recién ingresaste, empezá por revisar qué planes ofrece tu sucursal y después completá tu perfil.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <Link
-                to="/app/profile"
+                to="/app/memberships"
                 className="block rounded-2xl bg-zinc-100 px-4 py-3 text-center text-sm font-medium text-zinc-950 hover:bg-white"
               >
-                Completar mi perfil
+                Ver membresías disponibles
               </Link>
               <Link
-                to="/app/rubros"
+                to="/app/profile"
                 className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
               >
-                Explorar catálogo
+                Completar mi perfil
               </Link>
             </CardContent>
           </Card>

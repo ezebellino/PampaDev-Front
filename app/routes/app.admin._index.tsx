@@ -57,7 +57,7 @@ export default function AdminIndex() {
           <div className="text-xs uppercase tracking-widest text-zinc-500">Módulo administrador</div>
           <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">Panel Admin</h1>
           <p className="max-w-2xl text-sm text-zinc-400 md:text-base md:leading-7">
-            Desde acá gestionás configuración operativa, horarios base y solicitudes vinculadas al catálogo.
+            Desde acá gestionás configuración operativa, horarios base, oferta comercial y solicitudes vinculadas al catálogo.
           </p>
         </div>
 
@@ -78,11 +78,11 @@ export default function AdminIndex() {
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-zinc-100">Herramientas admin</h2>
           <p className="text-sm text-zinc-500">
-            Accesos directos para continuar con la configuración y el seguimiento operativo.
+            Accesos directos para continuar con la configuración, la oferta comercial y el seguimiento operativo.
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className={`grid gap-4 ${isDev ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
           <AdminTile
             title="Horarios base"
             desc={
@@ -93,6 +93,19 @@ export default function AdminIndex() {
             to="/app/admin/horarios"
             disabled={needBranch}
           />
+
+          {!isDev ? (
+            <AdminTile
+              title="Membresías"
+              desc={
+                needBranch
+                  ? "Seleccioná una sucursal para definir planes, beneficios y clase particular."
+                  : "Armá la oferta comercial de la sede con planes recurrentes y clase particular."
+              }
+              to="/app/admin/memberships"
+              disabled={needBranch}
+            />
+          ) : null}
 
           <AdminTile
             title="Solicitudes de rubros"
@@ -113,17 +126,26 @@ export default function AdminIndex() {
           <div className="text-sm leading-6 text-zinc-400">
             {isDev
               ? "Podés revisar el listado completo de solicitudes y volver al catálogo activo para seguir operando."
-              : "Podés crear una nueva solicitud, revisar el listado actual o volver al catálogo activo."}
+              : "Podés crear una nueva solicitud, ajustar la oferta comercial o volver al catálogo activo."}
           </div>
 
           <div className="flex flex-wrap gap-2 pt-2">
             {!isDev ? (
-              <Link
-                to="/app/admin/solicitudes/nueva"
-                className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-white"
-              >
-                + Nueva solicitud
-              </Link>
+              <>
+                <Link
+                  to="/app/admin/memberships"
+                  className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-white"
+                >
+                  Gestionar membresías
+                </Link>
+
+                <Link
+                  to="/app/admin/solicitudes/nueva"
+                  className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                >
+                  + Nueva solicitud
+                </Link>
+              </>
             ) : null}
 
             <Link

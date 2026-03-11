@@ -11,6 +11,7 @@ export default [
 
     route("profile", "routes/app.profile.tsx"),
     route("branches", "routes/app.branches.tsx"),
+    route("memberships", "routes/app.memberships.tsx"),
 
     route("rubros", "routes/app.rubros.tsx", [
       index("routes/app.rubros._index.tsx"),
@@ -23,6 +24,7 @@ export default [
     route("admin", "routes/app.admin.tsx", [
       index("routes/app.admin._index.tsx"),
       route("rubros", "routes/app.admin.rubros.tsx"),
+      route("memberships", "routes/app.admin.memberships.tsx"),
       route("solicitudes", "routes/app.admin.requests.tsx"),
       route("solicitudes/nueva", "routes/app.admin.requests.new.tsx"),
       route("horarios", "routes/app.admin.horarios.tsx"),

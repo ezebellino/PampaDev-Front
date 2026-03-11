@@ -26,7 +26,7 @@ function StatusBanner({
 
   return (
     <div
-      className={`rounded-[1.5rem] border px-5 py-4 text-sm ${
+      className={`rounded-3xl border px-5 py-4 text-sm ${
         isError
           ? "border-red-500/20 bg-red-500/10 text-red-200"
           : "border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
@@ -165,7 +165,7 @@ export default function ProfilePage() {
 
       {loading ? (
         <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
-          <div className="h-20 bg-[linear-gradient(135deg,rgba(56,189,248,0.14),transparent_55%)]" />
+          <div className="h-20 bg-linear-to-r from-cyan-500/14 to-transparent" />
           <CardContent className="relative -mt-3 py-6 text-sm text-zinc-400">
             Cargando información del perfil...
           </CardContent>
@@ -177,7 +177,7 @@ export default function ProfilePage() {
       {!loading && me ? (
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
-            <div className="h-24 bg-[linear-gradient(135deg,rgba(56,189,248,0.14),transparent_55%)]" />
+            <div className="h-24 bg-linear-to-r from-cyan-500/14 to-transparent" />
             <CardHeader className="relative -mt-8">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
@@ -197,7 +197,6 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   <Badge>Rol: {me.roleName}</Badge>
                   <Badge tone="neutral">Ciudad: {me.cityName}</Badge>
-                  <Badge tone="neutral">ID: {me.idUser}</Badge>
                 </div>
               </div>
             </CardHeader>
@@ -244,7 +243,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="rounded-[1.25rem] border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm leading-6 text-zinc-400">
+              <div className="rounded-3xl border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm leading-6 text-zinc-400">
                 El avatar todavía se gestiona desde una URL manual. Más adelante se puede llevar a una
                 carga directa de imagen para hacerlo más cómodo.
               </div>
@@ -273,7 +272,7 @@ export default function ProfilePage() {
           </Card>
 
           <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
-            <div className="h-24 bg-[linear-gradient(135deg,rgba(245,158,11,0.14),transparent_55%)]" />
+            <div className="h-24 bg-linear-to-r from-amber-500/14 to-transparent" />
             <CardHeader className="relative -mt-8">
               <CardTitle className="text-lg text-zinc-100">Seguridad</CardTitle>
               <CardDescription>
@@ -313,7 +312,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="rounded-[1.25rem] border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm leading-6 text-zinc-400">
+              <div className="rounded-3xl border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm leading-6 text-zinc-400">
                 Elegí una contraseña fácil de recordar para vos, pero difícil de adivinar para otros.
               </div>
 

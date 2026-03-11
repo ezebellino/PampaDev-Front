@@ -94,6 +94,7 @@ export default function AppDashboard() {
   const role = user?.role ?? ROLES.USER;
   const isAdmin = role === ROLES.ADMIN;
   const isDev = role === ROLES.DEVS;
+  const isStandardUser = role === ROLES.USER;
 
   const needsBranch = isAdmin;
   const branchSelected = branchId != null;
@@ -141,7 +142,7 @@ export default function AppDashboard() {
           </h1>
 
           <p className="max-w-2xl text-sm text-zinc-400 md:text-base md:leading-7">
-            Este es tu punto de entrada para continuar trabajando con sucursales, rubros, horarios y
+            Este es tu punto de entrada para continuar trabajando con sucursales, rubros, membresías, horarios y
             herramientas según el rol que tengas activo.
           </p>
         </div>
@@ -167,6 +168,13 @@ export default function AppDashboard() {
             desc="Consultá el catálogo disponible para la sucursal activa y seguí desde ahí."
             to="/app/rubros"
             cta="Abrir rubros"
+          />
+
+          <ActionCard
+            title="Membresías"
+            desc="Compará los planes disponibles y consultá si esta sucursal ofrece clase particular."
+            to="/app/memberships"
+            cta="Ver planes"
           />
 
           {(isAdmin || isDev) && (
@@ -203,7 +211,7 @@ export default function AppDashboard() {
         </div>
       </section>
 
-      {(isAdmin || isDev) && (
+      {(isAdmin || isDev || isStandardUser) && (
         <section className="grid gap-4 lg:grid-cols-2">
           <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
             <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
@@ -256,6 +264,28 @@ export default function AppDashboard() {
 
                   <div className="text-sm leading-6 text-zinc-400">
                     Vista rápida para detectar señales del sistema y revisar la carga operativa sin salir del dashboard.
+                  </div>
+                </>
+              ) : isStandardUser ? (
+                <>
+                  <div className="text-sm leading-6 text-zinc-400">
+                    Revisá los planes disponibles para tu sucursal y después completá tu perfil para dejar tu cuenta lista.
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    <Link
+                      to="/app/memberships"
+                      className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-white"
+                    >
+                      Ver membresías
+                    </Link>
+
+                    <Link
+                      to="/app/profile"
+                      className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                    >
+                      Completar perfil
+                    </Link>
                   </div>
                 </>
               ) : (

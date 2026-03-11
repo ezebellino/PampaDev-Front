@@ -1,15 +1,9 @@
 ﻿import { NavLink, Outlet } from "react-router";
 import Protected from "../lib/auth/Protected";
+import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
 import { useCompany } from "../lib/companies/CompanyContext";
 import { useBranch } from "../lib/branches/BranchContext";
-
-const ADMIN_NAV_ITEMS = [
-  { to: "/app/admin", label: "Panel", end: true },
-  { to: "/app/admin/horarios", label: "Horarios" },
-  { to: "/app/admin/rubros", label: "Rubros" },
-  { to: "/app/admin/solicitudes", label: "Solicitudes" },
-];
 
 function AdminTab({
   to,
@@ -39,8 +33,18 @@ function AdminTab({
 }
 
 export default function AdminLayout() {
+  const { user } = useAuth();
   const { companyId } = useCompany();
   const { branchId } = useBranch();
+  const isDev = user?.role === ROLES.DEVS;
+
+  const adminNavItems = [
+    { to: "/app/admin", label: "Panel", end: true },
+    { to: "/app/admin/horarios", label: "Horarios" },
+    ...(!isDev ? [{ to: "/app/admin/memberships", label: "Membresías" }] : []),
+    { to: "/app/admin/rubros", label: "Rubros" },
+    { to: "/app/admin/solicitudes", label: "Solicitudes" },
+  ];
 
   return (
     <Protected allowRoles={[ROLES.ADMIN, ROLES.DEVS]}>
@@ -58,7 +62,7 @@ export default function AdminLayout() {
                     Operación y catálogo administrativo
                   </h1>
                   <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400 md:text-base">
-                    Desde este espacio podés coordinar solicitudes, disponibilidad operativa y la configuración
+                    Desde este espacio podés coordinar solicitudes, disponibilidad operativa, oferta comercial y la configuración
                     general que impacta en sucursales, rubros y atención.
                   </p>
                 </div>
@@ -77,7 +81,7 @@ export default function AdminLayout() {
             </div>
 
             <nav className="flex flex-wrap gap-2">
-              {ADMIN_NAV_ITEMS.map((item) => (
+              {adminNavItems.map((item) => (
                 <AdminTab key={item.to} to={item.to} label={item.label} end={item.end} />
               ))}
             </nav>

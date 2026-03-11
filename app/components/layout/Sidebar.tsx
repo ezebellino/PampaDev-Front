@@ -40,7 +40,11 @@ function navByRole(role: string, opts: { canSeeBranches: boolean }) {
     return [...common, { to: "/app/instructor", label: "Instructor", icon: "◍", hint: "Panel de trabajo" }];
   }
 
-  return [...common, { to: "/app/user", label: "Mi cuenta", icon: "○", hint: "Perfil y accesos" }];
+  return [
+    ...common,
+    { to: "/app/memberships", label: "Membresías", icon: "◉", hint: "Planes y clases" },
+    { to: "/app/user", label: "Mi cuenta", icon: "○", hint: "Perfil y accesos" },
+  ];
 }
 
 function BrandBlock({ collapsed }: { collapsed?: boolean }) {

@@ -1,12 +1,12 @@
 ﻿# Plan de Refactorización — PampaDev Front
 
-Este documento describe el plan de refactorización paso a paso basado en el análisis del estado actual del código. Debe ejecutarse antes o durante el desarrollo de próximos features, para que la nueva funcionalidad se construya sobre una base limpia.
+Este documento describe el plan de refactorización y evolución funcional paso a paso basado en el análisis del estado actual del código. Sirve como referencia viva para seguir construyendo nuevas features sobre una base más limpia, consistente y mantenible.
 
 ---
 
 ## Objetivo
 
-Reducir la complejidad de las rutas y módulos más grandes, separar responsabilidades siguiendo los principios de React (un componente = una responsabilidad), y consolidar patrones consistentes en toda la app.
+Reducir la complejidad de las rutas y módulos más grandes, separar responsabilidades siguiendo principios consistentes de React, consolidar patrones reutilizables en toda la app y avanzar features reales sin degradar la UX/UI ni la estructura técnica.
 
 ---
 
@@ -19,6 +19,11 @@ Reducir la complejidad de las rutas y módulos más grandes, separar responsabil
 | ✅ | Paso 2 | `app.disciplines.tsx` ahora usa `useDisciplines` y componentes dedicados (`DisciplineForm`, `DisciplineList`). |
 | ✅ | Paso 3 | `AuthContext.tsx` delega la restauración y refresco de sesión al helper `tokenRefresh.ts`. |
 | ✅ | Paso 4 | `logger.ts` quedó reducido a API pública sobre `logFormatter.ts` y `logStorage.ts`. |
+| ✅ | Horarios | `Admin` planifica apertura semanal y `Instructor` consume esa referencia junto con `Classes/byBranch/{idBranch}`. |
+| ✅ | Membresías admin | Existe `app.admin.memberships.tsx` con planes por sucursal y clase particular usando persistencia local. |
+| ✅ | Membresías usuario | Existe `app.memberships.tsx` para comparar planes visibles y clase particular desde una pantalla dedicada. |
+| ✅ | Navegación | Sidebar, navbar, footer, selector de sucursal y paneles por rol quedaron más consistentes visualmente. |
+| ✅ | Privacidad básica | Se retiró el `idUser` visible de la UI de perfil. |
 | ✅ | Base estable | `npm run typecheck` pasa limpio. |
 
 ---
@@ -47,6 +52,7 @@ Estado: completado.
 - `app/lib/rubros/useRubroRequests.ts` centraliza carga, creación y revisión.
 - `app/lib/rubros/rubroRequests.ts` concentra el tipo y la persistencia local.
 - `app/routes/app.admin.requests.new.tsx` ahora crea solicitudes reales usando el hook compartido.
+- El flujo quedó alineado a roles: `Admin` crea solicitudes y `Devs` revisa el total.
 
 ---
 
@@ -86,6 +92,58 @@ Estado: completado.
 
 ---
 
+## Paso 5 — Horarios y operación por sucursal
+
+Estado: completado en frontend, pendiente de integración completa con backend write.
+
+### Resultado aplicado
+- `app/lib/scheduling/types.ts` define la estructura de planificación semanal por sucursal.
+- `app/lib/scheduling/storage.ts` y `app/lib/scheduling/useBranchScheduleConfig.ts` sostienen persistencia local por sucursal.
+- `app/lib/scheduling/classPresentation.ts` normaliza la respuesta real de `GET /api/Classes/byBranch/{idBranch}`.
+- `app/routes/app.admin.horarios.tsx` ahora tiene dos capas:
+  - planificación semanal editable por `Admin`
+  - agenda real de clases devuelta por backend
+- `app/routes/app.instructor.tsx` usa la planificación semanal como referencia operativa y la cruza con la agenda real de clases.
+
+### Próximo paso asociado
+- Reemplazar persistencia local de planificación por endpoints reales de creación/edición cuando backend los exponga.
+
+---
+
+## Paso 6 — Membresías y oferta comercial
+
+Estado: completado en frontend, pendiente de integración con backend real.
+
+### Resultado aplicado
+- `app/lib/memberships/types.ts` define planes, clase particular y catálogo por sucursal.
+- `app/lib/memberships/storage.ts` y `app/lib/memberships/useBranchMembershipCatalog.ts` sostienen persistencia local temporal.
+- `app/routes/app.admin.memberships.tsx` permite a `Admin` definir:
+  - planes por ciclo (`mensual`, `trimestral`, `semestral`, `anual`)
+  - beneficios
+  - disciplinas alcanzadas
+  - visibilidad y estado
+  - opción de clase particular
+- `app/routes/app.memberships.tsx` expone la oferta comercial al usuario final en una pantalla dedicada.
+- La vista pública de membresías tiene cards con microinteracción visual y un plan recomendado destacado.
+
+### Próximo paso asociado
+- Conectar el módulo a endpoints reales de memberships/private classes cuando el backend esté disponible.
+
+---
+
+## Paso 7 — Navegación, dashboards y consistencia visual
+
+Estado: completado en gran parte.
+
+### Resultado aplicado
+- `Sidebar`, `Navbar`, `UserMenu` y `Footer` quedaron más coherentes entre sí.
+- Se agregó color de acento mínimo y controlado sin perder la base sobria del proyecto.
+- Los paneles por rol (`dev`, `admin`, `user`, `instructor`) quedaron alineados visualmente.
+- Se agregaron accesos claros a membresías desde dashboard y navegación del usuario.
+- Se retiró el `idUser` visible del perfil para evitar exponer un dato sensible sin valor UX.
+
+---
+
 ## Checklist de ejecución
 
 ### Paso 0 — Home pública
@@ -120,27 +178,52 @@ Estado: completado.
 - [x] Reducir `logger.ts` a interfaz pública
 - [x] Verificar que todos los imports existentes siguen funcionando
 
+### Paso 5 — Horarios
+- [x] Crear módulo `app/lib/scheduling/*`
+- [x] Integrar `GET /api/Classes/byBranch/{idBranch}`
+- [x] Crear planificación semanal editable para `Admin`
+- [x] Mostrar referencia semanal y agenda real en `Instructor`
+- [ ] Reemplazar storage local por endpoints reales de write cuando existan
+
+### Paso 6 — Membresías
+- [x] Crear módulo `app/lib/memberships/*`
+- [x] Crear `app.routes/app.admin.memberships.tsx`
+- [x] Crear `app/routes/app.memberships.tsx`
+- [x] Exponer membresías en dashboard y sidebar del usuario
+- [x] Agregar microinteracción visual y plan recomendado
+- [ ] Reemplazar storage local por endpoints reales de memberships/private classes
+
+### Paso 7 — QA y cierre visual
+- [x] Mejorar navegación compartida (`Sidebar`, `Navbar`, `Footer`, `UserMenu`)
+- [x] Unificar paneles por rol
+- [x] Corregir textos rotos y copy técnico visible al usuario
+- [ ] QA visual manual completa en navegador
+- [ ] Validar responsive final en mobile/tablet/desktop
+
 ---
 
 ## Convenciones a respetar durante el refactor
 
-- Rutas: solo orquestan. No deben tener lógica de fetch ni estado complejo.
+- Rutas: solo orquestan o componen la experiencia principal. No deben concentrar lógica desordenada ni fetch duplicado.
 - Componentes: una responsabilidad visual por componente.
 - Hooks: toda lógica de estado y fetch vive en hooks `use*.ts`.
 - Servicios: toda comunicación HTTP vive en `app/lib/api/services/`.
 - Contextos: solo proveen estado global y delegan lógica a helpers.
 - Tipos: definir tipos compartidos en archivos `types.ts` por dominio.
-- Tests: si agregás o tocás un hook crítico, es buen momento para sumarle cobertura.
+- UX pública: no exponer detalles técnicos de backend, API, ids internos o estados de desarrollo.
+- Integraciones temporales: si backend no existe aún, preferir storage local explícito y fácil de reemplazar.
 
 ---
 
 ## Próximos incrementos sugeridos
 
-1. QA visual manual de Home, Admin Requests, Disciplines, Branches, Rubros y Perfil.
-2. Agregar tests a hooks críticos (`useDisciplines`, `useRubroRequests`, helpers de auth y logger).
-3. Revisar naming mixto `discipline`/`rubro` para consolidar lenguaje de dominio.
-4. Reemplazar mocks locales por endpoints reales donde ya exista backend.
+1. QA visual manual completa de `memberships`, `horarios`, `instructor`, `profile` y paneles por rol.
+2. Conectar `memberships` a backend real cuando estén disponibles los endpoints.
+3. Conectar la planificación semanal de `horarios` a backend real cuando exista write sobre agenda/configuración.
+4. Empezar la capa de contratación o reserva desde la vista de usuario (`contratar plan` / `reservar clase particular`).
+5. Agregar tests a hooks críticos (`useDisciplines`, `useRubroRequests`, helpers de auth, logger, scheduling y memberships).
+6. Revisar naming mixto `discipline`/`rubro` para consolidar lenguaje de dominio.
 
 ---
 
-Actualizado después de completar home, requests admin, disciplines, auth, logger y dejar `typecheck` limpio.
+Actualizado después de completar home, requests admin, disciplines, auth, logger, horarios, membresías, navegación compartida y de dejar `typecheck` limpio.
