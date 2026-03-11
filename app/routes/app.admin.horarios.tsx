@@ -1,4 +1,4 @@
-﻿import { useMemo } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
@@ -6,134 +6,49 @@ import { PageHeader } from "../components/ui/PageHeader";
 import ScreenLoader from "../components/ui/ScreenLoader";
 import { useBranchClasses } from "../lib/api/hooks/useBranchClasses";
 import { useBranches } from "../lib/api/hooks/useBranches";
-import type { BranchClassRecord } from "../lib/api/models/branchClass";
+import { useDisciplines } from "../lib/disciplines/useDisciplines";
 import { useBranch } from "../lib/branches/BranchContext";
+import {
+  buildClassTimeRange,
+  classStatusTone,
+  DAY_NAMES,
+  groupBranchClassesByDay,
+  normalizeBranchClass,
+} from "../lib/scheduling/classPresentation";
+import { useBranchScheduleConfig } from "../lib/scheduling/useBranchScheduleConfig";
+import { SLOT_DURATION_OPTIONS, type BranchScheduleConfig, type Weekday } from "../lib/scheduling/types";
 
-type NormalizedClass = {
-  id: string;
-  title: string;
-  branchLabel: string | null;
-  discipline: string | null;
-  instructor: string | null;
-  dayLabel: string;
-  startLabel: string | null;
-  endLabel: string | null;
-  capacity: number | null;
-  available: number | null;
-  status: string | null;
-  raw: BranchClassRecord;
-};
+const WEEKDAY_ORDER: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
 
-const DAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-
-function pickString(record: BranchClassRecord, keys: string[]) {
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "string" && value.trim()) return value.trim();
-  }
-  return null;
-}
-
-function pickNumber(record: BranchClassRecord, keys: string[]) {
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    if (typeof value === "string" && value.trim() && Number.isFinite(Number(value))) return Number(value);
-  }
-  return null;
-}
-
-function pickBoolean(record: BranchClassRecord, keys: string[]) {
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "boolean") return value;
-  }
-  return null;
-}
-
-function formatTimeValue(value: string | null) {
-  if (!value) return null;
-
-  if (/^\d{2}:\d{2}(:\d{2})?$/.test(value)) {
-    return value.slice(0, 5);
-  }
-
+function formatUpdatedAt(value?: string) {
+  if (!value) return "Sin guardar";
   const date = new Date(value);
-  if (!Number.isNaN(date.getTime())) {
-    return date.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-  }
-
-  return value;
-}
-
-function resolveDayLabel(record: BranchClassRecord, fallbackStart: string | null) {
-  const rawDayNumber = pickNumber(record, ["dayOfWeek", "weekDay", "weekday", "day"]);
-  if (rawDayNumber != null && rawDayNumber >= 0 && rawDayNumber <= 6) {
-    return DAY_NAMES[rawDayNumber];
-  }
-
-  const rawDayName = pickString(record, ["dayName", "weekdayName", "weekDayName"]);
-  if (rawDayName) return rawDayName;
-
-  if (fallbackStart) {
-    const date = new Date(fallbackStart);
-    if (!Number.isNaN(date.getTime())) return DAY_NAMES[date.getDay()];
-  }
-
-  return "Sin día definido";
-}
-
-function normalizeClass(item: BranchClassRecord, index: number): NormalizedClass {
-  const startRaw = pickString(item, ["startTime", "startHour", "timeStart", "startsAt", "startAt", "dateStart", "date"]);
-  const endRaw = pickString(item, ["endTime", "endHour", "timeEnd", "endsAt", "endAt", "dateEnd"]);
-  const title =
-    pickString(item, ["title", "name", "className", "disciplineName", "serviceName", "activityName"]) ??
-    `Clase ${index + 1}`;
-
-  const id =
-    pickString(item, ["idClass", "classId", "id", "uuid"]) ??
-    `${title}-${startRaw ?? "no-start"}-${index}`;
-
-  const active = pickBoolean(item, ["active", "isActive", "enabled"]);
-  const status =
-    pickString(item, ["status", "state"]) ??
-    (active == null ? null : active ? "Activa" : "Inactiva");
-
-  return {
-    id,
-    title,
-    branchLabel: pickString(item, ["branchName", "sucursal", "branchLabel"]),
-    discipline: pickString(item, ["disciplineName", "rubro", "categoryName"]),
-    instructor: pickString(item, ["instructorName", "teacherName", "coachName", "professorName"]),
-    dayLabel: resolveDayLabel(item, startRaw),
-    startLabel: formatTimeValue(startRaw),
-    endLabel: formatTimeValue(endRaw),
-    capacity: pickNumber(item, ["capacity", "quota", "maxCapacity", "slots"]),
-    available: pickNumber(item, ["availableSlots", "available", "remainingSlots", "freeSlots"]),
-    status,
-    raw: item,
-  };
-}
-
-function statusTone(status: string | null) {
-  if (!status) return "neutral" as const;
-  const normalized = status.toLowerCase();
-  if (normalized.includes("act") || normalized.includes("disp") || normalized.includes("open")) return "success" as const;
-  if (normalized.includes("cancel") || normalized.includes("inact") || normalized.includes("cerr")) return "warning" as const;
-  return "neutral" as const;
-}
-
-function buildTimeRange(item: NormalizedClass) {
-  if (item.startLabel && item.endLabel) return `${item.startLabel} a ${item.endLabel}`;
-  if (item.startLabel) return `Desde ${item.startLabel}`;
-  if (item.endLabel) return `Hasta ${item.endLabel}`;
-  return "Horario a confirmar";
+  if (Number.isNaN(date.getTime())) return "Sin guardar";
+  return date.toLocaleString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function AdminHorarios() {
   const { branchId } = useBranch();
   const { data: branches } = useBranches();
+  const { disciplines, loading: disciplinesLoading, error: disciplinesError } = useDisciplines();
   const { data, loading, error, unavailable, refresh } = useBranchClasses(branchId);
+  const {
+    data: scheduleConfig,
+    loading: scheduleLoading,
+    save: saveScheduleConfig,
+  } = useBranchScheduleConfig(branchId, disciplines);
+
+  const [draftConfig, setDraftConfig] = useState<BranchScheduleConfig | null>(null);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDraftConfig(scheduleConfig);
+  }, [scheduleConfig]);
 
   const activeBranch = useMemo(() => {
     if (branchId == null || !branches) return null;
@@ -141,22 +56,10 @@ export default function AdminHorarios() {
   }, [branchId, branches]);
 
   const classes = useMemo(() => {
-    return (data ?? []).map((item, index) => normalizeClass(item, index));
+    return (data ?? []).map((item, index) => normalizeBranchClass(item, index));
   }, [data]);
 
-  const grouped = useMemo(() => {
-    const map = new Map<string, NormalizedClass[]>();
-
-    for (const item of classes) {
-      const group = map.get(item.dayLabel) ?? [];
-      group.push(item);
-      map.set(item.dayLabel, group);
-    }
-
-    return DAY_NAMES.concat("Sin día definido")
-      .map((day) => ({ day, items: map.get(day) ?? [] }))
-      .filter((group) => group.items.length > 0);
-  }, [classes]);
+  const grouped = useMemo(() => groupBranchClassesByDay(classes), [classes]);
 
   const activeCount = useMemo(() => {
     return classes.filter((item) => {
@@ -166,12 +69,87 @@ export default function AdminHorarios() {
     }).length;
   }, [classes]);
 
+  const uniqueDisciplines = useMemo(() => {
+    return new Set(classes.map((item) => item.discipline).filter(Boolean)).size;
+  }, [classes]);
+
+  const plannedOpenDays = useMemo(() => {
+    if (!draftConfig) return 0;
+    return WEEKDAY_ORDER.filter((day) => !draftConfig.days[day].closed).length;
+  }, [draftConfig]);
+
+  const enabledDisciplines = useMemo(() => {
+    if (!draftConfig) return 0;
+    return draftConfig.disciplines.filter((item) => item.enabled).length;
+  }, [draftConfig]);
+
+  const handleDayToggle = (day: Weekday) => {
+    setDraftConfig((current) => {
+      if (!current) return current;
+      const nextClosed = !current.days[day].closed;
+      return {
+        ...current,
+        days: {
+          ...current.days,
+          [day]: {
+            ...current.days[day],
+            closed: nextClosed,
+            reason: nextClosed ? current.days[day].reason : "",
+          },
+        },
+      };
+    });
+  };
+
+  const handleDayReason = (day: Weekday, reason: string) => {
+    setDraftConfig((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        days: {
+          ...current.days,
+          [day]: {
+            ...current.days[day],
+            reason,
+          },
+        },
+      };
+    });
+  };
+
+  const handleDisciplineChange = (
+    idDiscipline: number,
+    field: "enabled" | "openTime" | "closeTime" | "slotDuration" | "notes",
+    value: boolean | string | number
+  ) => {
+    setDraftConfig((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        disciplines: current.disciplines.map((item) => {
+          if (item.idDiscipline !== idDiscipline) return item;
+          return {
+            ...item,
+            [field]: value,
+          };
+        }),
+      };
+    });
+  };
+
+  const handleSave = () => {
+    if (!draftConfig) return;
+    const saved = saveScheduleConfig(draftConfig);
+    if (!saved) return;
+    setSavedNotice(`Planificacion guardada el ${formatUpdatedAt(saved.updatedAt)}.`);
+  };
+
   if (branchId == null) {
     return (
       <div className="space-y-6">
         <PageHeader
           title="Horarios"
-          subtitle="Elegí una sucursal para ver las clases y franjas horarias asociadas a esa sede."
+          subtitle="Elegi una sucursal para planificar los dias abiertos y validar las clases activas de esa sede."
         />
         <Card>
           <CardContent className="py-6 text-sm text-zinc-400">
@@ -182,12 +160,31 @@ export default function AdminHorarios() {
     );
   }
 
-  if (loading) {
+  if (loading || disciplinesLoading || scheduleLoading) {
     return (
       <ScreenLoader
-        title="Cargando horarios…"
-        subtitle="Estamos consultando las clases configuradas para esta sucursal."
+        title="Cargando horarios..."
+        subtitle="Estamos preparando la planificacion semanal y consultando las clases configuradas para esta sucursal."
       />
+    );
+  }
+
+  if (disciplinesError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Horarios"
+          subtitle="No pudimos cargar las disciplinas necesarias para planificar esta sucursal."
+          right={
+            <Button variant="secondary" onClick={() => window.location.reload()}>
+              Reintentar
+            </Button>
+          }
+        />
+        <Card>
+          <CardContent className="py-6 text-sm text-red-300">{disciplinesError}</CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -210,36 +207,18 @@ export default function AdminHorarios() {
     );
   }
 
-  if (unavailable) {
-    return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Horarios"
-          subtitle="La consulta de clases por sucursal todavía no está disponible en este entorno."
-        />
-        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
-          <div className="h-20 bg-linear-to-r from-amber-500/12 to-transparent" />
-          <CardContent className="relative -mt-2 space-y-2 py-5 text-sm text-zinc-400">
-            <p>Cuando el backend publique esta información, la vista va a mostrar las clases de la sede activa.</p>
-            <p>La fuente esperada es `/api/Classes/byBranch/{'{'}idBranch{'}'}`.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <PageHeader
         title="Horarios"
         subtitle={
           activeBranch
-            ? `Clases registradas para ${activeBranch.companyName} · ${activeBranch.cityName}.`
-            : `Clases registradas para la sucursal ${branchId}.`
+            ? `Planifica la semana operativa de ${activeBranch.companyName} en ${activeBranch.cityName} y valida la agenda real cargada en backend.`
+            : `Planifica la semana operativa de la sucursal ${branchId}.`
         }
         right={
           <Button variant="secondary" onClick={() => refresh()}>
-            Actualizar
+            Actualizar agenda
           </Button>
         }
       />
@@ -255,9 +234,223 @@ export default function AdminHorarios() {
 
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardContent className="py-5">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Dias abiertos</div>
+            <div className="mt-3 text-3xl font-semibold text-zinc-100">{plannedOpenDays}</div>
+            <div className="mt-1 text-sm text-zinc-400">Configurados por administracion</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-zinc-800 bg-zinc-950/80">
+          <CardContent className="py-5">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas habilitadas</div>
+            <div className="mt-3 text-3xl font-semibold text-zinc-100">{enabledDisciplines}</div>
+            <div className="mt-1 text-sm text-zinc-400">Franjas listas para operar</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-zinc-800 bg-zinc-950/80">
+          <CardContent className="py-5">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Ultima planificacion</div>
+            <div className="mt-3 text-lg font-semibold text-zinc-100">{formatUpdatedAt(scheduleConfig?.updatedAt)}</div>
+            <div className="mt-1 text-sm text-zinc-400">Guardada localmente para esta sucursal</div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
+          <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
+          <CardHeader className="relative -mt-4">
+            <CardTitle>Calendario semanal de apertura</CardTitle>
+            <CardDescription>
+              El administrador define que dias estara operativa la sucursal y deja visibles los cierres por feriado, mantenimiento o eventos especiales.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {draftConfig ? (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {WEEKDAY_ORDER.map((day) => {
+                  const config = draftConfig.days[day];
+                  return (
+                    <div key={day} className="rounded-3xl border border-zinc-800 bg-zinc-900/45 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-base font-semibold text-zinc-100">{DAY_NAMES[day]}</div>
+                          <div className="mt-1 text-sm text-zinc-500">
+                            {config.closed ? "Dia cerrado" : "Dia habilitado"}
+                          </div>
+                        </div>
+                        <Badge tone={config.closed ? "warning" : "success"}>
+                          {config.closed ? "Cerrado" : "Abierto"}
+                        </Badge>
+                      </div>
+
+                      <Button
+                        variant="secondary"
+                        className="mt-4 w-full"
+                        onClick={() => handleDayToggle(day)}
+                      >
+                        {config.closed ? "Habilitar dia" : "Marcar cierre"}
+                      </Button>
+
+                      <label className="mt-4 block text-xs uppercase tracking-wider text-zinc-500">
+                        Motivo
+                        <input
+                          value={config.reason}
+                          onChange={(event) => handleDayReason(day, event.target.value)}
+                          disabled={!config.closed}
+                          placeholder={config.closed ? "Ej. Feriado, mantenimiento" : "Disponible mientras el dia este abierto"}
+                          className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 disabled:cursor-not-allowed disabled:text-zinc-500"
+                        />
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        <Card className="border-zinc-800 bg-zinc-950/80">
+          <CardHeader>
+            <CardTitle>Criterio operativo</CardTitle>
+            <CardDescription>
+              Esta capa ordena el trabajo entre Admin e Instructor aunque el backend todavia no permita guardar la planificacion semanal.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-zinc-400">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+              1. Admin define dias abiertos o cerrados para la sucursal.
+            </div>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+              2. Admin habilita horarios base y duracion por disciplina.
+            </div>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+              3. Instructor usa esa planificacion para ordenar pedidos y asignar turnos.
+            </div>
+            <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/8 px-4 py-3 text-cyan-100">
+              {savedNotice ?? "Todavia no hay cambios guardados en esta sesion."}
+            </div>
+            <Button className="w-full" onClick={handleSave} disabled={!draftConfig}>
+              Guardar planificacion semanal
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+
+      <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
+        <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
+        <CardHeader className="relative -mt-4">
+          <CardTitle>Franjas por disciplina</CardTitle>
+          <CardDescription>
+            Define para cada disciplina si la sede puede operar, desde que hora hasta que hora y con que duracion de turno.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {draftConfig ? (
+            <div className="grid gap-4 xl:grid-cols-2">
+              {disciplines.map((discipline) => {
+                const item = draftConfig.disciplines.find((entry) => entry.idDiscipline === discipline.idDiscipline);
+                if (!item) return null;
+
+                return (
+                  <div key={discipline.idDiscipline} className="rounded-3xl border border-zinc-800 bg-zinc-900/45 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <div className="text-lg font-semibold text-zinc-100">{discipline.name}</div>
+                        <div className="mt-1 text-sm text-zinc-500">Configuracion operativa para la sucursal activa</div>
+                      </div>
+                      <Badge tone={item.enabled ? "success" : "neutral"}>
+                        {item.enabled ? "Habilitada" : "Pausada"}
+                      </Badge>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
+                      <div>
+                        <div className="text-sm font-medium text-zinc-100">Permitir turnos en esta disciplina</div>
+                        <div className="mt-1 text-xs text-zinc-500">Si esta desactivada, el instructor no deberia ofrecer nuevos horarios.</div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={item.enabled}
+                        onChange={(event) => handleDisciplineChange(discipline.idDiscipline, "enabled", event.target.checked)}
+                        className="h-5 w-5 accent-cyan-400"
+                      />
+                    </div>
+
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                      <label className="text-xs uppercase tracking-wider text-zinc-500">
+                        Desde
+                        <input
+                          type="time"
+                          value={item.openTime}
+                          onChange={(event) => handleDisciplineChange(discipline.idDiscipline, "openTime", event.target.value)}
+                          disabled={!item.enabled}
+                          className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none disabled:cursor-not-allowed disabled:text-zinc-500"
+                        />
+                      </label>
+
+                      <label className="text-xs uppercase tracking-wider text-zinc-500">
+                        Hasta
+                        <input
+                          type="time"
+                          value={item.closeTime}
+                          onChange={(event) => handleDisciplineChange(discipline.idDiscipline, "closeTime", event.target.value)}
+                          disabled={!item.enabled}
+                          className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none disabled:cursor-not-allowed disabled:text-zinc-500"
+                        />
+                      </label>
+
+                      <label className="text-xs uppercase tracking-wider text-zinc-500">
+                        Duracion
+                        <select
+                          value={item.slotDuration}
+                          onChange={(event) => handleDisciplineChange(discipline.idDiscipline, "slotDuration", Number(event.target.value))}
+                          disabled={!item.enabled}
+                          className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none disabled:cursor-not-allowed disabled:text-zinc-500"
+                        >
+                          {SLOT_DURATION_OPTIONS.map((duration) => (
+                            <option key={duration} value={duration}>
+                              {duration} min
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+
+                    <label className="mt-4 block text-xs uppercase tracking-wider text-zinc-500">
+                      Notas para el instructor
+                      <textarea
+                        value={item.notes}
+                        onChange={(event) => handleDisciplineChange(discipline.idDiscipline, "notes", event.target.value)}
+                        disabled={!item.enabled}
+                        rows={3}
+                        placeholder="Ej. Priorizar alumnos con mensualidad o dejar 10 minutos entre grupos."
+                        className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 disabled:cursor-not-allowed disabled:text-zinc-500"
+                      />
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Card className="border-zinc-800 bg-zinc-950/80">
+          <CardContent className="py-5">
             <div className="text-xs uppercase tracking-wider text-zinc-500">Clases</div>
             <div className="mt-3 text-3xl font-semibold text-zinc-100">{classes.length}</div>
-            <div className="mt-1 text-sm text-zinc-400">Registros obtenidos desde la sucursal</div>
+            <div className="mt-1 text-sm text-zinc-400">Registros detectados en el backend</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-zinc-800 bg-zinc-950/80">
+          <CardContent className="py-5">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas con agenda</div>
+            <div className="mt-3 text-3xl font-semibold text-zinc-100">{uniqueDisciplines}</div>
+            <div className="mt-1 text-sm text-zinc-400">Rubros devueltos por `Classes/byBranch`</div>
           </CardContent>
         </Card>
 
@@ -265,30 +458,48 @@ export default function AdminHorarios() {
           <CardContent className="py-5">
             <div className="text-xs uppercase tracking-wider text-zinc-500">Activas</div>
             <div className="mt-3 text-3xl font-semibold text-zinc-100">{activeCount}</div>
-            <div className="mt-1 text-sm text-zinc-400">Clases con estado operativo o disponible</div>
+            <div className="mt-1 text-sm text-zinc-400">Clases en estado operativo</div>
           </CardContent>
         </Card>
 
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Días con actividad</div>
-            <div className="mt-3 text-3xl font-semibold text-zinc-100">{grouped.length}</div>
-            <div className="mt-1 text-sm text-zinc-400">Agrupación semanal detectada</div>
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Fuente actual</div>
+            <div className="mt-3 text-lg font-semibold text-zinc-100">Solo lectura</div>
+            <div className="mt-1 text-sm text-zinc-400">El backend hoy solo expone GET para clases</div>
           </CardContent>
         </Card>
       </section>
 
-      {classes.length === 0 ? (
+      {unavailable ? (
+        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
+          <div className="h-20 bg-linear-to-r from-amber-500/12 to-transparent" />
+          <CardContent className="relative -mt-2 space-y-2 py-5 text-sm text-zinc-400">
+            <p>Cuando el backend publique la agenda de clases para esta sucursal, el resumen inferior va a mostrar las clases reales de la sede activa.</p>
+            <p>La fuente esperada es `/api/Classes/byBranch/{'{'}idBranch{'}'}`.</p>
+          </CardContent>
+        </Card>
+      ) : classes.length === 0 ? (
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardHeader>
             <CardTitle>No hay horarios cargados</CardTitle>
             <CardDescription>
-              Esta sucursal todavía no devolvió clases desde el endpoint configurado.
+              Esta sucursal todavia no devolvio clases desde el endpoint configurado.
             </CardDescription>
           </CardHeader>
         </Card>
       ) : (
         <div className="space-y-5">
+          <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
+            <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
+            <CardHeader className="relative -mt-4">
+              <CardTitle>Agenda real cargada en backend</CardTitle>
+              <CardDescription>
+                Este bloque muestra las clases efectivamente creadas en `Classes/byBranch` para contrastarlas con la planificacion semanal definida por administracion.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
           {grouped.map((group) => (
             <section key={group.day} className="space-y-3">
               <div className="flex items-center gap-3">
@@ -307,18 +518,23 @@ export default function AdminHorarios() {
                         <div>
                           <CardTitle className="text-lg text-zinc-100">{item.title}</CardTitle>
                           <CardDescription className="mt-1 text-sm text-zinc-400">
-                            {buildTimeRange(item)}
+                            {buildClassTimeRange(item)}
                           </CardDescription>
                         </div>
-                        {item.status ? <Badge tone={statusTone(item.status)}>{item.status}</Badge> : null}
+                        {item.status ? <Badge tone={classStatusTone(item.status)}>{item.status}</Badge> : null}
                       </div>
                     </CardHeader>
 
                     <CardContent className="space-y-3 text-sm text-zinc-300">
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
                           <div className="text-xs uppercase tracking-wider text-zinc-500">Rubro</div>
                           <div className="mt-2 text-sm text-zinc-100">{item.discipline ?? "Sin dato"}</div>
+                        </div>
+
+                        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
+                          <div className="text-xs uppercase tracking-wider text-zinc-500">Duracion</div>
+                          <div className="mt-2 text-sm text-zinc-100">{item.duration != null ? `${item.duration} min` : "No informada"}</div>
                         </div>
 
                         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
@@ -339,20 +555,18 @@ export default function AdminHorarios() {
                             {item.available != null ? item.available : "Sin dato"}
                           </div>
                         </div>
+
+                        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
+                          <div className="text-xs uppercase tracking-wider text-zinc-500">Creditos</div>
+                          <div className="mt-2 text-sm text-zinc-100">
+                            {item.creditUsage != null ? `${item.creditUsage} uso / ${item.creditRefund ?? 0}% reintegro` : "Sin dato"}
+                          </div>
+                        </div>
                       </div>
 
                       {item.branchLabel ? (
                         <div className="text-xs text-zinc-500">Sucursal informada por API: {item.branchLabel}</div>
                       ) : null}
-
-                      <details className="rounded-2xl border border-zinc-800 bg-zinc-900/35 px-4 py-3">
-                        <summary className="cursor-pointer text-xs font-medium uppercase tracking-wider text-zinc-400">
-                          Ver payload recibido
-                        </summary>
-                        <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-xs text-zinc-500">
-                          {JSON.stringify(item.raw, null, 2)}
-                        </pre>
-                      </details>
                     </CardContent>
                   </Card>
                 ))}
