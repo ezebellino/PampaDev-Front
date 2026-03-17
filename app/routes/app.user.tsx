@@ -5,6 +5,7 @@ import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
 import { useBranch } from "../lib/branches/BranchContext";
 import { useCompany } from "../lib/companies/CompanyContext";
+import { useNextTurnos } from "../lib/scheduling/useNextTurnos";
 
 const USER_ACTIONS = [
   {
@@ -67,6 +68,8 @@ export default function User() {
   const { companyId } = useCompany();
   const { branchId } = useBranch();
 
+  const { turnos, loading: turnosLoading, error: turnosError } = useNextTurnos(branchId);
+
   return (
     <Protected allowRoles={[ROLES.USER, ROLES.DEVS]}>
       <div className="space-y-6">
@@ -128,23 +131,42 @@ export default function User() {
 
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardHeader>
-              <CardTitle>Siguiente paso recomendado</CardTitle>
+              <CardTitle>Tus próximos turnos</CardTitle>
               <CardDescription>
-                Si recién ingresaste, empezá por revisar qué planes ofrece tu sucursal y después completá tu perfil.
+                Tomá nota de los horarios cercanos y confirmá tu asistencia o reprogramá si es necesario.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              {turnosLoading && (
+                <p className="text-sm text-zinc-400">Cargando tus turnos...</p>
+              )}
+
+              {turnosError && (
+                <p className="text-sm text-orange-300">
+                  Error cargando turnos: {(turnosError as Error).message}
+                </p>
+              )}
+
+              {!turnosLoading && !turnosError && turnos.length === 0 && (
+                <p className="text-sm text-zinc-400">No tenés turnos programados por ahora.</p>
+              )}
+
+              {!turnosLoading && !turnosError && turnos.length > 0 && (
+                <div className="space-y-2">
+                  {turnos.map((slot) => (
+                    <div key={slot.id} className="rounded-xl border border-zinc-800 p-3">
+                      <div className="text-sm font-medium text-zinc-100">{slot.rubroId}</div>
+                      <div className="text-xs text-zinc-500">{slot.date} • {slot.time}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <Link
-                to="/app/memberships"
+                to="/app/rubros"
                 className="block rounded-2xl bg-zinc-100 px-4 py-3 text-center text-sm font-medium text-zinc-950 hover:bg-white"
               >
-                Ver membresías disponibles
-              </Link>
-              <Link
-                to="/app/profile"
-                className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
-              >
-                Completar mi perfil
+                Ver todos los rubros
               </Link>
             </CardContent>
           </Card>
