@@ -109,42 +109,37 @@ export default function User() {
           ))}
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
-          <Card className="border-zinc-800 bg-zinc-950/80">
-            <CardHeader>
-              <CardTitle>Tu espacio de gestión</CardTitle>
-              <CardDescription>
-                La idea es que desde acá encuentres lo esencial sin ruido técnico ni pasos innecesarios.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-6 text-zinc-400">
-              <p>
-                Podés revisar tus datos, comparar planes de membresía, entrar al catálogo de servicios y ubicar rápidamente la sucursal con
-                la que querés operar.
-              </p>
-              <p>
-                A medida que el producto crezca, este panel puede incorporar historial, reservas activas y
-                accesos personalizados para cada usuario.
-              </p>
-            </CardContent>
-          </Card>
+        <section className="space-y-4">
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-zinc-100">Resumen general</h2>
+                <p className="text-xs text-zinc-500">Accesos rápidos y tu agenda próxima.</p>
+              </div>
+              <div className="h-8 w-px bg-zinc-700" />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {USER_ACTIONS.map((action) => (
+                <UserActionCard key={action.title} {...action} />
+              ))}
+            </div>
+          </div>
 
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardHeader>
-              <CardTitle>Tus próximos turnos</CardTitle>
+              <CardTitle>Próximos turnos</CardTitle>
               <CardDescription>
-                Tomá nota de los horarios cercanos y confirmá tu asistencia o reprogramá si es necesario.
+                Tus próximos 5 turnos agendados. Podés gestionar o revisar nuevos servicios desde acá.
               </CardDescription>
             </CardHeader>
+
+            <div className="border-t border-zinc-800" />
             <CardContent className="space-y-3">
-              {turnosLoading && (
-                <p className="text-sm text-zinc-400">Cargando tus turnos...</p>
-              )}
+              {turnosLoading && <p className="text-sm text-zinc-400">Cargando tus turnos...</p>}
 
               {turnosError && (
-                <p className="text-sm text-orange-300">
-                  Error cargando turnos: {(turnosError as Error).message}
-                </p>
+                <p className="text-sm text-orange-300">Error cargando turnos: {(turnosError as Error).message}</p>
               )}
 
               {!turnosLoading && !turnosError && turnos.length === 0 && (
@@ -154,20 +149,28 @@ export default function User() {
               {!turnosLoading && !turnosError && turnos.length > 0 && (
                 <div className="space-y-2">
                   {turnos.map((slot) => (
-                    <div key={slot.id} className="rounded-xl border border-zinc-800 p-3">
-                      <div className="text-sm font-medium text-zinc-100">{slot.rubroId}</div>
-                      <div className="text-xs text-zinc-500">{slot.date} • {slot.time}</div>
+                    <div
+                      key={slot.id}
+                      className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900 p-3"
+                    >
+                      <div>
+                        <div className="text-sm font-medium text-zinc-100">{slot.rubroId}</div>
+                        <div className="text-xs text-zinc-500">{slot.date} • {slot.time}</div>
+                      </div>
+                      <span className="text-xs font-medium text-zinc-400">{slot.available} disponibles</span>
                     </div>
                   ))}
                 </div>
               )}
 
-              <Link
-                to="/app/rubros"
-                className="block rounded-2xl bg-zinc-100 px-4 py-3 text-center text-sm font-medium text-zinc-950 hover:bg-white"
-              >
-                Ver todos los rubros
-              </Link>
+              <div className="mt-2 pt-2 border-t border-zinc-800">
+                <Link
+                  to="/app/rubros"
+                  className="block rounded-2xl bg-zinc-100 px-4 py-3 text-center text-sm font-medium text-zinc-950 hover:bg-white"
+                >
+                  Agendar nuevo turno
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </section>
