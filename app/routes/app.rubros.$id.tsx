@@ -53,7 +53,7 @@ export default function RubroDetailPage() {
 
   const slots = apiSlots.length > 0 ? apiSlots : mockSlots.filter((s) => s.rubroId === id);
 
-  if (!hydrated) {
+  if (!hydrated || apiLoading) {
     return (
       <div className="space-y-6">
         <PageHeader title="Cargando..." subtitle="Preparando el detalle del rubro" />
@@ -64,11 +64,17 @@ export default function RubroDetailPage() {
     );
   }
 
-  // rubro inexistente
+  // Si no hay rubro local, puede ser que el endpoint aún no sincronizó (dev backend)
   if (!rubro) {
     return (
       <div className="space-y-4">
-        <PageHeader title="Rubro no encontrado" subtitle="El rubro solicitado no existe." />
+        <PageHeader title="Rubro no encontrado" subtitle="El rubro solicitado no existe localmente." />
+        <Card>
+          <CardContent className="py-6 text-sm text-zinc-400">
+            Si el backend no está listo, el catálogo puede demorar o la claves pueden ser distintas.
+            Intenta recargar o sincronizar el catálogo.
+          </CardContent>
+        </Card>
         <Link to="/app/rubros">
           <Button variant="secondary">← Volver a Rubros</Button>
         </Link>
@@ -95,6 +101,25 @@ export default function RubroDetailPage() {
             </Link>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (apiError) {
+    return (
+      <div className="space-y-4">
+        <PageHeader
+          title="Error cargando horarios"
+          subtitle="Ocurrió un problema al cargar los horarios desde el backend."
+        />
+        <Card>
+          <CardContent className="py-6 text-sm text-red-400">
+            {"Detalles: " + (apiError instanceof Error ? apiError.message : "Error desconocido")}
+          </CardContent>
+        </Card>
+        <Link to="/app/rubros">
+          <Button variant="secondary">← Volver a Rubros</Button>
+        </Link>
       </div>
     );
   }
