@@ -48,12 +48,49 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
 
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
   const [form, setForm] = useState<FormState>({
     firstName: "",
     lastname: "",
     email: "",
     avatarUrl: user?.avatarUrl ?? "",
   });
+
+  function readFileAsDataURL(file: File) {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") resolve(reader.result);
+        else reject(new Error("Error al leer la imagen"));
+      };
+      reader.onerror = () => reject(new Error("No se puede leer el archivo"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function onAvatarFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Selecciona un archivo de imagen válido.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("El archivo es muy grande. Máximo 5MB.");
+      return;
+    }
+
+    setError(null);
+    setOk("Vista previa lista. Guardá tu perfil para persistir localmente.");
+
+    const dataUrl = await readFileAsDataURL(file);
+
+    setAvatarFile(file);
+    setForm((prev) => ({ ...prev, avatarUrl: dataUrl }));
+  }
 
   const [pass, setPass] = useState({
     currentPassword: "",
@@ -71,11 +108,15 @@ export default function ProfilePage() {
       .then((data) => {
         if (!alive) return;
         setMe(data);
+
+        const savedAvatar = localStorage.getItem(`pampaDev-avatar-${data.idUser}`);
+
         setForm((prev) => ({
           ...prev,
           firstName: data.firstName ?? "",
           lastname: data.lastname ?? "",
           email: data.email ?? "",
+          avatarUrl: savedAvatar ?? prev.avatarUrl,
         }));
       })
       .catch((e: any) => {
@@ -114,13 +155,19 @@ export default function ProfilePage() {
         idCity: me.idCity,
       });
 
+      const activeAvatar = form.avatarUrl.trim();
+
       updateProfile({
         name: `${form.firstName.trim()} ${form.lastname.trim()}`.trim(),
-        avatarUrl: form.avatarUrl.trim() || undefined,
+        avatarUrl: activeAvatar || undefined,
       });
 
+      if (avatarFile || activeAvatar.startsWith("data:image/")) {
+        localStorage.setItem(`pampaDev-avatar-${me.idUser}`, activeAvatar);
+      }
+
       await refreshMe();
-      setOk("Tus datos se actualizaron correctamente.");
+      setOk("Tus datos se actualizaron correctamente. La foto se guarda localmente hasta que el backend esté disponible para subir archivos.");
     } catch (e: any) {
       setError(e?.message || "No se pudo guardar el perfil.");
     } finally {
@@ -243,9 +290,21 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <label className="text-sm text-zinc-300">Subir foto de perfil</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={onAvatarFileChange}
+                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                />
+                <p className="text-xs text-zinc-500">
+                  Puedes subir una imagen desde tu equipo. En esta versión se guarda localmente en el navegador y se ve en vista previa; el endpoint de subida de archivos está pendiente en backend.
+                </p>
+              </div>
+
               <div className="rounded-3xl border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm leading-6 text-zinc-400">
-                El avatar todavía se gestiona desde una URL manual. Más adelante se puede llevar a una
-                carga directa de imagen para hacerlo más cómodo.
+                Ahora podés subir una imagen de perfil directamente. Se renderiza en vista previa y se guarda localmente hasta que el backend soporte un endpoint REST dedicado.
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
