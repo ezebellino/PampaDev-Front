@@ -225,6 +225,7 @@ Estado: en progreso.
 - `app/lib/api/services/classes.ts` extiende con `createClassReservation`.
 - `app/lib/scheduling/useBranchClassSlots.ts` expone `slots`, `loading`, `error`, `reserveSlot` y revalida query tras reserva.
 - `app/routes/app.rubros.$id.tsx` usa API real desde `useBranchClassSlots` (fallback a `mockSlots` cuando no hay datos), y reserva activa con feedback.
+- `app/routes/app.profile.tsx` se amplió con carga de photo de perfil local (archivo -> preview -> localStorage), anticipando el endpoint backend de avatar.
 
 ### Próximos pasos
 - Sincronizar `reservation` con un endpoint backend robusto (`/api/Reservations` con atomicidad de cupos).
@@ -233,15 +234,15 @@ Estado: en progreso.
 
 ## Paso 9 — Validación y consolidación de roles
 
-Estado: pendiente.
+Estado: completado.
 
 ### Objetivo
 - Evitar acceso indebido (`user` no puede llevar acciones de `instructor`/`admin` en endpoints).
 
-### Tareas
-- `app/lib/auth/Roles` + `Protected` debe forzar role y cambiar el `error boundary` UX.
-- `app/routes/app.instructor.tsx` muestra exclusivamente reservas `pending/confirmed` y botones `confirmar/rechazar`.
-- `useBranchClassSlots` extiende a `invalidateQueries` al confirmar/rechazar.
+### Tareas completas
+- `app/lib/auth/Roles` + `Protected` ya obliga roles con redirect y evita accesos no autorizados.
+- `app/routes/app.instructor.tsx` ahora muestra solicitudes `pending/confirmed` con botones `confirmar/rechazar` y refresco.
+- `useBranchClassSlots` ahora añade solicitudes de reserva en localStorage para el instructor tras creación, y `useInstructorReservationRequests` gestiona estado local (pendientes/confirmados).
 
 ## Próximos incrementos sugeridos
 

@@ -18,6 +18,7 @@ import {
   normalizeBranchClass,
 } from "../lib/scheduling/classPresentation";
 import { useBranchScheduleConfig } from "../lib/scheduling/useBranchScheduleConfig";
+import { useInstructorReservationRequests } from "../lib/scheduling/useInstructorRequests";
 import type { Weekday } from "../lib/scheduling/types";
 
 const WEEKDAY_ORDER: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
@@ -67,6 +68,8 @@ export default function Instructor() {
     return scheduleConfig.disciplines.filter((item) => item.enabled);
   }, [scheduleConfig]);
 
+  const { pending, confirmed, refresh: refreshRequests, confirmRequest, rejectRequest } = useInstructorReservationRequests(branchId);
+
   if (loading || disciplinesLoading || scheduleLoading) {
     return (
       <Protected allowRoles={[ROLES.INSTRUCTOR, ROLES.DEVS]}>
@@ -112,6 +115,61 @@ export default function Instructor() {
             </div>
           </div>
         </section>
+
+        {hasBranch ? (
+          <section className="rounded-3xl border border-zinc-800 bg-zinc-950/80 p-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-zinc-100">Solicitudes de reserva</h2>
+                <p className="text-sm text-zinc-400">Administra solicitudes pendientes y confirma o rechaza para tu sucursal.</p>
+              </div>
+              <Button variant="ghost" onClick={refreshRequests} size="sm">
+                Actualizar
+              </Button>
+            </div>
+
+            {pending.length === 0 && confirmed.length === 0 ? (
+              <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-900/65 p-4 text-sm text-zinc-400">
+                No hay solicitudes en estado pendiente o confirmadas para esta sucursal.
+              </div>
+            ) : null}
+
+            {pending.length > 0 ? (
+              <div className="mt-4 space-y-3">
+                <div className="text-sm font-medium text-emerald-300">Pendientes</div>
+                {pending.map((request) => (
+                  <div
+                    key={request.id}
+                    className="rounded-2xl border border-amber-800 bg-zinc-900/65 p-4"
+                  >
+                    <div className="mb-2 text-sm text-zinc-200">
+                      {request.userId} — {request.date ?? "Fecha no especificada"} {request.time ?? "Hora no especificada"}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => confirmRequest(request.id)}>
+                        Confirmar
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => rejectRequest(request.id)}>
+                        Rechazar
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {confirmed.length > 0 ? (
+              <div className="mt-4 space-y-3">
+                <div className="text-sm font-medium text-cyan-300">Confirmadas</div>
+                {confirmed.map((request) => (
+                  <div key={request.id} className="rounded-2xl border border-emerald-800 bg-zinc-900/65 p-4 text-sm text-zinc-200">
+                    {request.userId} — {request.date ?? "-"} {request.time ?? "-"}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
         {!hasBranch ? (
           <Card className="border-zinc-800 bg-zinc-950/80">

@@ -7,6 +7,7 @@ import {
   type ClassReservationRequest,
 } from "../api/services/classes";
 import type { BranchClassRecord } from "../api/models/branchClass";
+import { persistInstructorReservationRequest } from "./useInstructorRequests";
 
 export function useBranchClassSlots(branchId: number | null, rubroId: string | null) {
   const queryClient = useQueryClient();
@@ -43,7 +44,7 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
     if (!rubroId) throw new Error("Rubro no seleccionado");
     if (slot.available <= 0) throw new Error("No hay cupos disponibles");
 
-    return reservationMutation.mutateAsync({
+    const response = await reservationMutation.mutateAsync({
       branchId,
       rubroId,
       slotId: slot.id,
@@ -51,6 +52,24 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
       date: slot.date,
       time: slot.time,
     });
+
+    try {
+      persistInstructorReservationRequest({
+        id: `req-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        branchId,
+        rubroId,
+        slotId: slot.id,
+        userId,
+        date: slot.date,
+        time: slot.time,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      });
+    } catch {
+      // no crash if localStorage no disponible.
+    }
+
+    return response;
   }
 
   return {
