@@ -215,6 +215,34 @@ Estado: completado en gran parte.
 
 ---
 
+## Paso 8 — Reserva de clase desde user (implementación inmediata)
+
+Estado: en progreso.
+
+### Resultado aplicado
+- Instalado `@tanstack/react-query` para manejar fetching/cache/refresh automático.
+- `app/root.tsx` está envuelto en `QueryClientProvider`.
+- `app/lib/api/services/classes.ts` extiende con `createClassReservation`.
+- `app/lib/scheduling/useBranchClassSlots.ts` expone `slots`, `loading`, `error`, `reserveSlot` y revalida query tras reserva.
+- `app/routes/app.rubros.$id.tsx` usa API real desde `useBranchClassSlots` (fallback a `mockSlots` cuando no hay datos), y reserva activa con feedback.
+
+### Próximos pasos
+- Sincronizar `reservation` con un endpoint backend robusto (`/api/Reservations` con atomicidad de cupos).
+- Ajustar en `app.routes/app.instructor.tsx` el listado de solicitudes pendentes / confirmación.
+- Agregar `useQuery` a métricas/reportes de `app.admin`. 
+
+## Paso 9 — Validación y consolidación de roles
+
+Estado: pendiente.
+
+### Objetivo
+- Evitar acceso indebido (`user` no puede llevar acciones de `instructor`/`admin` en endpoints).
+
+### Tareas
+- `app/lib/auth/Roles` + `Protected` debe forzar role y cambiar el `error boundary` UX.
+- `app/routes/app.instructor.tsx` muestra exclusivamente reservas `pending/confirmed` y botones `confirmar/rechazar`.
+- `useBranchClassSlots` extiende a `invalidateQueries` al confirmar/rechazar.
+
 ## Próximos incrementos sugeridos
 
 1. QA visual manual completa de `memberships`, `horarios`, `instructor`, `profile` y paneles por rol.

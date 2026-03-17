@@ -1,11 +1,13 @@
 import { Link, useParams } from "react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { mockRubros } from "../lib/rubros/mockRubros";
 import { mockSlots } from "../lib/horarios/mockHorarios";
 
 import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
+import { useBranch } from "../lib/branches/BranchContext";
+import { useBranchClassSlots } from "../lib/scheduling/useBranchClassSlots";
 
 import { PageHeader } from "../components/ui/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
@@ -35,7 +37,21 @@ export default function RubroDetailPage() {
   const isEnabled = !!id && config.enabledRubroIds.includes(id);
 
   const rubro = useMemo(() => mockRubros.find((r) => r.id === id), [id]);
-  const slots = useMemo(() => mockSlots.filter((s) => s.rubroId === id), [id]);
+
+  const { branchId } = useBranch();
+  const {
+    slots: apiSlots,
+    loading: apiLoading,
+    error: apiError,
+    reserveSlot,
+    reserving,
+    reservationError,
+  } = useBranchClassSlots(branchId, id ?? null);
+
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const slots = apiSlots.length > 0 ? apiSlots : mockSlots.filter((s) => s.rubroId === id);
 
   if (!hydrated) {
     return (
@@ -146,6 +162,22 @@ export default function RubroDetailPage() {
           <CardDescription>Seleccioná un turno para reservar</CardDescription>
         </CardHeader>
 
+        {apiLoading && (
+          <CardContent className="text-sm text-zinc-400">Cargando horarios desde el servidor...</CardContent>
+        )}
+
+        {apiError && (
+          <CardContent className="text-sm text-red-400">Error al cargar horarios: {(apiError as Error).message}</CardContent>
+        )}
+
+        {infoMessage && (
+          <CardContent className="text-sm text-emerald-400">{infoMessage}</CardContent>
+        )}
+
+        {errorMessage && (
+          <CardContent className="text-sm text-red-400">{errorMessage}</CardContent>
+        )}
+
         <CardContent className="space-y-3">
           {slots.length === 0 ? (
             <div className="text-sm text-zinc-400">
@@ -176,9 +208,25 @@ export default function RubroDetailPage() {
                         size="sm"
                         variant={full ? "secondary" : "primary"}
                         className="w-full"
-                        disabled={full}
+                        disabled={full || reserving}
+                        onClick={async () => {
+                          setInfoMessage(null);
+                          setErrorMessage(null);
+                          if (!user) {
+                            setErrorMessage("Debes iniciar sesión para reservar.");
+                            return;
+                          }
+
+                          try {
+                            await reserveSlot(s, user.id);
+                            setInfoMessage("Reserva registrada correctamente. El instructor deberá confirmar el turno.");
+                          } catch (err) {
+                            const message = err instanceof Error ? err.message : "Error al reservar turno";
+                            setErrorMessage(message);
+                          }
+                        }}
                       >
-                        {full ? "No disponible" : "Reservar turno"}
+                        {full ? "No disponible" : reserving ? "Reservando..." : "Reservar turno"}
                       </Button>
                     </div>
                   </div>
