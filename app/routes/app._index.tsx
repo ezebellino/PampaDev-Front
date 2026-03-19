@@ -21,30 +21,32 @@ function ActionCard({
   cta: string;
   disabled?: boolean;
 }) {
-  const base = "relative overflow-hidden rounded-3xl border bg-zinc-950/75 p-5 transition duration-200";
+  const base =
+    "relative overflow-hidden rounded-3xl border bg-zinc-950/80 p-5 shadow-[0_20px_60px_rgba(2,6,23,0.28)] transition duration-200";
 
   if (disabled) {
     return (
-      <div className={`${base} border-zinc-800 opacity-65`}>
-        <div className="absolute inset-x-0 top-0 h-20 bg-linear-to-r from-white/5 to-transparent" />
+      <div className={`${base} border-zinc-800/90 opacity-65`}>
+        <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-white/5 to-transparent" />
         <div className="relative">
           <div className="text-base font-semibold tracking-tight text-zinc-100">{title}</div>
           <div className="mt-2 text-sm leading-6 text-zinc-400">{desc}</div>
-          <div className="mt-5 inline-flex rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-500">
-            {cta}
-          </div>
+          <div className="mt-5 inline-flex rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-500">{cta}</div>
         </div>
       </div>
     );
   }
 
   return (
-    <Link to={to} className={`${base} border-zinc-800 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/75`}>
-      <div className="absolute inset-x-0 top-0 h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
+    <Link
+      to={to}
+      className={`${base} border-cyan-500/12 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-zinc-900/85`}
+    >
+      <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-cyan-400/16 via-sky-400/10 to-transparent" />
       <div className="relative">
         <div className="text-base font-semibold tracking-tight text-zinc-100">{title}</div>
         <div className="mt-2 text-sm leading-6 text-zinc-400">{desc}</div>
-        <div className="mt-5 inline-flex rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-white">
+        <div className="mt-5 inline-flex rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200">
           {cta}
         </div>
       </div>
@@ -54,7 +56,7 @@ function ActionCard({
 
 function ContextBadge({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
+    <div className="rounded-2xl border border-zinc-800/90 bg-zinc-950/78 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
       <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
       <div className="mt-1 text-sm font-medium text-zinc-200">{value}</div>
     </div>
@@ -74,7 +76,7 @@ function DevMiniBars({ values }: { values: { label: string; value: number }[] })
           </div>
           <div className="h-2 rounded-full bg-zinc-900">
             <div
-              className="h-2 rounded-full bg-linear-to-r from-cyan-400/80 to-cyan-300/50"
+              className="h-2 rounded-full bg-linear-to-r from-cyan-300 via-sky-300 to-blue-300"
               style={{ width: `${Math.max((item.value / max) * 100, item.value > 0 ? 12 : 0)}%` }}
             />
           </div>
@@ -130,18 +132,18 @@ export default function AppDashboard() {
   }, [isDev, logsTick, requests]);
 
   return (
-    <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-linear-to-br from-zinc-950 via-zinc-950 to-zinc-900 p-6 md:p-8">
-        <div className="absolute inset-0 bg-zinc-900/20" />
+    <div className="space-y-7 lg:space-y-8">
+      <section className="relative overflow-hidden rounded-[2rem] border border-cyan-500/12 bg-linear-to-br from-slate-950 via-zinc-950 to-slate-900 p-6 shadow-[0_24px_80px_rgba(2,6,23,0.28)] md:p-8 lg:p-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.12),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.14),transparent)]" />
 
         <div className="relative space-y-4">
-          <div className="text-xs uppercase tracking-widest text-zinc-500">Panel principal</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-cyan-200/55">Panel principal</div>
 
-          <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl xl:text-[2rem]">
             Bienvenido{user?.name ? `, ${user.name}` : ""}.
           </h1>
 
-          <p className="max-w-2xl text-sm text-zinc-400 md:text-base md:leading-7">
+          <p className="max-w-3xl text-sm text-zinc-300 md:text-base md:leading-7">
             Este es tu punto de entrada para continuar trabajando con sucursales, rubros, membresías, horarios y
             herramientas según el rol que tengas activo.
           </p>
@@ -157,9 +159,7 @@ export default function AppDashboard() {
       <section className="space-y-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-zinc-100">Accesos rápidos</h2>
-          <p className="text-sm text-zinc-500">
-            Entradas directas para seguir trabajando sin perder contexto.
-          </p>
+          <p className="text-sm text-zinc-500">Entradas directas para seguir trabajando sin perder contexto.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -213,8 +213,8 @@ export default function AppDashboard() {
 
       {(isAdmin || isDev || isStandardUser) && (
         <section className="grid gap-4 lg:grid-cols-2">
-          <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
-            <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
+          <Card className="overflow-hidden border-zinc-800/90 bg-zinc-950/78 shadow-[0_18px_48px_rgba(2,6,23,0.22)]">
+            <div className="h-24 bg-linear-to-r from-cyan-400/16 via-sky-400/8 to-transparent" />
             <CardContent className="relative -mt-2 space-y-3 py-5">
               <div className="text-sm font-semibold text-zinc-100">Estado del entorno</div>
               <div className="space-y-2 text-sm text-zinc-400">
@@ -234,8 +234,8 @@ export default function AppDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
-            <div className={`h-20 bg-linear-to-r ${isDev ? "from-cyan-500/14 to-transparent" : "from-amber-500/12 to-transparent"}`} />
+          <Card className="overflow-hidden border-zinc-800/90 bg-zinc-950/78 shadow-[0_18px_48px_rgba(2,6,23,0.22)]">
+            <div className={`h-24 bg-linear-to-r ${isDev ? "from-cyan-400/16 via-sky-400/8 to-transparent" : "from-amber-400/16 via-orange-300/8 to-transparent"}`} />
             <CardContent className="relative -mt-2 space-y-4 py-5">
               <div className="text-sm font-semibold text-zinc-100">
                 {isDev ? "Resumen técnico" : "Próximo paso recomendado"}
@@ -275,7 +275,7 @@ export default function AppDashboard() {
                   <div className="flex flex-wrap gap-2 pt-2">
                     <Link
                       to="/app/memberships"
-                      className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-white"
+                      className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
                     >
                       Ver membresías
                     </Link>
@@ -297,7 +297,7 @@ export default function AppDashboard() {
                   <div className="flex flex-wrap gap-2 pt-2">
                     <Link
                       to="/app/admin/solicitudes/nueva"
-                      className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-white"
+                      className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
                     >
                       + Nueva solicitud
                     </Link>
