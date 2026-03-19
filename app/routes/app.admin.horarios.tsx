@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
@@ -40,7 +40,9 @@ export default function AdminHorarios() {
   const {
     data: scheduleConfig,
     loading: scheduleLoading,
+    error: scheduleError,
     save: saveScheduleConfig,
+    saving: scheduleSaving,
   } = useBranchScheduleConfig(branchId, disciplines);
 
   const [draftConfig, setDraftConfig] = useState<BranchScheduleConfig | null>(null);
@@ -137,11 +139,15 @@ export default function AdminHorarios() {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!draftConfig) return;
-    const saved = saveScheduleConfig(draftConfig);
-    if (!saved) return;
-    setSavedNotice(`Planificacion guardada el ${formatUpdatedAt(saved.updatedAt)}.`);
+
+    try {
+      const saved = await saveScheduleConfig(draftConfig);
+      setSavedNotice(`Planificacion guardada el ${formatUpdatedAt(saved.updatedAt)}.`);
+    } catch (err) {
+      setSavedNotice(err instanceof Error ? err.message : "No pudimos guardar la planificacion semanal.");
+    }
   };
 
   if (branchId == null) {
@@ -183,6 +189,20 @@ export default function AdminHorarios() {
         />
         <Card>
           <CardContent className="py-6 text-sm text-red-300">{disciplinesError}</CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (scheduleError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Horarios"
+          subtitle="No pudimos cargar la planificación semanal de esta sucursal."
+        />
+        <Card>
+          <CardContent className="py-6 text-sm text-red-300">{scheduleError instanceof Error ? scheduleError.message : "Error inesperado al leer la planificación."}</CardContent>
         </Card>
       </div>
     );
@@ -331,7 +351,7 @@ export default function AdminHorarios() {
             <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/8 px-4 py-3 text-cyan-100">
               {savedNotice ?? "Todavia no hay cambios guardados en esta sesion."}
             </div>
-            <Button className="w-full" onClick={handleSave} disabled={!draftConfig}>
+            <Button className="w-full" onClick={() => void handleSave()} disabled={!draftConfig || scheduleSaving}>
               Guardar planificacion semanal
             </Button>
           </CardContent>

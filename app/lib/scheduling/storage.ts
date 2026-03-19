@@ -1,8 +1,16 @@
-﻿import type { Discipline } from "../api/services/disciplines";
+import type { Discipline } from "../api/services/disciplines";
 import type { BranchScheduleConfig, DaySchedule, DisciplineScheduleConfig, Weekday } from "./types";
 
+const SCHEDULE_STORAGE_PREFIX = "pampadev:branch-schedule-config:v1";
+export const SCHEDULE_CONFIG_EVENT = "pampadev:branch-schedule-config:changed";
+
 function key(branchId: number | string) {
-  return `pampadev:branch-schedule-config:v1:${branchId}`;
+  return `${SCHEDULE_STORAGE_PREFIX}:${branchId}`;
+}
+
+function emitScheduleConfigChanged(branchId: number | string) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(SCHEDULE_CONFIG_EVENT, { detail: { branchId: String(branchId) } }));
 }
 
 const WEEKDAYS: Weekday[] = [0, 1, 2, 3, 4, 5, 6];
@@ -19,6 +27,15 @@ const DEFAULT_DISCIPLINE: Omit<DisciplineScheduleConfig, "idDiscipline"> = {
   slotDuration: 60,
   notes: "",
 };
+
+function sanitizeText(value: unknown, fallback = "") {
+  return typeof value === "string" ? value.trim() : fallback;
+}
+
+function sanitizeOptionalText(value: unknown) {
+  const normalized = sanitizeText(value);
+  return normalized.length > 0 ? normalized : undefined;
+}
 
 function createDefaultDays(): Record<Weekday, DaySchedule> {
   return {
@@ -46,6 +63,14 @@ export function createDefaultBranchScheduleConfig(
   };
 }
 
+function normalizeSlotDuration(value: unknown): DisciplineScheduleConfig["slotDuration"] {
+  const numeric = Number(value);
+  if (numeric === 30 || numeric === 60 || numeric === 90 || numeric === 120 || numeric === 150) {
+    return numeric;
+  }
+  return DEFAULT_DISCIPLINE.slotDuration;
+}
+
 export function loadBranchScheduleConfig(
   branchId: number | string,
   disciplines: Discipline[]
@@ -65,7 +90,7 @@ export function loadBranchScheduleConfig(
       const current = storedDays[day];
       mergedDays[day] = {
         closed: Boolean(current?.closed),
-        reason: typeof current?.reason === "string" ? current.reason : "",
+        reason: sanitizeText(current?.reason),
       };
     });
 
@@ -80,26 +105,53 @@ export function loadBranchScheduleConfig(
 
     return {
       branchId,
-      updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : undefined,
+      updatedAt: sanitizeOptionalText(parsed.updatedAt),
       days: mergedDays,
       disciplines: disciplines.map((discipline) => {
         const stored = storedDisciplineMap.get(discipline.idDiscipline);
         return {
           idDiscipline: discipline.idDiscipline,
           enabled: stored?.enabled ?? DEFAULT_DISCIPLINE.enabled,
-          openTime: typeof stored?.openTime === "string" ? stored.openTime : DEFAULT_DISCIPLINE.openTime,
-          closeTime: typeof stored?.closeTime === "string" ? stored.closeTime : DEFAULT_DISCIPLINE.closeTime,
-          slotDuration:
-            typeof stored?.slotDuration === "number"
-              ? (stored.slotDuration as DisciplineScheduleConfig["slotDuration"])
-              : DEFAULT_DISCIPLINE.slotDuration,
-          notes: typeof stored?.notes === "string" ? stored.notes : DEFAULT_DISCIPLINE.notes,
+          openTime: sanitizeText(stored?.openTime, DEFAULT_DISCIPLINE.openTime),
+          closeTime: sanitizeText(stored?.closeTime, DEFAULT_DISCIPLINE.closeTime),
+          slotDuration: normalizeSlotDuration(stored?.slotDuration),
+          notes: sanitizeText(stored?.notes, DEFAULT_DISCIPLINE.notes),
         };
       }),
     };
   } catch {
     return fallback;
   }
+}
+
+export function subscribeToBranchScheduleConfig(branchId: number | string, onChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  const expectedKey = key(branchId);
+  const expectedBranchId = String(branchId);
+
+  function onStorage(event: StorageEvent) {
+    if (event.key === expectedKey) {
+      onChange();
+    }
+  }
+
+  function onScheduleChanged(event: Event) {
+    const customEvent = event as CustomEvent<{ branchId?: string }>;
+    if (customEvent.detail?.branchId === expectedBranchId) {
+      onChange();
+    }
+  }
+
+  window.addEventListener("storage", onStorage);
+  window.addEventListener(SCHEDULE_CONFIG_EVENT, onScheduleChanged as EventListener);
+
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener(SCHEDULE_CONFIG_EVENT, onScheduleChanged as EventListener);
+  };
 }
 
 export function saveBranchScheduleConfig(branchId: number | string, config: BranchScheduleConfig) {
@@ -110,5 +162,6 @@ export function saveBranchScheduleConfig(branchId: number | string, config: Bran
   };
 
   localStorage.setItem(key(branchId), JSON.stringify(payload));
+  emitScheduleConfigChanged(branchId);
   return payload;
 }
