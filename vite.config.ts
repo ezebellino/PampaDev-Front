@@ -3,8 +3,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
-  plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+export default defineConfig(({ mode }) => ({
+  plugins: [tailwindcss(), ...(mode === "test" ? [] : [reactRouter()]), tsconfigPaths()],
   server: {
     proxy: {
       "/api": {
@@ -17,8 +17,8 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    include: ["app/**/*.test.ts"],
+    include: ["app/**/*.test.ts", "app/**/*.test.tsx"],
     restoreMocks: true,
     clearMocks: true,
   },
-});
+}));
