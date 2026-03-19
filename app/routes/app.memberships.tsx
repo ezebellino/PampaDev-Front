@@ -1,4 +1,4 @@
-﻿import { useMemo } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -41,7 +41,7 @@ export default function MembershipsPage() {
   const { branchId } = useBranch();
   const { data: branches } = useBranches();
   const { disciplines, loading: disciplinesLoading } = useDisciplines();
-  const { data, loading } = useBranchMembershipCatalog(branchId);
+  const { data, loading, error: catalogError } = useBranchMembershipCatalog(branchId);
 
   const activeBranch = useMemo(() => {
     if (branchId == null || !branches) return null;

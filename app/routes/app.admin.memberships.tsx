@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
@@ -41,7 +41,7 @@ export default function AdminMembershipsPage() {
   const { branchId } = useBranch();
   const { data: branches } = useBranches();
   const { disciplines, loading: disciplinesLoading, error: disciplinesError } = useDisciplines();
-  const { data, loading, createPlan, updatePlan, removePlan, savePrivateClass } = useBranchMembershipCatalog(branchId);
+  const { data, loading, error: catalogError, createPlan, updatePlan, removePlan, savePrivateClass, saving } = useBranchMembershipCatalog(branchId);
 
   const [planForm, setPlanForm] = useState<MembershipPlanInput>(DEFAULT_PLAN_FORM);
   const [editingPlanId, setEditingPlanId] = useState<number | null>(null);
@@ -84,7 +84,7 @@ export default function AdminMembershipsPage() {
       : [...currentIds, idDiscipline];
   }
 
-  function handlePlanSubmit() {
+  async function handlePlanSubmit() {
     setFeedback(null);
     setError(null);
 
@@ -440,9 +440,9 @@ export default function AdminMembershipsPage() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Button onClick={handlePlanSubmit}>{editingPlanId != null ? "Guardar cambios" : "Crear plan"}</Button>
+                <Button onClick={() => void handlePlanSubmit()} disabled={saving}>{editingPlanId != null ? "Guardar cambios" : "Crear plan"}</Button>
                 {editingPlanId != null ? (
-                  <Button variant="secondary" onClick={resetPlanForm}>
+                  <Button variant="secondary" onClick={resetPlanForm} disabled={saving}>
                     Cancelar edición
                   </Button>
                 ) : null}
@@ -549,7 +549,7 @@ export default function AdminMembershipsPage() {
                   />
                 </label>
 
-                <Button onClick={handleSavePrivateClass}>Guardar clase particular</Button>
+                <Button onClick={() => void handleSavePrivateClass()} disabled={saving}>Guardar clase particular</Button>
               </CardContent>
             </Card>
 
@@ -639,10 +639,10 @@ export default function AdminMembershipsPage() {
                       ) : null}
 
                       <div className="flex flex-wrap gap-3">
-                        <Button variant="secondary" onClick={() => startEditPlan(plan)}>
+                        <Button variant="secondary" onClick={() => startEditPlan(plan)} disabled={saving}>
                           Editar plan
                         </Button>
-                        <Button variant="ghost" onClick={() => handleRemovePlan(plan.idMembershipPlan)}>
+                        <Button variant="ghost" onClick={() => void handleRemovePlan(plan.idMembershipPlan)} disabled={saving}>
                           Eliminar
                         </Button>
                       </div>
