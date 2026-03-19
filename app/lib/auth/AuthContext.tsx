@@ -1,5 +1,6 @@
-﻿import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { loginApi } from "../api/services/auth";
+import { AUTH_EXPIRED_EVENT } from "../api/api";
 import type { User } from "./authTypes";
 import {
   buildUserFromLoginResponse,
@@ -29,12 +30,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [bootstrapped, setBootstrapped] = useState(false);
 
-  async function refreshMe() {
+  const resetSession = useCallback(() => {
+    clearSession();
+    setToken(null);
+    setUser(null);
+  }, []);
+
+  const refreshMe = useCallback(async () => {
     const refreshedUser = await refreshCurrentUser();
     if (refreshedUser) {
       setUser(refreshedUser);
+      return;
     }
-  }
+    resetSession();
+  }, [resetSession]);
 
   useEffect(() => {
     let alive = true;
@@ -43,10 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const stored = getStoredSession();
 
       if (!stored.token) {
-        clearSession();
+        resetSession();
         if (!alive) return;
-        setToken(null);
-        setUser(null);
         setBootstrapped(true);
         return;
       }
@@ -60,12 +67,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const refreshedUser = await refreshCurrentUser();
         if (!alive) return;
+        if (!refreshedUser) {
+          resetSession();
+          return;
+        }
         setUser(refreshedUser);
       } catch {
-        clearSession();
         if (!alive) return;
-        setToken(null);
-        setUser(null);
+        resetSession();
       } finally {
         if (alive) {
           setBootstrapped(true);
@@ -78,30 +87,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [resetSession]);
 
-  function updateProfile(patch: { name?: string; avatarUrl?: string }) {
-    setUser((previousUser) => {
-      if (!previousUser) return previousUser;
+  useEffect(() => {
+    function onAuthExpired() {
+      resetSession();
+      setBootstrapped(true);
+    }
 
-      const nextUser: User = {
-        ...previousUser,
-        name: patch.name ?? previousUser.name,
-        avatarUrl: patch.avatarUrl ?? previousUser.avatarUrl,
-      };
+    window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
+  }, [resetSession]);
 
-      if (token) {
-        persistSession(token, nextUser);
-      }
+  const updateProfile = useCallback(
+    (patch: { name?: string; avatarUrl?: string }) => {
+      setUser((previousUser) => {
+        if (!previousUser) return previousUser;
 
-      return nextUser;
-    });
-  }
+        const nextUser: User = {
+          ...previousUser,
+          name: patch.name ?? previousUser.name,
+          avatarUrl: patch.avatarUrl ?? previousUser.avatarUrl,
+        };
 
-  async function loginWithApi(payload: { email: string; password: string }) {
+        if (token) {
+          persistSession(token, nextUser);
+        }
+
+        return nextUser;
+      });
+    },
+    [token]
+  );
+
+  const loginWithApi = useCallback(async (payload: { email: string; password: string }) => {
     const response = await loginApi(payload);
     if (!response.token) {
-      throw new Error("La API no devolvió token");
+      throw new Error("La API no devolvio token");
     }
 
     const quickUser = buildUserFromLoginResponse(response);
@@ -110,13 +132,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(quickUser);
 
     await refreshMe();
-  }
+  }, [refreshMe]);
 
-  function logout() {
-    clearSession();
-    setToken(null);
-    setUser(null);
-  }
+  const logout = useCallback(() => {
+    resetSession();
+    setBootstrapped(true);
+  }, [resetSession]);
 
   const value = useMemo(
     () => ({
@@ -129,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout,
       refreshMe,
     }),
-    [user, token, bootstrapped]
+    [user, token, bootstrapped, updateProfile, loginWithApi, logout, refreshMe]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

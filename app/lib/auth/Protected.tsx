@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router";
+import ScreenLoader from "../../components/ui/ScreenLoader";
 import { useAuth } from "./AuthContext";
 import type { Role } from "./roles";
 
@@ -12,16 +13,16 @@ export default function Protected({
 }) {
   const { isAuthed, user, bootstrapped } = useAuth();
 
-  // Evita mismatch SSR / warning de StaticRouter
-  if (!bootstrapped) return null;
+  if (!bootstrapped) {
+    return <ScreenLoader title="Recuperando tu sesion" subtitle="Estamos validando tu acceso y cargando tu contexto." />;
+  }
 
-  // Sin token => fuera
   if (!isAuthed) return <Navigate to="/login" replace />;
 
-  // Con token pero user todavía no cargó (/me) => esperamos (o podrías renderizar loader)
-  if (allowRoles && !user) return null;
+  if (allowRoles && !user) {
+    return <ScreenLoader title="Cargando permisos" subtitle="Estamos confirmando el rol y los accesos disponibles." />;
+  }
 
-  // Role guard
   if (allowRoles && user && !allowRoles.includes(user.role)) {
     return <Navigate to="/app" replace />;
   }

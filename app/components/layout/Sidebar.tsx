@@ -1,4 +1,4 @@
-﻿import { NavLink, useLocation } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import { useEffect, useMemo } from "react";
 import { useAuth } from "../../lib/auth/AuthContext";
 import { ROLES } from "../../lib/auth/roles";
@@ -174,8 +174,21 @@ export default function Sidebar({
   const location = useLocation();
 
   useEffect(() => {
-    if (mobileMenuOpen) closeMobileMenu();
-  }, [location.pathname, mobileMenuOpen, closeMobileMenu]);
+    closeMobileMenu();
+  }, [location.pathname, closeMobileMenu]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const previousOverflow = document.body.style.overflow;
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
