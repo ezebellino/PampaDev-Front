@@ -1,4 +1,4 @@
-﻿import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
@@ -49,14 +49,13 @@ export default function AdminNewDisciplineRequestRoute() {
 function AdminNewDisciplineRequest() {
   const nav = useNavigate();
   const { user } = useAuth();
-  const { createRequest } = useRubroRequests();
+  const { createRequest, creating } = useRubroRequests();
   const [p, setP] = useState<Payload>({
     name: "",
     description: "",
     exampleServices: "",
     notes: "",
   });
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function set<K extends keyof Payload>(key: K, value: Payload[K]) {
@@ -73,9 +72,8 @@ function AdminNewDisciplineRequest() {
       return;
     }
 
-    setSaving(true);
     try {
-      createRequest({
+      await createRequest({
         requestedBy: user?.email ?? user?.name ?? "admin@example.com",
         requestedByRole: user?.role ?? "ADMIN",
         title: name,
@@ -85,10 +83,8 @@ function AdminNewDisciplineRequest() {
       });
 
       nav("/app/admin/solicitudes", { replace: true });
-    } catch (e: any) {
-      setError(e?.message ?? "No se pudo enviar la solicitud.");
-    } finally {
-      setSaving(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo enviar la solicitud.");
     }
   }
 
@@ -96,7 +92,7 @@ function AdminNewDisciplineRequest() {
     <div className="space-y-6">
       <PageHeader
         title="Nueva solicitud de rubro"
-        subtitle="Prepará el pedido para Devs con el contexto suficiente para que puedan evaluar, crear o ajustar el catálogo sin ida y vuelta innecesaria."
+        subtitle="Prepara el pedido para Devs con el contexto suficiente para que puedan evaluar, crear o ajustar el catalogo sin ida y vuelta innecesaria."
       />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]">
@@ -105,7 +101,7 @@ function AdminNewDisciplineRequest() {
           <CardHeader className="relative -mt-4">
             <CardTitle className="text-xl text-zinc-100">Solicitar nuevo rubro</CardTitle>
             <CardDescription>
-              Completá la información clave para que el equipo Devs pueda revisar la solicitud y tomar una decisión.
+              Completa la informacion clave para que el equipo Devs pueda revisar la solicitud y tomar una decision.
             </CardDescription>
           </CardHeader>
 
@@ -113,50 +109,50 @@ function AdminNewDisciplineRequest() {
             <form onSubmit={submit} className="space-y-5">
               <Field
                 label="Nombre del rubro"
-                hint="Usá un nombre claro y directamente reutilizable en el catálogo."
+                hint="Usa un nombre claro y directamente reutilizable en el catalogo."
                 required
               >
                 <input
                   value={p.name}
                   onChange={(event) => set("name", event.target.value)}
                   className="w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-cyan-500/40"
-                  placeholder="Ej: Pilates, Pádel, Taekwondo…"
+                  placeholder="Ej: Pilates, Padel, Taekwondo..."
                 />
               </Field>
 
               <Field
-                label="Descripción"
-                hint="Explicá qué servicio se necesita y cómo debería entenderlo el usuario final."
+                label="Descripcion"
+                hint="Explica que servicio se necesita y como deberia entenderlo el usuario final."
               >
                 <textarea
                   value={p.description}
                   onChange={(event) => set("description", event.target.value)}
                   className="min-h-28 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-cyan-500/40"
-                  placeholder="Ej: clases grupales con cupos limitados, reservas por horario, modalidad mensual o por clase…"
+                  placeholder="Ej: clases grupales con cupos limitados, reservas por horario, modalidad mensual o por clase..."
                 />
               </Field>
 
               <Field
                 label="Ejemplos de servicios"
-                hint="Podés listar formatos, variantes o productos que deberían existir dentro del rubro."
+                hint="Podes listar formatos, variantes o productos que deberian existir dentro del rubro."
               >
                 <input
                   value={p.exampleServices}
                   onChange={(event) => set("exampleServices", event.target.value)}
                   className="w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-cyan-500/40"
-                  placeholder="Ej: clase grupal, clase individual, mensualidad, reserva por turno…"
+                  placeholder="Ej: clase grupal, clase individual, mensualidad, reserva por turno..."
                 />
               </Field>
 
               <Field
                 label="Notas para Devs"
-                hint="Aclaraciones técnicas u operativas: prioridad, restricciones, material visual o reglas especiales."
+                hint="Aclaraciones tecnicas u operativas: prioridad, restricciones, material visual o reglas especiales."
               >
                 <textarea
                   value={p.notes}
                   onChange={(event) => set("notes", event.target.value)}
                   className="min-h-24 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-cyan-500/40"
-                  placeholder="Ej: se usará en dos sucursales, requiere imagen representativa, necesita clases grupales e individuales…"
+                  placeholder="Ej: se usara en dos sucursales, requiere imagen representativa, necesita clases grupales e individuales..."
                 />
               </Field>
 
@@ -170,7 +166,7 @@ function AdminNewDisciplineRequest() {
                 <Button type="button" variant="secondary" onClick={() => nav(-1)}>
                   Cancelar
                 </Button>
-                <Button disabled={saving}>{saving ? "Enviando..." : "Enviar solicitud"}</Button>
+                <Button disabled={creating}>{creating ? "Enviando..." : "Enviar solicitud"}</Button>
               </div>
             </form>
           </CardContent>
@@ -179,9 +175,9 @@ function AdminNewDisciplineRequest() {
         <div className="space-y-4">
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardHeader>
-              <CardTitle>Qué conviene incluir</CardTitle>
+              <CardTitle>Que conviene incluir</CardTitle>
               <CardDescription>
-                Una buena solicitud reduce fricción y acelera la incorporación del rubro.
+                Una buena solicitud reduce friccion y acelera la incorporacion del rubro.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-zinc-400">
@@ -192,7 +188,7 @@ function AdminNewDisciplineRequest() {
                 Ejemplos concretos de servicios, variantes o formatos de cobro.
               </div>
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                Cualquier contexto operativo que impacte en UX o lógica.
+                Cualquier contexto operativo que impacte en UX o logica.
               </div>
             </CardContent>
           </Card>
@@ -201,7 +197,7 @@ function AdminNewDisciplineRequest() {
             <CardHeader>
               <CardTitle>Flujo posterior</CardTitle>
               <CardDescription>
-                Después de enviarla, la solicitud queda visible para Devs en la bandeja completa.
+                Despues de enviarla, la solicitud queda visible para Devs en la bandeja completa.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-zinc-400">

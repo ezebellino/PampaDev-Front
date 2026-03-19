@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import RequestDetailModal from "../components/admin/RequestDetailModal";
 import RequestsTable from "../components/admin/RequestsTable";
@@ -27,8 +27,9 @@ function normalizeIdentity(value: string | undefined | null) {
 
 function AdminRequests() {
   const { user } = useAuth();
-  const { requests, loading, approve, reject } = useRubroRequests();
+  const { requests, loading, error, approve, reject, reviewing } = useRubroRequests();
   const [selectedId, setSelectedId] = useState<SelectedRequestId>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const isDev = user?.role === ROLES.DEVS;
   const requesterKeys = [normalizeIdentity(user?.email), normalizeIdentity(user?.name)].filter(Boolean);
@@ -47,24 +48,53 @@ function AdminRequests() {
   if (loading) {
     return (
       <ScreenLoader
-        title="Cargando solicitudes…"
-        subtitle="Estamos preparando la bandeja de revisión del equipo."
+        title="Cargando solicitudes..."
+        subtitle="Estamos preparando la bandeja de revision del equipo."
       />
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Solicitudes de Rubros"
+          subtitle="No pudimos cargar la bandeja de solicitudes en este momento."
+        />
+
+        <Card className="border-rose-500/20 bg-rose-500/10">
+          <CardContent className="space-y-2 py-5 text-sm text-rose-100">
+            <div className="font-medium">Ocurrio un problema al cargar las solicitudes.</div>
+            <div>Volve a intentar en unos instantes. Si persiste, revisamos storage local y sincronizacion del dominio.</div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   function closeModal() {
     setSelectedId(null);
+    setActionError(null);
   }
 
-  function handleApprove(id: string, notes?: string) {
-    approve(id, notes, user?.email ?? user?.name);
-    closeModal();
+  async function handleApprove(id: string, notes?: string) {
+    setActionError(null);
+    try {
+      await approve(id, notes, user?.email ?? user?.name);
+      closeModal();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "No se pudo aprobar la solicitud.");
+    }
   }
 
-  function handleReject(id: string, notes?: string) {
-    reject(id, notes, user?.email ?? user?.name);
-    closeModal();
+  async function handleReject(id: string, notes?: string) {
+    setActionError(null);
+    try {
+      await reject(id, notes, user?.email ?? user?.name);
+      closeModal();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "No se pudo rechazar la solicitud.");
+    }
   }
 
   return (
@@ -73,8 +103,8 @@ function AdminRequests() {
         title="Solicitudes de Rubros"
         subtitle={
           isDev
-            ? "Revisá el total de solicitudes enviadas por administración y definí qué entra al catálogo."
-            : "Seguí las solicitudes que enviaste a Devs y consultá su estado de revisión."
+            ? "Revisa el total de solicitudes enviadas por administracion y defini que entra al catalogo."
+            : "Segui las solicitudes que enviaste a Devs y consulta su estado de revision."
         }
         right={
           !isDev ? (
@@ -90,20 +120,29 @@ function AdminRequests() {
         <CardContent className="relative -mt-2 space-y-2 py-5 text-sm text-zinc-400">
           <p>
             {isDev
-              ? "Centralizá la revisión completa de nuevos rubros desde una sola vista y mantené trazabilidad sobre cada decisión."
-              : "Concentrá acá tus pedidos de nuevos rubros y mantené seguimiento claro sobre cada respuesta del equipo Devs."}
+              ? "Centraliza la revision completa de nuevos rubros desde una sola vista y manten trazabilidad sobre cada decision."
+              : "Concentra aca tus pedidos de nuevos rubros y manten seguimiento claro sobre cada respuesta del equipo Devs."}
           </p>
           <p>
             {isDev
-              ? "Podés abrir cada solicitud, dejar observaciones y definir si entra al catálogo o si necesita ajustes."
-              : "Podés abrir el detalle de cada solicitud, revisar feedback interno y consultar si ya fue aprobada o rechazada."}
+              ? "Podes abrir cada solicitud, dejar observaciones y definir si entra al catalogo o si necesita ajustes."
+              : "Podes abrir el detalle de cada solicitud, revisar feedback interno y consultar si ya fue aprobada o rechazada."}
           </p>
         </CardContent>
       </Card>
 
+      {actionError ? (
+        <Card className="border-rose-500/20 bg-rose-500/10">
+          <CardContent className="py-4 text-sm text-rose-100">{actionError}</CardContent>
+        </Card>
+      ) : null}
+
       <RequestsTable
         requests={visibleRequests}
-        onSelect={(request) => setSelectedId(request.id)}
+        onSelect={(request) => {
+          setActionError(null);
+          setSelectedId(request.id);
+        }}
         canCreate={!isDev}
       />
 
@@ -112,7 +151,7 @@ function AdminRequests() {
         onClose={closeModal}
         onApprove={handleApprove}
         onReject={handleReject}
-        canReview={isDev}
+        canReview={isDev && !reviewing}
       />
     </div>
   );
