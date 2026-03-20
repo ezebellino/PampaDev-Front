@@ -5,12 +5,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import LogsChart from "../components/dev/LogChart";
 import Protected from "../lib/auth/Protected";
 import { ROLES } from "../lib/auth/roles";
-import { clearLogs, getLogs, type LogEntry, type LogLevel, LOGS_EVENT } from "../lib/utils/logger";
+import {
+  clearLogs,
+  getLogs,
+  type LogEntry,
+  type LogLevel,
+  type LogOrigin,
+  LOGS_EVENT,
+} from "../lib/utils/logger";
 
 type LevelFilter = "all" | "warning" | "error";
+type OriginFilter = "all" | "frontend" | "backend" | "unknown";
 
 type AnyLog = LogEntry & {
-  origin?: "frontend" | "backend" | "unknown";
+  origin?: LogOrigin;
   layer?: string;
   feature?: string;
   route?: string;
@@ -19,7 +27,6 @@ type AnyLog = LogEntry & {
 
 function levelBadgeTone(level: LogLevel) {
   if (level === "error") return "warning";
-  if (level === "warning") return "neutral";
   return "neutral";
 }
 
@@ -31,6 +38,12 @@ function originLabel(origin?: AnyLog["origin"]) {
   if (origin === "backend") return "BACKEND";
   if (origin === "frontend") return "FRONTEND";
   return "UNKNOWN";
+}
+
+function originAccent(origin?: AnyLog["origin"]) {
+  if (origin === "backend") return "border-rose-500/20 bg-rose-500/5";
+  if (origin === "frontend") return "border-cyan-500/20 bg-cyan-500/5";
+  return "border-zinc-800 bg-zinc-950/85";
 }
 
 function buildMetaSummary(meta: any) {
@@ -60,6 +73,54 @@ function safeUpperStr(value: unknown, fallback = "") {
   return typeof value === "string" ? value.toUpperCase() : fallback;
 }
 
+function MetricCard({
+  label,
+  value,
+  helper,
+  accent,
+}: {
+  label: string;
+  value: number;
+  helper: string;
+  accent: string;
+}) {
+  return (
+    <article className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/75 p-5">
+      <div className={`absolute inset-x-0 top-0 h-20 bg-linear-to-r ${accent}`} />
+      <div className="relative">
+        <div className="text-xs uppercase tracking-widest text-zinc-500">{label}</div>
+        <div className="mt-3 text-3xl font-semibold text-zinc-100">{value}</div>
+        <div className="mt-2 text-sm text-zinc-400">{helper}</div>
+      </div>
+    </article>
+  );
+}
+
+function FilterChip({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "rounded-full border px-3 py-1.5 text-xs font-medium transition",
+        active
+          ? "border-cyan-400/40 bg-cyan-400/10 text-cyan-100"
+          : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200",
+      ].join(" ")}
+    >
+      {label}
+    </button>
+  );
+}
+
 function LogRow({ log }: { log: AnyLog }) {
   const level = safeLevel(log.level);
   const tone = levelBadgeTone(level);
@@ -70,7 +131,7 @@ function LogRow({ log }: { log: AnyLog }) {
   const metaSummary = buildMetaSummary(log.meta);
 
   return (
-    <div className="rounded-3xl border border-zinc-800 bg-zinc-950/85 p-4">
+    <div className={`rounded-3xl border p-4 ${originAccent(origin)}`}>
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={tone} className="shrink-0">
@@ -126,6 +187,7 @@ export default function Dev() {
 function DevPanel() {
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState<LevelFilter>("all");
+  const [origin, setOrigin] = useState<OriginFilter>("all");
   const [tick, setTick] = useState(0);
 
   const logs = useMemo(() => {
@@ -143,9 +205,11 @@ function DevPanel() {
 
     return logs.filter((log) => {
       const safe = safeLevel(log.level);
+      const currentOrigin = log.origin ?? "unknown";
       const matchesLevel = level === "all" ? true : safe === level;
+      const matchesOrigin = origin === "all" ? true : currentOrigin === origin;
 
-      if (!normalized) return matchesLevel;
+      if (!normalized) return matchesLevel && matchesOrigin;
 
       const haystack = [
         log.message ?? "",
@@ -159,21 +223,28 @@ function DevPanel() {
         .join(" ")
         .toLowerCase();
 
-      return matchesLevel && haystack.includes(normalized);
+      return matchesLevel && matchesOrigin && haystack.includes(normalized);
     });
-  }, [logs, query, level]);
+  }, [logs, query, level, origin]);
 
   const counts = useMemo(() => {
     let warning = 0;
     let error = 0;
+    let frontendErrors = 0;
+    let backendErrors = 0;
 
     for (const log of logs) {
       const safe = safeLevel(log.level);
+      const currentOrigin = log.origin ?? "unknown";
       if (safe === "warning") warning += 1;
-      if (safe === "error") error += 1;
+      if (safe === "error") {
+        error += 1;
+        if (currentOrigin === "frontend") frontendErrors += 1;
+        if (currentOrigin === "backend") backendErrors += 1;
+      }
     }
 
-    return { warning, error };
+    return { warning, error, frontendErrors, backendErrors };
   }, [logs]);
 
   const chartData = useMemo(() => {
@@ -198,9 +269,9 @@ function DevPanel() {
     let unknown = 0;
 
     for (const log of logs) {
-      const origin = log.origin ?? "unknown";
-      if (origin === "frontend") frontend += 1;
-      else if (origin === "backend") backend += 1;
+      const currentOrigin = log.origin ?? "unknown";
+      if (currentOrigin === "frontend") frontend += 1;
+      else if (currentOrigin === "backend") backend += 1;
       else unknown += 1;
     }
 
@@ -215,10 +286,22 @@ function DevPanel() {
       accent: "from-cyan-500/15 via-cyan-500/5 to-transparent",
     },
     {
-      label: "Errores",
-      value: counts.error,
-      helper: "Eventos críticos",
+      label: "Errores backend",
+      value: counts.backendErrors,
+      helper: "Fallos de API o servidor",
       accent: "from-rose-500/15 via-rose-500/5 to-transparent",
+    },
+    {
+      label: "Errores frontend",
+      value: counts.frontendErrors,
+      helper: "Fallos de UI, hooks o cliente",
+      accent: "from-amber-500/15 via-amber-500/5 to-transparent",
+    },
+    {
+      label: "Warnings",
+      value: counts.warning,
+      helper: "Señales a revisar",
+      accent: "from-zinc-500/15 via-zinc-500/5 to-transparent",
     },
   ] as const;
 
@@ -232,39 +315,46 @@ function DevPanel() {
             Observabilidad y monitoreo del frontend.
           </h1>
           <p className="max-w-2xl text-sm text-zinc-400 md:text-base md:leading-7">
-            Revisá actividad reciente, errores y señales de comportamiento sin salir del panel de desarrollo.
+            Ahora el panel separa con claridad errores del frontend, errores de backend y warnings para evitar falsos diagnósticos.
           </p>
         </div>
       </section>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.2fr]">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metricCards.map((card) => (
-          <article key={card.label} className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/75 p-5">
-            <div className={`absolute inset-x-0 top-0 h-20 bg-linear-to-r ${card.accent}`} />
-            <div className="relative">
-              <div className="text-xs uppercase tracking-widest text-zinc-500">{card.label}</div>
-              <div className="mt-3 text-3xl font-semibold text-zinc-100">{card.value}</div>
-              <div className="mt-2 text-sm text-zinc-400">{card.helper}</div>
-            </div>
-          </article>
+          <MetricCard key={card.label} {...card} />
         ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+        <Card className="border-zinc-800 bg-zinc-950/75">
+          <CardHeader>
+            <CardTitle>Actividad de logs</CardTitle>
+            <CardDescription>Últimos 10 días con foco en warnings y errores.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 w-full">
+              <LogsChart data={chartData} />
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="border-zinc-800 bg-zinc-950/75">
           <CardHeader>
-            <CardTitle>Origen de eventos</CardTitle>
-            <CardDescription>Distribución entre frontend y backend.</CardDescription>
+            <CardTitle>Mapa de origen</CardTitle>
+            <CardDescription>Qué parte del sistema está emitiendo más señales.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-zinc-400">Frontend</span>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex items-center justify-between rounded-2xl border border-cyan-500/20 bg-cyan-500/5 px-3 py-3">
+              <span className="text-cyan-100">Frontend</span>
               <Badge tone="neutral">{originCounts.frontend}</Badge>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-zinc-400">Backend</span>
+            <div className="flex items-center justify-between rounded-2xl border border-rose-500/20 bg-rose-500/5 px-3 py-3">
+              <span className="text-rose-100">Backend</span>
               <Badge tone="neutral">{originCounts.backend}</Badge>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-zinc-500">Unknown</span>
+            <div className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-3">
+              <span className="text-zinc-400">Unknown</span>
               <Badge tone="neutral">{originCounts.unknown}</Badge>
             </div>
           </CardContent>
@@ -273,45 +363,42 @@ function DevPanel() {
 
       <Card className="border-zinc-800 bg-zinc-950/75">
         <CardHeader>
-          <CardTitle>Actividad de logs</CardTitle>
-          <CardDescription>Últimos 10 días con foco en warnings y errores.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 w-full">
-            <LogsChart data={chartData} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-zinc-800 bg-zinc-950/75">
-        <CardHeader>
           <CardTitle>Visor de eventos</CardTitle>
           <CardDescription>Filtrá, buscá y limpiá el historial almacenado.</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar por mensaje, feature, ruta o meta…"
-                className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600 sm:w-96"
-              />
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+            <div className="space-y-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Buscar por mensaje, feature, ruta o meta…"
+                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600 sm:w-96"
+                />
 
-              <select
-                value={level}
-                onChange={(event) => setLevel(event.target.value as LevelFilter)}
-                className="rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
-              >
-                <option value="all">Todos</option>
-                <option value="warning">Warning</option>
-                <option value="error">Error</option>
-              </select>
+                <select
+                  value={level}
+                  onChange={(event) => setLevel(event.target.value as LevelFilter)}
+                  className="rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                >
+                  <option value="all">Todos los niveles</option>
+                  <option value="warning">Warnings</option>
+                  <option value="error">Errores</option>
+                </select>
 
-              <Button variant="secondary" onClick={() => setTick((current) => current + 1)}>
-                Refrescar
-              </Button>
+                <Button variant="secondary" onClick={() => setTick((current) => current + 1)}>
+                  Refrescar
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <FilterChip active={origin === "all"} label="Todos los orígenes" onClick={() => setOrigin("all")} />
+                <FilterChip active={origin === "frontend"} label="Solo frontend" onClick={() => setOrigin("frontend")} />
+                <FilterChip active={origin === "backend"} label="Solo backend" onClick={() => setOrigin("backend")} />
+                <FilterChip active={origin === "unknown"} label="Solo unknown" onClick={() => setOrigin("unknown")} />
+              </div>
             </div>
 
             <Button
@@ -324,6 +411,16 @@ function DevPanel() {
             >
               Limpiar logs
             </Button>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 text-sm text-zinc-400">
+            {origin === "all"
+              ? "Vista general de eventos técnicos."
+              : origin === "backend"
+              ? "Mostrando solo respuestas y fallos que provienen del servidor o la API."
+              : origin === "frontend"
+              ? "Mostrando solo errores y señales generadas por UI, hooks o cliente."
+              : "Mostrando eventos sin origen clasificado."}
           </div>
 
           <div className="space-y-3">
