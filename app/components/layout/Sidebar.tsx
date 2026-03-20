@@ -17,7 +17,8 @@ function navByRole(role: string): NavItem[] {
   if (role === ROLES.DEVS) {
     return [
       ...common,
-      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Contexto operativo" },
+      { to: "/app/companies", label: "Empresas", icon: "◩", hint: "Estructura empresarial" },
+      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Red operativa" },
       { to: "/app/disciplines", label: "Disciplinas", icon: "◌", hint: "Catálogo global" },
       { to: "/app/dev", label: "Dev Panel", icon: "◈", hint: "Logs y monitoreo" },
       { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },

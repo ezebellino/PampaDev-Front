@@ -1,21 +1,21 @@
-import { useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { apiGet } from "../api";
 import type { ApiError } from "../api";
+import type { Company } from "../models/company";
+import {
+  createLocalCompany,
+  mergeCompanies,
+  type CompanyCreateInput,
+} from "../../companies/companyCatalogStorage";
 
-export type Company = {
-  idCompany: number;
-  fantasyName: string;
-  tradeName: string;
-  cuitCuilDNI: string;
-  createdAt: string; // ISO
-};
+export type { Company } from "../models/company";
 
 export function useCompanies() {
   const [data, setData] = useState<Company[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiError | null>(null);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     const ctrl = new AbortController();
     let alive = true;
 
@@ -25,7 +25,7 @@ export function useCompanies() {
     apiGet<Company[]>("/api/Companies", ctrl.signal)
       .then((res) => {
         if (!alive) return;
-        setData(res);
+        setData(mergeCompanies(res));
       })
       .catch((e: ApiError) => {
         if (!alive) return;
@@ -43,5 +43,20 @@ export function useCompanies() {
     };
   }, []);
 
-  return { data, loading, error };
+  useEffect(() => {
+    const cleanup = refresh();
+    return cleanup;
+  }, [refresh]);
+
+  const create = useCallback(
+    async (input: CompanyCreateInput) => {
+      const existing = data ?? [];
+      const newCompany = createLocalCompany(input, existing);
+      setData(mergeCompanies(existing, [newCompany]));
+      return newCompany;
+    },
+    [data]
+  );
+
+  return { data, loading, error, refresh, create };
 }

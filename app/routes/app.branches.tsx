@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import BranchForm, { type BranchFormData } from "../components/branches/BranchForm";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "~/components/ui/Button";
@@ -21,7 +21,7 @@ export default function BranchesPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [createBusy, setCreateBusy] = useState(false);
 
-  const isAdmin = user?.role === ROLES.ADMIN;
+  const isDev = user?.role === ROLES.DEVS;
   const initialFormData = useMemo<Partial<BranchFormData>>(
     () => ({
       companyName: companyId ? `Empresa ${companyId}` : "",
@@ -84,7 +84,7 @@ export default function BranchesPage() {
           title="Sucursales"
           subtitle="Todavía no hay sedes configuradas para operar desde este entorno."
           right={
-            isAdmin ? (
+            isDev ? (
               <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!companyId}>
                 + Nueva sucursal
               </Button>
@@ -94,7 +94,7 @@ export default function BranchesPage() {
         <Card>
           <CardContent className="space-y-4 py-6 text-sm text-zinc-400">
             <div>Cuando exista al menos una sucursal, vas a poder seleccionarla desde acá.</div>
-            {isAdmin ? (
+            {isDev ? (
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
                 {companyId
                   ? "Podés crear la primera sucursal desde este mismo panel."
@@ -129,7 +129,7 @@ export default function BranchesPage() {
         title="Sucursales"
         subtitle="Elegí la sede activa para filtrar la operación, los rubros y la configuración disponible."
         right={
-          isAdmin ? (
+          isDev ? (
             <div className="flex flex-wrap items-center gap-2">
               <Button variant="ghost" onClick={() => void refresh()}>
                 Actualizar
@@ -142,7 +142,7 @@ export default function BranchesPage() {
         }
       />
 
-      {isAdmin && !companyId ? (
+      {isDev && !companyId ? (
         <Card>
           <CardContent className="py-4 text-sm text-zinc-400">
             Elegí primero una empresa activa para habilitar el alta de nuevas sucursales.

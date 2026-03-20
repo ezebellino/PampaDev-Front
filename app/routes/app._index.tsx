@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { Card, CardContent } from "../components/ui/Card";
 import { useAuth } from "../lib/auth/AuthContext";
@@ -16,13 +16,7 @@ type DashboardAction = {
   disabled?: boolean;
 };
 
-function ActionCard({
-  title,
-  desc,
-  to,
-  cta,
-  disabled,
-}: DashboardAction) {
+function ActionCard({ title, desc, to, cta, disabled }: DashboardAction) {
   const base =
     "relative overflow-hidden rounded-3xl border bg-zinc-950/80 p-5 shadow-[0_20px_60px_rgba(2,6,23,0.28)] transition duration-200";
 
@@ -99,7 +93,6 @@ export default function AppDashboard() {
   const isAdmin = role === ROLES.ADMIN;
   const isDev = role === ROLES.DEVS;
   const isInstructor = role === ROLES.INSTRUCTOR;
-  const isStandardUser = role === ROLES.USER;
 
   const needsBranch = isAdmin;
   const branchSelected = branchId != null;
@@ -138,28 +131,28 @@ export default function AppDashboard() {
     if (isDev) {
       return [
         {
+          title: "Empresas",
+          desc: "Creá la estructura empresarial base con ciudad, provincia y país para ordenar toda la plataforma.",
+          to: "/app/companies",
+          cta: "Gestionar empresas",
+        },
+        {
+          title: "Sucursales",
+          desc: "Vinculá nuevas sedes a una empresa activa y dejá la red operativa lista para administración.",
+          to: "/app/branches",
+          cta: "Gestionar sucursales",
+        },
+        {
+          title: "Disciplinas",
+          desc: "Mantené el catálogo global que luego se adapta por sucursal como oferta operativa.",
+          to: "/app/disciplines",
+          cta: "Abrir disciplinas",
+        },
+        {
           title: "Dev Panel",
           desc: "Revisá logs, métricas internas y señales útiles para el seguimiento técnico.",
           to: "/app/dev",
           cta: "Abrir Dev Panel",
-        },
-        {
-          title: "Rubros",
-          desc: "Consultá el catálogo operativo y el detalle por sucursal.",
-          to: "/app/rubros",
-          cta: "Abrir rubros",
-        },
-        {
-          title: "Sucursales",
-          desc: "Cambiá contexto rápido para validar operación por sede.",
-          to: "/app/branches",
-          cta: "Ver sucursales",
-        },
-        {
-          title: "Disciplinas",
-          desc: "Mantené visible el catálogo global y revisá consistencia técnica del dominio.",
-          to: "/app/disciplines",
-          cta: "Abrir disciplinas",
         },
       ];
     }
@@ -188,7 +181,7 @@ export default function AppDashboard() {
         },
         {
           title: "Solicitudes",
-          desc: "Consultá el estado real de tus pedidos y enviá nuevos requests a Devs.",
+          desc: "Gestioná la empresa y las sucursales ya creadas, y canalizá pedidos estructurales hacia Devs.",
           to: "/app/admin/requests",
           cta: "Ver requests",
         },
@@ -349,23 +342,23 @@ export default function AppDashboard() {
 
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Link
-                    to="/app/dev"
+                    to="/app/companies"
                     className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
                   >
-                    Abrir Dev Panel
+                    Crear empresas
                   </Link>
                   <Link
-                    to="/app/disciplines"
+                    to="/app/branches"
                     className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
                   >
-                    Ver disciplinas
+                    Crear sucursales
                   </Link>
                 </div>
               </>
             ) : isAdmin ? (
               <>
                 <div className="text-sm leading-6 text-zinc-400">
-                  Tu recorrido principal hoy queda concentrado en admin: horarios, membresías, rubros y requests reales sin rutas rotas.
+                  Tu recorrido principal hoy queda concentrado en administrar la empresa y las sucursales ya creadas: horarios, membresías, rubros y requests reales.
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-2">
@@ -376,10 +369,10 @@ export default function AppDashboard() {
                     Ir al panel admin
                   </Link>
                   <Link
-                    to="/app/admin/requests/new"
+                    to="/app/branches"
                     className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
                   >
-                    + Nuevo request
+                    Revisar sucursales
                   </Link>
                 </div>
               </>
