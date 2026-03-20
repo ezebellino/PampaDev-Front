@@ -1,17 +1,14 @@
-import { NavLink, useLocation } from "react-router";
+﻿import { NavLink, useLocation } from "react-router";
 import { useEffect, useMemo } from "react";
 import { useAuth } from "../../lib/auth/AuthContext";
 import { ROLES } from "../../lib/auth/roles";
 import { useUI } from "../../lib/ui/UIContext";
 import BranchPicker from "../branches/BranchPicker";
 import CompanyPicker from "~/lib/companies/CompanyPicker";
-import { useBranches } from "../../lib/api/hooks/useBranches";
-import { useCompany } from "../../lib/companies/CompanyContext";
-import { useCompanyBranches } from "../../lib/api/hooks/useCompanyBranches";
 
 type NavItem = { to: string; label: string; icon: string; hint?: string };
 
-function navByRole(role: string, opts: { canSeeBranches: boolean }) {
+function navByRole(role: string): NavItem[] {
   const common: NavItem[] = [
     { to: "/app", label: "Dashboard", icon: "⌂", hint: "Resumen general" },
     { to: "/app/rubros", label: "Rubros", icon: "◫", hint: "Catálogo activo" },
@@ -21,35 +18,42 @@ function navByRole(role: string, opts: { canSeeBranches: boolean }) {
     return [
       ...common,
       { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Contexto operativo" },
-      { to: "/app/dev", label: "Dev Panel", icon: "◈", hint: "Logs y monitoreo" },
+      { to: "/app/admin", label: "Admin", icon: "▣", hint: "Workspace administrativo" },
       { to: "/app/disciplines", label: "Disciplinas", icon: "◌", hint: "Catálogo global" },
+      { to: "/app/dev", label: "Dev Panel", icon: "◈", hint: "Logs y monitoreo" },
+      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
     ];
   }
 
   if (role === ROLES.ADMIN) {
     return [
       ...common,
-      ...(opts.canSeeBranches
-        ? [{ to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Sedes disponibles" }]
-        : []),
-      { to: "/app/admin", label: "Admin", icon: "▣", hint: "Operación y solicitudes" },
+      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Sedes disponibles" },
+      { to: "/app/admin", label: "Admin", icon: "▣", hint: "Operación y catálogo" },
+      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
     ];
   }
 
   if (role === ROLES.INSTRUCTOR) {
-    return [...common, { to: "/app/instructor", label: "Instructor", icon: "◍", hint: "Panel de trabajo" }];
+    return [
+      ...common,
+      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Sede activa" },
+      { to: "/app/instructor", label: "Instructor", icon: "◍", hint: "Agenda y operación" },
+      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
+    ];
   }
 
   return [
     ...common,
     { to: "/app/memberships", label: "Membresías", icon: "◉", hint: "Planes y clases" },
-    { to: "/app/user", label: "Mi cuenta", icon: "○", hint: "Perfil y accesos" },
+    { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Elegir sede" },
+    { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
   ];
 }
 
 function BrandBlock({ collapsed }: { collapsed?: boolean }) {
   return (
-    <NavLink to="/" aria-label="Ir al inicio" className="flex items-center gap-3 focus:outline-none">
+    <NavLink to="/app" aria-label="Ir al dashboard" className="flex items-center gap-3 focus:outline-none">
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-500/15 bg-zinc-900/80 shadow-[0_0_0_1px_rgba(6,182,212,0.04)]">
         <img
           src="/branding/pampadev-icondark.png"
@@ -79,18 +83,7 @@ function SidebarContent({
 }) {
   const { user } = useAuth();
   const role = user?.role ?? ROLES.USER;
-
-  const { companyId } = useCompany();
-  const { data: branches, loading: branchesLoading } = useBranches();
-  const companyBranches = useCompanyBranches(branches, companyId);
-
-  const canSeeBranches = useMemo(() => {
-    if (role === ROLES.DEVS) return true;
-    if (role === ROLES.ADMIN) return !branchesLoading && companyBranches.length > 1;
-    return false;
-  }, [role, branchesLoading, companyBranches.length]);
-
-  const items = useMemo(() => navByRole(role, { canSeeBranches }), [role, canSeeBranches]);
+  const items = useMemo(() => navByRole(role), [role]);
 
   return (
     <div className="flex h-full w-full flex-col">
