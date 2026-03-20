@@ -73,6 +73,12 @@ function safeUpperStr(value: unknown, fallback = "") {
   return typeof value === "string" ? value.toUpperCase() : fallback;
 }
 
+function normalizeFeature(value: unknown) {
+  if (typeof value !== "string") return "Sin feature";
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : "Sin feature";
+}
+
 function MetricCard({
   label,
   value,
@@ -278,6 +284,32 @@ function DevPanel() {
     return { frontend, backend, unknown };
   }, [logs]);
 
+  const featureGroups = useMemo(() => {
+    const map = new Map<string, { feature: string; total: number; errors: number; warnings: number; backend: number }>();
+
+    for (const log of logs) {
+      const feature = normalizeFeature(log.feature);
+      const row = map.get(feature) ?? { feature, total: 0, errors: 0, warnings: 0, backend: 0 };
+      const safe = safeLevel(log.level);
+      const currentOrigin = log.origin ?? "unknown";
+
+      row.total += 1;
+      if (safe === "warning") row.warnings += 1;
+      if (safe === "error") row.errors += 1;
+      if (currentOrigin === "backend") row.backend += 1;
+
+      map.set(feature, row);
+    }
+
+    return Array.from(map.values())
+      .sort((a, b) => {
+        if (b.errors !== a.errors) return b.errors - a.errors;
+        if (b.total !== a.total) return b.total - a.total;
+        return a.feature.localeCompare(b.feature);
+      })
+      .slice(0, 8);
+  }, [logs]);
+
   const metricCards = [
     {
       label: "Logs",
@@ -363,6 +395,40 @@ function DevPanel() {
 
       <Card className="border-zinc-800 bg-zinc-950/75">
         <CardHeader>
+          <CardTitle>Agrupación por feature</CardTitle>
+          <CardDescription>Los módulos con más señales para priorizar foco técnico.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {featureGroups.length === 0 ? (
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-5 text-sm text-zinc-400">
+              Aún no hay eventos suficientes para agrupar por feature.
+            </div>
+          ) : (
+            featureGroups.map((group) => (
+              <div
+                key={group.feature}
+                className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-4"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-zinc-100">{group.feature}</div>
+                    <div className="mt-1 text-xs text-zinc-500">{group.total} eventos registrados</div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Badge tone="neutral">Errores: {group.errors}</Badge>
+                    <Badge tone="neutral">Warnings: {group.warnings}</Badge>
+                    <Badge tone="neutral">Backend: {group.backend}</Badge>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-zinc-800 bg-zinc-950/75">
+        <CardHeader>
           <CardTitle>Visor de eventos</CardTitle>
           <CardDescription>Filtrá, buscá y limpiá el historial almacenado.</CardDescription>
         </CardHeader>
@@ -419,8 +485,8 @@ function DevPanel() {
               : origin === "backend"
               ? "Mostrando solo respuestas y fallos que provienen del servidor o la API."
               : origin === "frontend"
-              ? "Mostrando solo errores y señales generadas por UI, hooks o cliente."
-              : "Mostrando eventos sin origen clasificado."}
+                ? "Mostrando solo errores y señales generadas por UI, hooks o cliente."
+                : "Mostrando eventos sin origen clasificado."}
           </div>
 
           <div className="space-y-3">
