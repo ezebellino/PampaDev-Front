@@ -25,6 +25,43 @@ type AnyLog = LogEntry & {
   tags?: string[];
 };
 
+type DevPanelFilters = {
+  query: string;
+  level: LevelFilter;
+  origin: OriginFilter;
+  selectedFeature: string | null;
+};
+
+const DEV_PANEL_FILTERS_KEY = "pampadev:dev-panel:filters";
+
+function readStoredFilters(): DevPanelFilters | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(DEV_PANEL_FILTERS_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as Partial<DevPanelFilters>;
+    return {
+      query: typeof parsed.query === "string" ? parsed.query : "",
+      level: parsed.level === "warning" || parsed.level === "error" ? parsed.level : "all",
+      origin:
+        parsed.origin === "frontend" || parsed.origin === "backend" || parsed.origin === "unknown"
+          ? parsed.origin
+          : "all",
+      selectedFeature: typeof parsed.selectedFeature === "string" ? parsed.selectedFeature : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredFilters(filters: DevPanelFilters) {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(DEV_PANEL_FILTERS_KEY, JSON.stringify(filters));
+}
+
 function levelBadgeTone(level: LogLevel) {
   if (level === "error") return "warning";
   return "neutral";
@@ -191,10 +228,11 @@ export default function Dev() {
 }
 
 function DevPanel() {
-  const [query, setQuery] = useState("");
-  const [level, setLevel] = useState<LevelFilter>("all");
-  const [origin, setOrigin] = useState<OriginFilter>("all");
-  const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
+  const storedFilters = useMemo(() => readStoredFilters(), []);
+  const [query, setQuery] = useState(storedFilters?.query ?? "");
+  const [level, setLevel] = useState<LevelFilter>(storedFilters?.level ?? "all");
+  const [origin, setOrigin] = useState<OriginFilter>(storedFilters?.origin ?? "all");
+  const [selectedFeature, setSelectedFeature] = useState<string | null>(storedFilters?.selectedFeature ?? null);
   const [tick, setTick] = useState(0);
 
   const logs = useMemo(() => {
@@ -206,6 +244,10 @@ function DevPanel() {
     window.addEventListener(LOGS_EVENT, onLogs);
     return () => window.removeEventListener(LOGS_EVENT, onLogs);
   }, []);
+
+  useEffect(() => {
+    writeStoredFilters({ query, level, origin, selectedFeature });
+  }, [query, level, origin, selectedFeature]);
 
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -238,7 +280,6 @@ function DevPanel() {
 
   const counts = useMemo(() => {
     let warning = 0;
-    let error = 0;
     let frontendErrors = 0;
     let backendErrors = 0;
 
@@ -247,13 +288,12 @@ function DevPanel() {
       const currentOrigin = log.origin ?? "unknown";
       if (safe === "warning") warning += 1;
       if (safe === "error") {
-        error += 1;
         if (currentOrigin === "frontend") frontendErrors += 1;
         if (currentOrigin === "backend") backendErrors += 1;
       }
     }
 
-    return { warning, error, frontendErrors, backendErrors };
+    return { warning, frontendErrors, backendErrors };
   }, [logs]);
 
   const chartData = useMemo(() => {
@@ -350,7 +390,7 @@ function DevPanel() {
             Observabilidad y monitoreo del frontend.
           </h1>
           <p className="max-w-2xl text-sm text-zinc-400 md:text-base md:leading-7">
-            Ahora el panel separa con claridad errores del frontend, errores de backend y warnings para evitar falsos diagnósticos.
+            Ahora el panel recuerda tus filtros para que puedas retomar el análisis técnico sin rearmar el contexto.
           </p>
         </div>
       </section>
