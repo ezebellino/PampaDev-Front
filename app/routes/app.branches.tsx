@@ -1,14 +1,60 @@
-﻿import { Badge } from "../components/ui/Badge";
+﻿import { useMemo, useState } from "react";
+import BranchForm, { type BranchFormData } from "../components/branches/BranchForm";
+import { Badge } from "../components/ui/Badge";
 import { Button } from "~/components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
+import { Modal } from "../components/ui/Modal";
 import { PageHeader } from "../components/ui/PageHeader";
 import ScreenLoader from "../components/ui/ScreenLoader";
 import { useBranches } from "../lib/api/hooks/useBranches";
+import { useAuth } from "../lib/auth/AuthContext";
+import { ROLES } from "../lib/auth/roles";
 import { useBranch } from "../lib/branches/BranchContext";
+import { useCompany } from "../lib/companies/CompanyContext";
+import { logInfo } from "../lib/utils/logger";
 
 export default function BranchesPage() {
-  const { data, loading, error } = useBranches();
+  const { user } = useAuth();
+  const { companyId } = useCompany();
+  const { data, loading, error, refresh, create } = useBranches();
   const { branchId, setBranchId } = useBranch();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createBusy, setCreateBusy] = useState(false);
+
+  const isAdmin = user?.role === ROLES.ADMIN;
+  const initialFormData = useMemo<Partial<BranchFormData>>(
+    () => ({
+      companyName: companyId ? `Empresa ${companyId}` : "",
+    }),
+    [companyId]
+  );
+
+  async function handleCreate(data: BranchFormData) {
+    if (!companyId) {
+      alert("Elegí primero una empresa activa para crear la sucursal.");
+      return;
+    }
+
+    setCreateBusy(true);
+    try {
+      const branch = await create({
+        ...data,
+        idCompany: companyId,
+      });
+
+      setBranchId(branch.idBranch);
+      setCreateOpen(false);
+      logInfo(
+        "Branch created locally",
+        { idBranch: branch.idBranch, cityName: branch.cityName },
+        { feature: "branches", layer: "ui" }
+      );
+    } catch (error: any) {
+      alert(error?.message || "No se pudo crear la sucursal.");
+    } finally {
+      setCreateBusy(false);
+    }
+  }
 
   if (loading) {
     return <ScreenLoader title="Cargando sucursales…" subtitle="Estamos preparando tu red de operación." />;
@@ -37,12 +83,42 @@ export default function BranchesPage() {
         <PageHeader
           title="Sucursales"
           subtitle="Todavía no hay sedes configuradas para operar desde este entorno."
+          right={
+            isAdmin ? (
+              <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!companyId}>
+                + Nueva sucursal
+              </Button>
+            ) : undefined
+          }
         />
         <Card>
-          <CardContent className="py-6 text-sm text-zinc-400">
-            Cuando exista al menos una sucursal, vas a poder seleccionarla desde acá.
+          <CardContent className="space-y-4 py-6 text-sm text-zinc-400">
+            <div>Cuando exista al menos una sucursal, vas a poder seleccionarla desde acá.</div>
+            {isAdmin ? (
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                {companyId
+                  ? "Podés crear la primera sucursal desde este mismo panel."
+                  : "Elegí una empresa activa para habilitar el alta de sucursales."}
+              </div>
+            ) : null}
           </CardContent>
         </Card>
+
+        <Modal
+          open={createOpen}
+          title="Nueva sucursal"
+          onClose={() => {
+            if (!createBusy) setCreateOpen(false);
+          }}
+        >
+          <BranchForm
+            initialData={initialFormData}
+            loading={createBusy}
+            submitLabel="Crear sucursal"
+            onSubmit={handleCreate}
+            onCancel={() => setCreateOpen(false)}
+          />
+        </Modal>
       </div>
     );
   }
@@ -52,7 +128,27 @@ export default function BranchesPage() {
       <PageHeader
         title="Sucursales"
         subtitle="Elegí la sede activa para filtrar la operación, los rubros y la configuración disponible."
+        right={
+          isAdmin ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="ghost" onClick={() => void refresh()}>
+                Actualizar
+              </Button>
+              <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!companyId}>
+                + Nueva sucursal
+              </Button>
+            </div>
+          ) : undefined
+        }
       />
+
+      {isAdmin && !companyId ? (
+        <Card>
+          <CardContent className="py-4 text-sm text-zinc-400">
+            Elegí primero una empresa activa para habilitar el alta de nuevas sucursales.
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {data!.map((branch) => {
@@ -117,6 +213,22 @@ export default function BranchesPage() {
           );
         })}
       </div>
+
+      <Modal
+        open={createOpen}
+        title="Nueva sucursal"
+        onClose={() => {
+          if (!createBusy) setCreateOpen(false);
+        }}
+      >
+        <BranchForm
+          initialData={initialFormData}
+          loading={createBusy}
+          submitLabel="Crear sucursal"
+          onSubmit={handleCreate}
+          onCancel={() => setCreateOpen(false)}
+        />
+      </Modal>
     </div>
   );
 }
