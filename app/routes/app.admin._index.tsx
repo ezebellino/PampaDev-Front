@@ -113,7 +113,7 @@ export default function AdminIndex() {
                 ? "Revisá la bandeja completa de solicitudes enviadas por administración."
                 : "Creá solicitudes para nuevos rubros y seguí su estado con Devs."
             }
-            to="/app/admin/solicitudes"
+            to="/app/admin/requests"
           />
         </div>
       </section>
@@ -139,7 +139,7 @@ export default function AdminIndex() {
                 </Link>
 
                 <Link
-                  to="/app/admin/solicitudes/nueva"
+                  to="/app/admin/requests/new"
                   className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
                 >
                   + Nueva solicitud
@@ -148,7 +148,7 @@ export default function AdminIndex() {
             ) : null}
 
             <Link
-              to="/app/admin/solicitudes"
+              to="/app/admin/requests"
               className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
             >
               Ver listado
@@ -166,3 +166,4 @@ export default function AdminIndex() {
     </div>
   );
 }
+

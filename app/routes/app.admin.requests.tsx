@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import RequestDetailModal from "../components/admin/RequestDetailModal";
 import RequestsTable from "../components/admin/RequestsTable";
@@ -108,7 +108,7 @@ function AdminRequests() {
         }
         right={
           !isDev ? (
-            <Link to="/app/admin/solicitudes/nueva">
+            <Link to="/app/admin/requests/new">
               <Button variant="secondary">+ Nueva solicitud</Button>
             </Link>
           ) : null

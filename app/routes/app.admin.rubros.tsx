@@ -27,7 +27,7 @@ export default function AdminRubrosPage() {
           title: "Nueva solicitud",
           description:
             "Canalizá pedidos para incorporar rubros o actualizar los existentes sin perder trazabilidad.",
-          to: "/app/admin/solicitudes/nueva",
+          to: "/app/admin/requests/new",
           cta: "Crear solicitud",
         }
       : null,
@@ -36,7 +36,7 @@ export default function AdminRubrosPage() {
       description: isDev
         ? "Seguimiento centralizado de todas las solicitudes enviadas por administración."
         : "Seguimiento centralizado de las solicitudes enviadas y sus próximos pasos.",
-      to: "/app/admin/solicitudes",
+      to: "/app/admin/requests",
       cta: "Ver solicitudes",
     },
   ].filter(Boolean) as { title: string; description: string; to: string; cta: string }[];
@@ -141,7 +141,7 @@ export default function AdminRubrosPage() {
           </p>
           <div className="flex flex-wrap gap-2">
             {!isDev ? (
-              <Link to="/app/admin/solicitudes/nueva">
+              <Link to="/app/admin/requests/new">
                 <Button variant="primary">Solicitar nuevo rubro</Button>
               </Link>
             ) : null}
@@ -154,3 +154,4 @@ export default function AdminRubrosPage() {
     </div>
   );
 }
+

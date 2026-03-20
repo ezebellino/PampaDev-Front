@@ -43,7 +43,7 @@ export default function AdminLayout() {
     { to: "/app/admin/horarios", label: "Horarios" },
     ...(!isDev ? [{ to: "/app/admin/memberships", label: "Membresías" }] : []),
     { to: "/app/admin/rubros", label: "Rubros" },
-    { to: "/app/admin/solicitudes", label: "Solicitudes" },
+    { to: "/app/admin/requests", label: "Solicitudes" },
   ];
 
   return (
@@ -93,3 +93,4 @@ export default function AdminLayout() {
     </Protected>
   );
 }
+

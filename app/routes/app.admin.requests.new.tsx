@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+﻿import { useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
@@ -82,7 +82,7 @@ function AdminNewDisciplineRequest() {
         notes: p.notes?.trim() || undefined,
       });
 
-      nav("/app/admin/solicitudes", { replace: true });
+      nav("/app/admin/requests", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo enviar la solicitud.");
     }
@@ -205,7 +205,7 @@ function AdminNewDisciplineRequest() {
                 Desde tu cuenta de Admin vas a poder seguir el estado, revisar feedback interno y confirmar si la
                 propuesta fue aprobada, rechazada o necesita ajustes.
               </p>
-              <Button variant="ghost" className="w-full" onClick={() => nav("/app/admin/solicitudes")}>
+              <Button variant="ghost" className="w-full" onClick={() => nav("/app/admin/requests")}>
                 Ver mis solicitudes
               </Button>
             </CardContent>

@@ -8,19 +8,21 @@ import { useCompany } from "../lib/companies/CompanyContext";
 import { useRubroRequests } from "../lib/rubros/useRubroRequests";
 import { getLogs, LOGS_EVENT, type LogEntry } from "../lib/utils/logger";
 
+type DashboardAction = {
+  title: string;
+  desc: string;
+  to: string;
+  cta: string;
+  disabled?: boolean;
+};
+
 function ActionCard({
   title,
   desc,
   to,
   cta,
   disabled,
-}: {
-  title: string;
-  desc: string;
-  to: string;
-  cta: string;
-  disabled?: boolean;
-}) {
+}: DashboardAction) {
   const base =
     "relative overflow-hidden rounded-3xl border bg-zinc-950/80 p-5 shadow-[0_20px_60px_rgba(2,6,23,0.28)] transition duration-200";
 
@@ -96,6 +98,7 @@ export default function AppDashboard() {
   const role = user?.role ?? ROLES.USER;
   const isAdmin = role === ROLES.ADMIN;
   const isDev = role === ROLES.DEVS;
+  const isInstructor = role === ROLES.INSTRUCTOR;
   const isStandardUser = role === ROLES.USER;
 
   const needsBranch = isAdmin;
@@ -131,6 +134,124 @@ export default function AppDashboard() {
     };
   }, [isDev, logsTick, requests]);
 
+  const quickActions = useMemo<DashboardAction[]>(() => {
+    if (isDev) {
+      return [
+        {
+          title: "Dev Panel",
+          desc: "Revisá logs, métricas internas y señales útiles para el seguimiento técnico.",
+          to: "/app/dev",
+          cta: "Abrir Dev Panel",
+        },
+        {
+          title: "Solicitudes",
+          desc: "Entrá directo a la bandeja real de requests para revisar pendientes y aprobadas.",
+          to: "/app/admin/requests",
+          cta: "Ver requests",
+        },
+        {
+          title: "Rubros",
+          desc: "Consultá el catálogo operativo y el detalle por sucursal.",
+          to: "/app/rubros",
+          cta: "Abrir rubros",
+        },
+        {
+          title: "Sucursales",
+          desc: "Cambiá contexto rápido para validar operación por sede.",
+          to: "/app/branches",
+          cta: "Ver sucursales",
+        },
+      ];
+    }
+
+    if (isAdmin) {
+      return [
+        {
+          title: "Panel Admin",
+          desc: "Entrá al workspace administrativo principal y seguí desde ahí.",
+          to: "/app/admin",
+          cta: "Abrir admin",
+        },
+        {
+          title: "Horarios base",
+          desc: "Definí la disponibilidad semanal para ordenar turnos y operación.",
+          to: "/app/admin/horarios",
+          cta: needsBranch && !branchSelected ? "Elegí sucursal primero" : "Configurar horarios",
+          disabled: needsBranch && !branchSelected,
+        },
+        {
+          title: "Membresías",
+          desc: "Gestioná la oferta comercial de la sucursal activa.",
+          to: "/app/admin/memberships",
+          cta: needsBranch && !branchSelected ? "Elegí sucursal primero" : "Gestionar planes",
+          disabled: needsBranch && !branchSelected,
+        },
+        {
+          title: "Solicitudes",
+          desc: "Consultá el estado real de tus pedidos y enviá nuevos requests a Devs.",
+          to: "/app/admin/requests",
+          cta: "Ver requests",
+        },
+      ];
+    }
+
+    if (isInstructor) {
+      return [
+        {
+          title: "Panel Instructor",
+          desc: "Entrá a la agenda operativa y administrá la actividad de tu sucursal.",
+          to: "/app/instructor",
+          cta: "Abrir panel",
+        },
+        {
+          title: "Rubros",
+          desc: "Consultá servicios disponibles y validá el contexto operativo de la sede.",
+          to: "/app/rubros",
+          cta: "Ver rubros",
+        },
+        {
+          title: "Sucursales",
+          desc: "Elegí o revisá la sede activa antes de tomar nuevos turnos.",
+          to: "/app/branches",
+          cta: "Cambiar sucursal",
+        },
+        {
+          title: "Mi perfil",
+          desc: "Revisá tus datos y dejá tu cuenta lista para operar.",
+          to: "/app/profile",
+          cta: "Editar perfil",
+        },
+      ];
+    }
+
+    return [
+      {
+        title: "Membresías",
+        desc: "Compará planes disponibles y consultá si esta sucursal ofrece clase particular.",
+        to: "/app/memberships",
+        cta: "Ver planes",
+      },
+      {
+        title: "Mi perfil",
+        desc: "Actualizá tus datos personales y mantené tu cuenta al día.",
+        to: "/app/profile",
+        cta: "Editar perfil",
+      },
+      {
+        title: "Explorar rubros",
+        desc: "Revisá servicios disponibles y seguí desde ahí con tu próxima reserva.",
+        to: "/app/rubros",
+        cta: "Ver rubros",
+      },
+      {
+        title: "Sucursales",
+        desc: "Consultá las sedes activas y elegí dónde querés operar.",
+        to: "/app/branches",
+        cta: "Ver sucursales",
+      },
+    ];
+  }, [isAdmin, isDev, isInstructor, needsBranch, branchSelected]);
+
   return (
     <div className="space-y-7 lg:space-y-8">
       <section className="relative overflow-hidden rounded-[2rem] border border-cyan-500/12 bg-linear-to-br from-slate-950 via-zinc-950 to-slate-900 p-6 shadow-[0_24px_80px_rgba(2,6,23,0.28)] md:p-8 lg:p-10">
@@ -144,8 +265,7 @@ export default function AppDashboard() {
           </h1>
 
           <p className="max-w-3xl text-sm text-zinc-300 md:text-base md:leading-7">
-            Este es tu punto de entrada para continuar trabajando con sucursales, rubros, membresías, horarios y
-            herramientas según el rol que tengas activo.
+            Este punto de entrada prioriza accesos reales según tu rol para que no tengas botones vacíos ni desvíos innecesarios.
           </p>
         </div>
 
@@ -159,162 +279,157 @@ export default function AppDashboard() {
       <section className="space-y-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-zinc-100">Accesos rápidos</h2>
-          <p className="text-sm text-zinc-500">Entradas directas para seguir trabajando sin perder contexto.</p>
+          <p className="text-sm text-zinc-500">Solo acciones que hoy tienen destino útil dentro de la aplicación.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <ActionCard
-            title="Ver rubros"
-            desc="Consultá el catálogo disponible para la sucursal activa y seguí desde ahí."
-            to="/app/rubros"
-            cta="Abrir rubros"
-          />
-
-          <ActionCard
-            title="Membresías"
-            desc="Compará los planes disponibles y consultá si esta sucursal ofrece clase particular."
-            to="/app/memberships"
-            cta="Ver planes"
-          />
-
-          {(isAdmin || isDev) && (
-            <ActionCard
-              title="Solicitudes de rubros"
-              desc={
-                isDev
-                  ? "Revisá todas las solicitudes enviadas por administración y definí su estado."
-                  : "Consultá el estado de tus solicitudes y enviá nuevos pedidos a Devs."
-              }
-              to="/app/admin/solicitudes"
-              cta="Ver solicitudes"
-            />
-          )}
-
-          {(isAdmin || isDev) && (
-            <ActionCard
-              title="Horarios base"
-              desc="Definí la disponibilidad semanal para ordenar turnos y operación."
-              to="/app/admin/horarios"
-              cta={needsBranch && !branchSelected ? "Elegí sucursal primero" : "Configurar horarios"}
-              disabled={needsBranch && !branchSelected}
-            />
-          )}
-
-          {isDev && (
-            <ActionCard
-              title="Dev Panel"
-              desc="Revisá logs, métricas internas y señales útiles para el seguimiento técnico."
-              to="/app/dev"
-              cta="Abrir Dev Panel"
-            />
-          )}
+          {quickActions.map((action) => (
+            <ActionCard key={`${action.title}-${action.to}`} {...action} />
+          ))}
         </div>
       </section>
 
-      {(isAdmin || isDev || isStandardUser) && (
-        <section className="grid gap-4 lg:grid-cols-2">
-          <Card className="overflow-hidden border-zinc-800/90 bg-zinc-950/78 shadow-[0_18px_48px_rgba(2,6,23,0.22)]">
-            <div className="h-24 bg-linear-to-r from-cyan-400/16 via-sky-400/8 to-transparent" />
-            <CardContent className="relative -mt-2 space-y-3 py-5">
-              <div className="text-sm font-semibold text-zinc-100">Estado del entorno</div>
-              <div className="space-y-2 text-sm text-zinc-400">
-                <div className="flex items-center justify-between">
-                  <span>Empresa seleccionada</span>
-                  <span className="text-zinc-200">{companyId ?? "No"}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Sucursal seleccionada</span>
-                  <span className="text-zinc-200">{branchId ?? "No"}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Módulo admin</span>
-                  <span className="text-zinc-200">{isAdmin || isDev ? "Disponible" : "No aplica"}</span>
-                </div>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card className="overflow-hidden border-zinc-800/90 bg-zinc-950/78 shadow-[0_18px_48px_rgba(2,6,23,0.22)]">
+          <div className="h-24 bg-linear-to-r from-cyan-400/16 via-sky-400/8 to-transparent" />
+          <CardContent className="relative -mt-2 space-y-3 py-5">
+            <div className="text-sm font-semibold text-zinc-100">Estado del entorno</div>
+            <div className="space-y-2 text-sm text-zinc-400">
+              <div className="flex items-center justify-between">
+                <span>Empresa seleccionada</span>
+                <span className="text-zinc-200">{companyId ?? "No"}</span>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="overflow-hidden border-zinc-800/90 bg-zinc-950/78 shadow-[0_18px_48px_rgba(2,6,23,0.22)]">
-            <div className={`h-24 bg-linear-to-r ${isDev ? "from-cyan-400/16 via-sky-400/8 to-transparent" : "from-amber-400/16 via-orange-300/8 to-transparent"}`} />
-            <CardContent className="relative -mt-2 space-y-4 py-5">
-              <div className="text-sm font-semibold text-zinc-100">
-                {isDev ? "Resumen técnico" : "Próximo paso recomendado"}
+              <div className="flex items-center justify-between">
+                <span>Sucursal seleccionada</span>
+                <span className="text-zinc-200">{branchId ?? "No"}</span>
               </div>
+              <div className="flex items-center justify-between">
+                <span>Panel prioritario</span>
+                <span className="text-zinc-200">
+                  {isDev ? "Dev" : isAdmin ? "Admin" : isInstructor ? "Instructor" : "Usuario"}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-              {isDev ? (
-                <>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                      <div className="text-xs uppercase tracking-wider text-zinc-500">Logs registrados</div>
-                      <div className="mt-2 text-2xl font-semibold text-zinc-100">{devMetrics.totalLogs}</div>
-                    </div>
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                      <div className="text-xs uppercase tracking-wider text-zinc-500">Solicitudes pendientes</div>
-                      <div className="mt-2 text-2xl font-semibold text-zinc-100">{devMetrics.pendingRequests}</div>
-                    </div>
+        <Card className="overflow-hidden border-zinc-800/90 bg-zinc-950/78 shadow-[0_18px_48px_rgba(2,6,23,0.22)]">
+          <div className={`h-24 bg-linear-to-r ${isDev ? "from-cyan-400/16 via-sky-400/8 to-transparent" : isAdmin ? "from-amber-400/16 via-orange-300/8 to-transparent" : "from-emerald-400/16 via-cyan-300/8 to-transparent"}`} />
+          <CardContent className="relative -mt-2 space-y-4 py-5">
+            <div className="text-sm font-semibold text-zinc-100">
+              {isDev
+                ? "Resumen técnico"
+                : isAdmin
+                  ? "Siguiente paso admin"
+                  : isInstructor
+                    ? "Siguiente paso instructor"
+                    : "Siguiente paso recomendado"}
+            </div>
+
+            {isDev ? (
+              <>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                    <div className="text-xs uppercase tracking-wider text-zinc-500">Logs registrados</div>
+                    <div className="mt-2 text-2xl font-semibold text-zinc-100">{devMetrics.totalLogs}</div>
                   </div>
-
-                  <DevMiniBars
-                    values={[
-                      { label: "Warnings", value: devMetrics.warning },
-                      { label: "Errores", value: devMetrics.error },
-                      { label: "Aprobadas", value: devMetrics.approvedRequests },
-                    ]}
-                  />
-
-                  <div className="text-sm leading-6 text-zinc-400">
-                    Vista rápida para detectar señales del sistema y revisar la carga operativa sin salir del dashboard.
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                    <div className="text-xs uppercase tracking-wider text-zinc-500">Requests pendientes</div>
+                    <div className="mt-2 text-2xl font-semibold text-zinc-100">{devMetrics.pendingRequests}</div>
                   </div>
-                </>
-              ) : isStandardUser ? (
-                <>
-                  <div className="text-sm leading-6 text-zinc-400">
-                    Revisá los planes disponibles para tu sucursal y después completá tu perfil para dejar tu cuenta lista.
-                  </div>
+                </div>
 
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Link
-                      to="/app/memberships"
-                      className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
-                    >
-                      Ver membresías
-                    </Link>
+                <DevMiniBars
+                  values={[
+                    { label: "Warnings", value: devMetrics.warning },
+                    { label: "Errores", value: devMetrics.error },
+                    { label: "Aprobadas", value: devMetrics.approvedRequests },
+                  ]}
+                />
 
-                    <Link
-                      to="/app/profile"
-                      className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
-                    >
-                      Completar perfil
-                    </Link>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-sm leading-6 text-zinc-400">
-                    Generá una nueva solicitud de rubro o revisá el estado de los pedidos ya enviados a Devs.
-                  </div>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Link
+                    to="/app/dev"
+                    className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                  >
+                    Abrir Dev Panel
+                  </Link>
+                  <Link
+                    to="/app/admin/requests"
+                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                  >
+                    Ver requests
+                  </Link>
+                </div>
+              </>
+            ) : isAdmin ? (
+              <>
+                <div className="text-sm leading-6 text-zinc-400">
+                  Tu recorrido principal hoy queda concentrado en admin: horarios, membresías, rubros y requests reales sin rutas rotas.
+                </div>
 
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Link
-                      to="/app/admin/solicitudes/nueva"
-                      className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
-                    >
-                      + Nueva solicitud
-                    </Link>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Link
+                    to="/app/admin"
+                    className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                  >
+                    Ir al panel admin
+                  </Link>
+                  <Link
+                    to="/app/admin/requests/new"
+                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                  >
+                    + Nuevo request
+                  </Link>
+                </div>
+              </>
+            ) : isInstructor ? (
+              <>
+                <div className="text-sm leading-6 text-zinc-400">
+                  La mejor entrada para vos es el panel instructor con agenda, solicitudes y referencia operativa por sucursal.
+                </div>
 
-                    <Link
-                      to="/app/admin"
-                      className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
-                    >
-                      Ir al módulo admin
-                    </Link>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </section>
-      )}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Link
+                    to="/app/instructor"
+                    className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                  >
+                    Abrir panel instructor
+                  </Link>
+                  <Link
+                    to="/app/branches"
+                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                  >
+                    Cambiar sucursal
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-sm leading-6 text-zinc-400">
+                  Revisá los planes disponibles para tu sucursal y después completá tu perfil para dejar tu cuenta lista.
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Link
+                    to="/app/memberships"
+                    className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                  >
+                    Ver membresías
+                  </Link>
+
+                  <Link
+                    to="/app/profile"
+                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                  >
+                    Completar perfil
+                  </Link>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }

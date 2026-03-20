@@ -100,7 +100,7 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
             />
 
             {canCreate ? (
-              <Link to="/app/admin/solicitudes/nueva">
+              <Link to="/app/admin/requests/new">
                 <Button>+ Nueva solicitud</Button>
               </Link>
             ) : null}
@@ -175,3 +175,4 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
     </div>
   );
 }
+
