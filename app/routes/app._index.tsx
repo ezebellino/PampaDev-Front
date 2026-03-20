@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { Card, CardContent } from "../components/ui/Card";
 import { useAuth } from "../lib/auth/AuthContext";
@@ -144,12 +144,6 @@ export default function AppDashboard() {
           cta: "Abrir Dev Panel",
         },
         {
-          title: "Solicitudes",
-          desc: "Entrá directo a la bandeja real de requests para revisar pendientes y aprobadas.",
-          to: "/app/admin/requests",
-          cta: "Ver requests",
-        },
-        {
           title: "Rubros",
           desc: "Consultá el catálogo operativo y el detalle por sucursal.",
           to: "/app/rubros",
@@ -160,6 +154,12 @@ export default function AppDashboard() {
           desc: "Cambiá contexto rápido para validar operación por sede.",
           to: "/app/branches",
           cta: "Ver sucursales",
+        },
+        {
+          title: "Disciplinas",
+          desc: "Mantené visible el catálogo global y revisá consistencia técnica del dominio.",
+          to: "/app/disciplines",
+          cta: "Abrir disciplinas",
         },
       ];
     }
@@ -355,10 +355,10 @@ export default function AppDashboard() {
                     Abrir Dev Panel
                   </Link>
                   <Link
-                    to="/app/admin/requests"
+                    to="/app/disciplines"
                     className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
                   >
-                    Ver requests
+                    Ver disciplinas
                   </Link>
                 </div>
               </>

@@ -18,7 +18,6 @@ function navByRole(role: string): NavItem[] {
     return [
       ...common,
       { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Contexto operativo" },
-      { to: "/app/admin", label: "Admin", icon: "▣", hint: "Workspace administrativo" },
       { to: "/app/disciplines", label: "Disciplinas", icon: "◌", hint: "Catálogo global" },
       { to: "/app/dev", label: "Dev Panel", icon: "◈", hint: "Logs y monitoreo" },
       { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },

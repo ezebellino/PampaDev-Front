@@ -6,7 +6,7 @@ import {
   updateDiscipline,
   type Discipline,
 } from "../api/services/disciplines";
-import { logError, logInfo } from "../utils/logger";
+import { logApiError, logInfo } from "../utils/logger";
 
 export function useDisciplines() {
   const [disciplines, setDisciplines] = useState<Discipline[]>([]);
@@ -21,10 +21,10 @@ export function useDisciplines() {
       const result = await getDisciplines();
       setDisciplines(result);
       logInfo("Disciplines loaded", { count: result.length }, { layer: "hook", feature: "disciplines" });
-    } catch (e: any) {
-      const message = e?.message || "Error cargando disciplinas";
+    } catch (error: any) {
+      const message = error?.message || "Error cargando disciplinas";
       setError(message);
-      logError("Disciplines load failed", { message }, { layer: "hook", feature: "disciplines" });
+      logApiError("Disciplines load failed", error, { layer: "hook", feature: "disciplines" });
     } finally {
       setLoading(false);
     }

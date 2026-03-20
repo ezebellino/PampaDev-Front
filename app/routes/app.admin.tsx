@@ -1,6 +1,5 @@
 ﻿import { NavLink, Outlet } from "react-router";
 import Protected from "../lib/auth/Protected";
-import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
 import { useCompany } from "../lib/companies/CompanyContext";
 import { useBranch } from "../lib/branches/BranchContext";
@@ -33,21 +32,19 @@ function AdminTab({
 }
 
 export default function AdminLayout() {
-  const { user } = useAuth();
   const { companyId } = useCompany();
   const { branchId } = useBranch();
-  const isDev = user?.role === ROLES.DEVS;
 
   const adminNavItems = [
     { to: "/app/admin", label: "Panel", end: true },
     { to: "/app/admin/horarios", label: "Horarios" },
-    ...(!isDev ? [{ to: "/app/admin/memberships", label: "Membresías" }] : []),
+    { to: "/app/admin/memberships", label: "Membresías" },
     { to: "/app/admin/rubros", label: "Rubros" },
     { to: "/app/admin/requests", label: "Solicitudes" },
   ];
 
   return (
-    <Protected allowRoles={[ROLES.ADMIN, ROLES.DEVS]}>
+    <Protected allowRoles={[ROLES.ADMIN]}>
       <div className="space-y-6">
         <section className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/80">
           <div className="h-24 bg-linear-to-r from-cyan-500/15 via-emerald-500/10 to-transparent" />
@@ -93,4 +90,3 @@ export default function AdminLayout() {
     </Protected>
   );
 }
-
