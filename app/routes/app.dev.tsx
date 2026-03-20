@@ -194,6 +194,7 @@ function DevPanel() {
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState<LevelFilter>("all");
   const [origin, setOrigin] = useState<OriginFilter>("all");
+  const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
 
   const logs = useMemo(() => {
@@ -212,10 +213,12 @@ function DevPanel() {
     return logs.filter((log) => {
       const safe = safeLevel(log.level);
       const currentOrigin = log.origin ?? "unknown";
+      const currentFeature = normalizeFeature(log.feature);
       const matchesLevel = level === "all" ? true : safe === level;
       const matchesOrigin = origin === "all" ? true : currentOrigin === origin;
+      const matchesFeature = selectedFeature == null ? true : currentFeature === selectedFeature;
 
-      if (!normalized) return matchesLevel && matchesOrigin;
+      if (!normalized) return matchesLevel && matchesOrigin && matchesFeature;
 
       const haystack = [
         log.message ?? "",
@@ -229,9 +232,9 @@ function DevPanel() {
         .join(" ")
         .toLowerCase();
 
-      return matchesLevel && matchesOrigin && haystack.includes(normalized);
+      return matchesLevel && matchesOrigin && matchesFeature && haystack.includes(normalized);
     });
-  }, [logs, query, level, origin]);
+  }, [logs, query, level, origin, selectedFeature]);
 
   const counts = useMemo(() => {
     let warning = 0;
@@ -404,25 +407,38 @@ function DevPanel() {
               Aún no hay eventos suficientes para agrupar por feature.
             </div>
           ) : (
-            featureGroups.map((group) => (
-              <div
-                key={group.feature}
-                className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-4"
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <div className="text-sm font-semibold text-zinc-100">{group.feature}</div>
-                    <div className="mt-1 text-xs text-zinc-500">{group.total} eventos registrados</div>
-                  </div>
+            featureGroups.map((group) => {
+              const isActive = selectedFeature === group.feature;
+              return (
+                <button
+                  key={group.feature}
+                  type="button"
+                  onClick={() => setSelectedFeature((current) => (current === group.feature ? null : group.feature))}
+                  className={[
+                    "block w-full rounded-2xl border px-4 py-4 text-left transition",
+                    isActive
+                      ? "border-cyan-400/35 bg-cyan-400/10"
+                      : "border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900/70",
+                  ].join(" ")}
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div className="text-sm font-semibold text-zinc-100">{group.feature}</div>
+                      <div className="mt-1 text-xs text-zinc-500">
+                        {group.total} eventos registrados
+                        {isActive ? " · filtro activo" : " · click para filtrar"}
+                      </div>
+                    </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <Badge tone="neutral">Errores: {group.errors}</Badge>
-                    <Badge tone="neutral">Warnings: {group.warnings}</Badge>
-                    <Badge tone="neutral">Backend: {group.backend}</Badge>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge tone="neutral">Errores: {group.errors}</Badge>
+                      <Badge tone="neutral">Warnings: {group.warnings}</Badge>
+                      <Badge tone="neutral">Backend: {group.backend}</Badge>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))
+                </button>
+              );
+            })
           )}
         </CardContent>
       </Card>
@@ -465,6 +481,19 @@ function DevPanel() {
                 <FilterChip active={origin === "backend"} label="Solo backend" onClick={() => setOrigin("backend")} />
                 <FilterChip active={origin === "unknown"} label="Solo unknown" onClick={() => setOrigin("unknown")} />
               </div>
+
+              {selectedFeature ? (
+                <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-sm text-cyan-100">
+                  <span>Feature activa: {selectedFeature}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFeature(null)}
+                    className="rounded-full border border-cyan-400/25 px-2 py-0.5 text-xs text-cyan-100 hover:bg-cyan-400/10"
+                  >
+                    Limpiar feature
+                  </button>
+                </div>
+              ) : null}
             </div>
 
             <Button
@@ -473,6 +502,7 @@ function DevPanel() {
               onClick={() => {
                 clearLogs();
                 setTick((current) => current + 1);
+                setSelectedFeature(null);
               }}
             >
               Limpiar logs
@@ -480,13 +510,15 @@ function DevPanel() {
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 text-sm text-zinc-400">
-            {origin === "all"
-              ? "Vista general de eventos técnicos."
-              : origin === "backend"
-              ? "Mostrando solo respuestas y fallos que provienen del servidor o la API."
-              : origin === "frontend"
-                ? "Mostrando solo errores y señales generadas por UI, hooks o cliente."
-                : "Mostrando eventos sin origen clasificado."}
+            {selectedFeature
+              ? `Mostrando eventos de la feature ${selectedFeature}.`
+              : origin === "all"
+                ? "Vista general de eventos técnicos."
+                : origin === "backend"
+                  ? "Mostrando solo respuestas y fallos que provienen del servidor o la API."
+                  : origin === "frontend"
+                    ? "Mostrando solo errores y señales generadas por UI, hooks o cliente."
+                    : "Mostrando eventos sin origen clasificado."}
           </div>
 
           <div className="space-y-3">
