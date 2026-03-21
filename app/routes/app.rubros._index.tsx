@@ -1,14 +1,15 @@
-﻿import { Link } from "react-router";
+﻿
+import { Link } from "react-router";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../components/ui/Card";
 import { PageHeader } from "../components/ui/PageHeader";
 import ScreenLoader from "../components/ui/ScreenLoader";
 import { useAuth } from "../lib/auth/AuthContext";
+import { ROLES } from "../lib/auth/roles";
 import { useBranch } from "../lib/branches/BranchContext";
 import { useBranchDisciplineConfig } from "../lib/disciplines/useBranchDisciplineConfig";
 import { useDisciplines } from "../lib/disciplines/useDisciplines";
-import { ROLES } from "../lib/auth/roles";
 
 function formatARS(amount: number) {
   return `$ ${amount.toLocaleString("es-AR")}`;
@@ -25,16 +26,15 @@ export default function RubrosPage() {
   const hasBranch = branchId !== null;
   const safeBranchId: number | string = branchId ?? noBranch;
 
-  const { hydrated, byId, toggleEnabled, updateField } =
-    useBranchDisciplineConfig(safeBranchId, disciplines);
+  const { hydrated, byId, toggleEnabled, updateField } = useBranchDisciplineConfig(safeBranchId, disciplines);
 
   const hydratedSafe = hasBranch ? hydrated : false;
 
   if (loading) {
     return (
       <ScreenLoader
-        title="Cargando rubros…"
-        subtitle="Estamos preparando el catálogo disponible para esta operación."
+        title="Cargando catalogo..."
+        subtitle="Estamos preparando la oferta disponible para esta sucursal."
       />
     );
   }
@@ -42,13 +42,10 @@ export default function RubrosPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <PageHeader
-          title="Rubros"
-          subtitle="No pudimos cargar el catálogo en este momento."
-        />
+        <PageHeader title="Rubros" subtitle="No pudimos cargar el catalogo en este momento." />
         <Card>
           <CardContent className="space-y-3 py-6 text-sm">
-            <div className="font-medium text-red-300">Ocurrió un problema al cargar los rubros.</div>
+            <div className="font-medium text-red-300">Ocurrio un problema al cargar los rubros.</div>
             <div className="text-zinc-400">{error}</div>
             <div>
               <Button variant="secondary" onClick={() => void refresh()}>
@@ -66,7 +63,7 @@ export default function RubrosPage() {
       <div className="space-y-6">
         <PageHeader
           title="Rubros"
-          subtitle="Elegí una sucursal para ver su catálogo, precios y configuración disponible."
+          subtitle="Elige una sucursal para ver su catalogo operativo, precios base y visibilidad."
         />
         <Card>
           <CardContent className="space-y-4 py-6 text-sm text-zinc-400">
@@ -76,7 +73,7 @@ export default function RubrosPage() {
                 <Button variant="secondary">Ver sucursales</Button>
               </Link>
               <Button variant="ghost" onClick={() => void refresh()}>
-                Actualizar catálogo
+                Actualizar catalogo
               </Button>
             </div>
           </CardContent>
@@ -87,22 +84,24 @@ export default function RubrosPage() {
 
   if (!hydratedSafe) {
     return (
-      <ScreenLoader
-        title="Cargando configuración…"
-        subtitle="Estamos preparando la vista de esta sucursal."
-      />
+      <ScreenLoader title="Cargando configuracion..." subtitle="Estamos preparando la vista operativa de esta sucursal." />
     );
   }
 
-  const visible = isDevs
-    ? disciplines
-    : disciplines.filter((discipline) => byId.get(discipline.idDiscipline)?.enabled);
+  const visible = isDevs ? disciplines : disciplines.filter((discipline) => byId.get(discipline.idDiscipline)?.enabled);
+  const enabledCount = disciplines.filter((discipline) => byId.get(discipline.idDiscipline)?.enabled).length;
+  const customConfiguredCount = disciplines.filter((discipline) => byId.has(discipline.idDiscipline)).length;
+  const averageDuration = disciplines.length
+    ? Math.round(
+        disciplines.reduce((total, discipline) => total + (byId.get(discipline.idDiscipline)?.durationMin ?? 60), 0) / disciplines.length
+      )
+    : 0;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Rubros"
-        subtitle={`Catálogo disponible para la sucursal ${branchId}. Desde acá podés revisar visibilidad, duración y precio base.`}
+        subtitle={`Catalogo operativo de la sucursal ${branchId}. Aqui administras que disciplinas base se muestran como oferta real en esta sede.`}
         right={
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={() => void refresh()}>
@@ -112,19 +111,51 @@ export default function RubrosPage() {
         }
       />
 
+      <Card className="border-cyan-500/20 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.15),transparent_36%),linear-gradient(135deg,rgba(24,24,27,0.96),rgba(9,9,11,0.98))]">
+        <CardContent className="grid gap-5 py-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.6fr)]">
+          <div className="space-y-3">
+            <div className="text-xs uppercase tracking-[0.24em] text-cyan-200/80">Catalogo por sucursal</div>
+            <div className="max-w-3xl text-2xl font-semibold leading-tight text-white">
+              Una disciplina base se convierte en rubro operativo cuando la sede define visibilidad, duracion y precio.
+            </div>
+            <p className="max-w-3xl text-sm leading-6 text-zinc-300">
+              Esto ayuda a separar el catalogo general de disciplinas del comportamiento real de cada sucursal. La misma disciplina puede mostrarse distinta segun la sede, sin duplicar el modelo base.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Badge tone="success">{enabledCount} visibles</Badge>
+              <Badge tone="neutral">{customConfiguredCount} configuradas</Badge>
+              <Badge tone="neutral">Promedio {averageDuration} min</Badge>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-zinc-400">Sucursal activa</div>
+              <div className="mt-2 text-lg font-semibold text-white">#{branchId}</div>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-zinc-400">Modo</div>
+              <div className="mt-2 text-sm font-medium text-white">{isDevs ? "Configuracion completa" : "Vista publicada"}</div>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-zinc-400">Enfoque</div>
+              <div className="mt-2 text-sm font-medium text-white">Oferta real por sede</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {isDevs ? (
         <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
           <div className="h-20 bg-[linear-gradient(135deg,rgba(34,197,94,0.12),transparent_55%)]" />
-          <CardHeader className="-mt-6 relative">
-            <CardTitle>Configuración por sucursal</CardTitle>
+          <CardHeader className="relative -mt-6">
+            <CardTitle>Como leer este modulo</CardTitle>
             <CardDescription>
-              Controlá qué rubros están visibles y ajustá parámetros clave para esta sede.
+              Aqui no creas disciplinas nuevas: ajustas como se publica cada disciplina dentro de la sucursal activa.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-sm leading-6 text-zinc-400">
-              Cada rubro puede cambiar según la sucursal activa. Esto permite adaptar precios,
-              duración y disponibilidad sin perder consistencia en el catálogo general.
+              Si necesitas ampliar el catalogo base, primero trabajas en Disciplinas o en Requests. Desde este panel defines la capa operativa: visibilidad, duracion y precio base para esta sede.
             </div>
           </CardContent>
         </Card>
@@ -136,8 +167,8 @@ export default function RubrosPage() {
             <CardTitle>No hay rubros disponibles</CardTitle>
             <CardDescription>
               {isDevs
-                ? "Activá al menos un rubro para que quede disponible en esta sucursal."
-                : "Todavía no hay servicios habilitados para esta sede."}
+                ? "Activa al menos una disciplina para que quede publicada como rubro en esta sucursal."
+                : "Todavia no hay servicios habilitados para esta sede."}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -155,7 +186,7 @@ export default function RubrosPage() {
                 className={`relative overflow-hidden rounded-[1.75rem] border bg-zinc-950/75 transition duration-200 ${
                   enabled
                     ? "border-zinc-800 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/75"
-                    : "border-zinc-850 opacity-95"
+                    : "border-zinc-800/70 opacity-95"
                 }`}
               >
                 <div
@@ -170,16 +201,16 @@ export default function RubrosPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <div className="text-lg font-semibold text-zinc-100">{discipline.name}</div>
-                      <div className="text-sm text-zinc-500">Servicio #{discipline.idDiscipline}</div>
+                      <div className="text-sm text-zinc-500">Disciplina base #{discipline.idDiscipline}</div>
                     </div>
                     <Badge className="shrink-0 border-zinc-700 bg-zinc-900/80 text-zinc-300">
-                      {enabled ? "✅ Visible" : "🚫 Oculto"}
+                      {enabled ? "Visible" : "Oculto"}
                     </Badge>
                   </div>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/55 px-4 py-3">
-                      <div className="text-xs uppercase tracking-[0.22em] text-zinc-500">Duración</div>
+                      <div className="text-xs uppercase tracking-[0.22em] text-zinc-500">Duracion</div>
                       <div className="mt-2 text-lg font-semibold text-zinc-100">{durationMin} min</div>
                     </div>
 
@@ -191,7 +222,7 @@ export default function RubrosPage() {
 
                   {isDevs && !config ? (
                     <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-100">
-                      Esta sucursal todavía usa valores iniciales para este rubro.
+                      Esta sucursal todavia usa valores iniciales para esta disciplina dentro del catalogo operativo.
                     </div>
                   ) : null}
 
@@ -204,7 +235,7 @@ export default function RubrosPage() {
                           onChange={() => toggleEnabled(discipline.idDiscipline)}
                           className="accent-zinc-200"
                         />
-                        Mostrar este rubro en la sucursal activa
+                        Mostrar esta oferta en la sucursal activa
                       </label>
 
                       <div className="grid gap-2 sm:grid-cols-2">
@@ -217,7 +248,7 @@ export default function RubrosPage() {
                             })
                           }
                           className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
-                          placeholder="Duración"
+                          placeholder="Duracion"
                         />
                         <input
                           type="number"
@@ -236,13 +267,8 @@ export default function RubrosPage() {
 
                   <CardFooter className="mt-5 flex flex-col gap-2 border-t border-zinc-800 px-0 pb-0 pt-4 sm:flex-row sm:items-center sm:justify-between">
                     <Link to={`/app/rubros/${discipline.idDiscipline}`} className="w-full sm:w-auto">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        className="w-full"
-                        disabled={!enabled && !isDevs}
-                      >
-                        Ver horarios
+                      <Button size="sm" variant="primary" className="w-full" disabled={!enabled && !isDevs}>
+                        Ver agenda
                       </Button>
                     </Link>
 

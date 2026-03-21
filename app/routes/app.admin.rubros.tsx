@@ -16,17 +16,17 @@ export default function AdminRubrosPage() {
 
   const managementActions = [
     {
-      title: "Catálogo por sucursal",
+      title: "Catalogo por sucursal",
       description:
-        "Revisá qué rubros están visibles, ajustá precio base y mantené una configuración consistente por sede.",
+        "Revisa que disciplinas se publican como rubros operativos, ajusta precio base y mantiene una configuracion consistente por sede.",
       to: "/app/rubros",
-      cta: "Abrir catálogo operativo",
+      cta: "Abrir catalogo operativo",
     },
     !isDev
       ? {
           title: "Nueva solicitud",
           description:
-            "Canalizá pedidos para incorporar rubros o actualizar los existentes sin perder trazabilidad.",
+            "Canaliza pedidos para incorporar nuevas disciplinas al catalogo base o actualizar las existentes sin perder trazabilidad.",
           to: "/app/admin/requests/new",
           cta: "Crear solicitud",
         }
@@ -34,8 +34,8 @@ export default function AdminRubrosPage() {
     {
       title: "Bandeja administrativa",
       description: isDev
-        ? "Seguimiento centralizado de todas las solicitudes enviadas por administración."
-        : "Seguimiento centralizado de las solicitudes enviadas y sus próximos pasos.",
+        ? "Seguimiento centralizado de todas las solicitudes enviadas por administracion."
+        : "Seguimiento centralizado de las solicitudes enviadas y sus proximos pasos.",
       to: "/app/admin/requests",
       cta: "Ver solicitudes",
     },
@@ -55,11 +55,10 @@ export default function AdminRubrosPage() {
             </div>
             <div>
               <CardTitle className="text-2xl tracking-tight text-zinc-100 md:text-3xl">
-                Gestión del catálogo administrativo
+                Catalogo operativo por sucursal
               </CardTitle>
               <CardDescription className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 md:text-base">
-                Ordená el crecimiento del catálogo, revisá qué servicios están listos para publicarse y
-                mantené alineada la operación entre sucursales.
+                En este modulo administras como una disciplina base se transforma en oferta real dentro de una sede. El trabajo no es crear disciplinas nuevas, sino publicarlas con reglas claras por sucursal.
               </CardDescription>
             </div>
           </CardHeader>
@@ -75,7 +74,7 @@ export default function AdminRubrosPage() {
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/65 px-4 py-4 sm:col-span-2 xl:col-span-1">
               <div className="text-xs uppercase tracking-wider text-zinc-500">Estado</div>
               <div className="mt-2 text-base font-semibold text-zinc-100">
-                {hasBranch ? "Listo para configurar" : "Elegí una sucursal para continuar"}
+                {hasBranch ? "Listo para configurar" : "Elige una sucursal para continuar"}
               </div>
             </div>
           </CardContent>
@@ -83,22 +82,20 @@ export default function AdminRubrosPage() {
 
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardHeader>
-            <CardTitle>Qué podés hacer desde acá</CardTitle>
+            <CardTitle>Lectura rapida del flujo</CardTitle>
             <CardDescription>
-              Unificamos los accesos clave para que el equipo administrativo no tenga que navegar a ciegas.
+              Dejamos mucho mas clara la diferencia entre disciplina base, rubro operativo y solicitud administrativa.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-zinc-400">
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-              Ajustar visibilidad y parámetros por sucursal.
+              1. Disciplinas define el catalogo base de la plataforma.
             </div>
-            {!isDev ? (
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                Crear solicitudes para nuevos servicios o cambios operativos.
-              </div>
-            ) : null}
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-              Coordinar horarios y publicación desde un flujo más claro.
+              2. Rubros publica esa disciplina dentro de una sucursal concreta.
+            </div>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+              3. Requests sirve para pedir altas o cambios cuando la base todavia no alcanza.
             </div>
           </CardContent>
         </Card>
@@ -106,10 +103,7 @@ export default function AdminRubrosPage() {
 
       <section className={`grid gap-4 ${managementActions.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
         {managementActions.map((action) => (
-          <Card
-            key={action.title}
-            className="border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/70"
-          >
+          <Card key={action.title} className="border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/70">
             <CardHeader>
               <CardTitle className="text-lg text-zinc-100">{action.title}</CardTitle>
               <CardDescription className="text-sm leading-6 text-zinc-400">{action.description}</CardDescription>
@@ -127,26 +121,25 @@ export default function AdminRubrosPage() {
 
       <Card className="border-zinc-800 bg-zinc-950/80">
         <CardHeader>
-          <CardTitle>Recomendación operativa</CardTitle>
+          <CardTitle>Recomendacion operativa</CardTitle>
           <CardDescription>
-            Para mantener el desempeño del sistema y evitar inconsistencias, el catálogo general debería crecer
-            por solicitud y publicarse por sucursal solo cuando esté validado.
+            Para evitar duplicaciones y confusion, la ampliacion del catalogo base deberia pasar por solicitud y despues publicarse por sucursal solo cuando este validada.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-2xl leading-6">
             {isDev
-              ? "Desde acá podés revisar el catálogo por sucursal y controlar la bandeja completa de solicitudes enviadas por administración."
-              : "Si necesitás habilitar un nuevo rubro, primero registrá la solicitud. Después revisá el catálogo por sucursal y ajustá precio, duración y visibilidad en el flujo operativo principal."}
+              ? "Desde aqui puedes revisar el catalogo por sucursal y controlar la bandeja completa de solicitudes enviadas por administracion."
+              : "Si necesitas habilitar un nuevo rubro, primero registra la solicitud. Despues revisa el catalogo por sucursal y ajusta precio, duracion y visibilidad desde el flujo operativo principal."}
           </p>
           <div className="flex flex-wrap gap-2">
             {!isDev ? (
               <Link to="/app/admin/requests/new">
-                <Button variant="primary">Solicitar nuevo rubro</Button>
+                <Button variant="primary">Solicitar nueva disciplina</Button>
               </Link>
             ) : null}
             <Link to="/app/rubros">
-              <Button variant="ghost">Ir a catálogo por sucursal</Button>
+              <Button variant="ghost">Ir a catalogo por sucursal</Button>
             </Link>
           </div>
         </CardContent>
@@ -154,5 +147,3 @@ export default function AdminRubrosPage() {
     </div>
   );
 }
-
-

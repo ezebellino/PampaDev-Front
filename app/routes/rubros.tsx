@@ -56,14 +56,13 @@ export default function PublicRubros() {
             <div className="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div className="max-w-3xl space-y-4">
                 <p className="inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-zinc-900/80 px-3 py-1 text-xs font-medium text-zinc-200">
-                  🧭 Catálogo MultiRubro
+                  Catalogo MultiRubro
                 </p>
                 <h1 className="text-3xl font-semibold tracking-tight text-white md:text-5xl md:leading-tight">
-                  Explorá rubros pensados para organizar servicios, reservas y experiencias.
+                  Explora disciplinas que despues pueden convertirse en oferta real por sucursal.
                 </h1>
                 <p className="max-w-2xl text-sm leading-7 text-zinc-300 md:text-lg md:leading-8">
-                  Descubrí disciplinas disponibles y conocé cómo podría verse una operación centralizada
-                  para sedes, turnos y membresías.
+                  Aqui ves el catalogo base. En la operacion interna, cada sucursal decide como publica esa disciplina: visibilidad, precio, duracion y disponibilidad.
                 </p>
               </div>
 
@@ -71,7 +70,7 @@ export default function PublicRubros() {
                 to="/"
                 className="inline-flex items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-900/80 px-5 py-3 text-sm font-medium text-zinc-100 transition hover:-translate-y-0.5 hover:border-zinc-500 hover:bg-zinc-900"
               >
-                ← Volver al inicio
+                Volver al inicio
               </Link>
             </div>
           </section>
@@ -84,16 +83,12 @@ export default function PublicRubros() {
             </section>
           ) : items.length === 0 ? (
             <div className="mt-8 rounded-[1.5rem] border border-zinc-800 bg-zinc-950/75 px-5 py-6 text-sm text-zinc-400">
-              Todavía no hay rubros publicados.
+              Todavia no hay disciplinas publicadas.
             </div>
           ) : (
             <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((discipline) => (
-                <DisciplinePublicCard
-                  key={discipline.idDiscipline}
-                  discipline={discipline}
-                  imageUrl={pickImage(discipline.name)}
-                />
+                <DisciplinePublicCard key={discipline.idDiscipline} discipline={discipline} imageUrl={pickImage(discipline.name)} />
               ))}
             </section>
           )}

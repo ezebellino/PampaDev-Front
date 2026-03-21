@@ -1,5 +1,4 @@
-// app/lib/disciplines/useBranchDisciplineConfig.ts
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import type { Discipline, DisciplineConfig } from "./types";
 import { loadBranchDisciplineConfig, saveBranchDisciplineConfig } from "./branchDisciplineStorage";
 
@@ -11,9 +10,8 @@ export function useBranchDisciplineConfig(branchId: number | string, disciplines
   const [hydrated, setHydrated] = useState(false);
   const [config, setConfig] = useState<DisciplineConfig[]>([]);
 
-  // hidratar cuando llegan disciplines o cambia branch
+  // Hidrata cuando llegan disciplinas o cambia la sucursal activa.
   useEffect(() => {
-    // modo “desactivado”: no hay branch válido o no hay disciplines todavía
     if (safeBranchId === NO_BRANCH || disciplines.length === 0) {
       setConfig([]);
       setHydrated(false);
@@ -25,7 +23,7 @@ export function useBranchDisciplineConfig(branchId: number | string, disciplines
     setHydrated(true);
   }, [safeBranchId, disciplines]);
 
-  // persistir solo si está hidratado y hay branch real
+  // Persiste solo cuando ya hay una sucursal real hidratada.
   useEffect(() => {
     if (!hydrated) return;
     if (safeBranchId === NO_BRANCH) return;
@@ -33,14 +31,14 @@ export function useBranchDisciplineConfig(branchId: number | string, disciplines
   }, [hydrated, config, safeBranchId]);
 
   const byId = useMemo(() => {
-    const m = new Map<number, DisciplineConfig>();
-    config.forEach((c) => m.set(c.idDiscipline, c));
-    return m;
+    const map = new Map<number, DisciplineConfig>();
+    config.forEach((item) => map.set(item.idDiscipline, item));
+    return map;
   }, [config]);
 
   function toggleEnabled(idDiscipline: number) {
     setConfig((prev) =>
-      prev.map((c) => (c.idDiscipline === idDiscipline ? { ...c, enabled: !c.enabled } : c))
+      prev.map((item) => (item.idDiscipline === idDiscipline ? { ...item, enabled: !item.enabled } : item))
     );
   }
 
@@ -48,7 +46,7 @@ export function useBranchDisciplineConfig(branchId: number | string, disciplines
     idDiscipline: number,
     patch: Partial<Pick<DisciplineConfig, "durationMin" | "basePrice">>
   ) {
-    setConfig((prev) => prev.map((c) => (c.idDiscipline === idDiscipline ? { ...c, ...patch } : c)));
+    setConfig((prev) => prev.map((item) => (item.idDiscipline === idDiscipline ? { ...item, ...patch } : item)));
   }
 
   return { hydrated, config, byId, toggleEnabled, updateField };

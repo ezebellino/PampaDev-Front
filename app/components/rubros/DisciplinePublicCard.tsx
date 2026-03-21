@@ -24,7 +24,7 @@ export default function DisciplinePublicCard({ discipline, imageUrl }: Props) {
         <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
 
         <div className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-xs text-zinc-200 backdrop-blur">
-          Rubro #{discipline.idDiscipline}
+          Disciplina #{discipline.idDiscipline}
         </div>
       </div>
 
@@ -33,7 +33,7 @@ export default function DisciplinePublicCard({ discipline, imageUrl }: Props) {
           <h3 className="text-lg font-semibold tracking-tight text-zinc-100">{discipline.name}</h3>
 
           <p className="text-sm leading-relaxed text-zinc-400">
-            Un rubro pensado para integrarse a una experiencia moderna de reservas, clases y gestión.
+            Una disciplina base que despues puede publicarse como rubro operativo en una o varias sucursales.
           </p>
         </div>
 
