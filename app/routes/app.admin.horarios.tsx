@@ -1,4 +1,5 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
@@ -6,8 +7,8 @@ import { PageHeader } from "../components/ui/PageHeader";
 import ScreenLoader from "../components/ui/ScreenLoader";
 import { useBranchClasses } from "../lib/api/hooks/useBranchClasses";
 import { useBranches } from "../lib/api/hooks/useBranches";
-import { useDisciplines } from "../lib/disciplines/useDisciplines";
 import { useBranch } from "../lib/branches/BranchContext";
+import { useDisciplines } from "../lib/disciplines/useDisciplines";
 import {
   buildClassTimeRange,
   classStatusTone,
@@ -87,6 +88,11 @@ export default function AdminHorarios() {
     return draftConfig.disciplines.filter((item) => item.enabled).length;
   }, [draftConfig]);
 
+  const busiestDay = useMemo(() => {
+    if (grouped.length === 0) return null;
+    return [...grouped].sort((a, b) => b.items.length - a.items.length)[0] ?? null;
+  }, [grouped]);
+
   const handleDayToggle = (day: Weekday) => {
     setDraftConfig((current) => {
       if (!current) return current;
@@ -149,9 +155,9 @@ export default function AdminHorarios() {
       const sourceMessage = usingBackendAvailability
         ? "sincronizada con la disponibilidad del backend"
         : "guardada en fallback local hasta que el backend publique availability";
-      setSavedNotice(`Planificación ${sourceMessage} el ${formatUpdatedAt(saved.updatedAt)}.`);
+      setSavedNotice(`Planificacion ${sourceMessage} el ${formatUpdatedAt(saved.updatedAt)}.`);
     } catch (err) {
-      setSavedNotice(err instanceof Error ? err.message : "No pudimos guardar la planificación semanal.");
+      setSavedNotice(err instanceof Error ? err.message : "No pudimos guardar la planificacion semanal.");
     }
   };
 
@@ -160,7 +166,7 @@ export default function AdminHorarios() {
       <div className="space-y-6">
         <PageHeader
           title="Horarios"
-          subtitle="Elegí una sucursal para planificar los días abiertos y validar las clases activas de esa sede."
+          subtitle="Elige una sucursal para planificar los dias abiertos y validar la agenda activa de esa sede."
         />
         <Card>
           <CardContent className="py-6 text-sm text-zinc-400">No hay una sucursal activa seleccionada.</CardContent>
@@ -173,7 +179,7 @@ export default function AdminHorarios() {
     return (
       <ScreenLoader
         title="Cargando horarios..."
-        subtitle="Estamos preparando la planificación semanal y consultando las clases configuradas para esta sucursal."
+        subtitle="Estamos preparando la planificacion semanal y consultando la agenda real de esta sucursal."
       />
     );
   }
@@ -200,10 +206,10 @@ export default function AdminHorarios() {
   if (scheduleError) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Horarios" subtitle="No pudimos cargar la planificación semanal de esta sucursal." />
+        <PageHeader title="Horarios" subtitle="No pudimos cargar la planificacion semanal de esta sucursal." />
         <Card>
           <CardContent className="py-6 text-sm text-red-300">
-            {scheduleError instanceof Error ? scheduleError.message : "Error inesperado al leer la planificación."}
+            {scheduleError instanceof Error ? scheduleError.message : "Error inesperado al leer la planificacion."}
           </CardContent>
         </Card>
       </div>
@@ -245,6 +251,43 @@ export default function AdminHorarios() {
         }
       />
 
+      <Card className="border-cyan-500/20 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),transparent_38%),linear-gradient(135deg,rgba(24,24,27,0.96),rgba(9,9,11,0.98))]">
+        <CardContent className="grid gap-5 py-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.6fr)]">
+          <div className="space-y-3">
+            <div className="text-xs uppercase tracking-[0.24em] text-cyan-200/80">Panel operativo</div>
+            <div className="max-w-3xl text-2xl font-semibold leading-tight text-white">
+              Organiza apertura semanal, franjas por disciplina y contrasta todo con la agenda real de la sede.
+            </div>
+            <p className="max-w-3xl text-sm leading-6 text-zinc-300">
+              Este modulo ya intenta usar availability del backend cuando existe. Si todavia no esta publicado para la sucursal, mantenemos fallback local para no cortar la operacion diaria.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Badge tone="success">{plannedOpenDays} dias abiertos</Badge>
+              <Badge tone="neutral">{enabledDisciplines} disciplinas habilitadas</Badge>
+              <Badge tone={usingBackendAvailability ? "success" : "warning"}>
+                {usingBackendAvailability ? "Availability conectada" : "Fallback local activo"}
+              </Badge>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-zinc-400">Ultima planificacion</div>
+              <div className="mt-2 text-sm font-medium text-white">{formatUpdatedAt(scheduleConfig?.updatedAt)}</div>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-zinc-400">Fuente semanal</div>
+              <div className="mt-2 text-sm font-medium text-white">{scheduleSource === "api+local" ? "API + local" : "Fallback local"}</div>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-zinc-400">Dia mas cargado</div>
+              <div className="mt-2 text-sm font-medium text-white">
+                {busiestDay ? `${busiestDay.day} · ${busiestDay.items.length} clase${busiestDay.items.length === 1 ? "" : "s"}` : "Sin clases devueltas"}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardContent className="py-5">
@@ -256,9 +299,9 @@ export default function AdminHorarios() {
 
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Días abiertos</div>
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Dias abiertos</div>
             <div className="mt-3 text-3xl font-semibold text-zinc-100">{plannedOpenDays}</div>
-            <div className="mt-1 text-sm text-zinc-400">Configurados por administración</div>
+            <div className="mt-1 text-sm text-zinc-400">Configurados por administracion</div>
           </CardContent>
         </Card>
 
@@ -272,12 +315,12 @@ export default function AdminHorarios() {
 
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Fuente de planificación</div>
-            <div className="mt-3 text-lg font-semibold text-zinc-100">{scheduleSource === "api+local" ? "API + local" : "Fallback local"}</div>
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Fuente de planificacion</div>
+            <div className="mt-3 text-lg font-semibold text-zinc-100">{usingBackendAvailability ? "API + local" : "Fallback local"}</div>
             <div className="mt-1 text-sm text-zinc-400">
               {usingBackendAvailability
-                ? `Sincronizada con availability. Última actualización: ${formatUpdatedAt(scheduleConfig?.updatedAt)}`
-                : "El backend todavía no expone availability para esta sede; conservamos la planificación local."}
+                ? `Sincronizada con availability. Ultima actualizacion: ${formatUpdatedAt(scheduleConfig?.updatedAt)}`
+                : "El backend todavia no expone availability para esta sede; conservamos la planificacion local."}
             </div>
           </CardContent>
         </Card>
@@ -289,7 +332,7 @@ export default function AdminHorarios() {
           <CardHeader className="relative -mt-4">
             <CardTitle>Calendario semanal de apertura</CardTitle>
             <CardDescription>
-              El administrador define qué días estará operativa la sucursal y deja visibles los cierres por feriado, mantenimiento o eventos especiales.
+              Define que dias la sucursal abre, que cierres excepcionales tiene y deja trazabilidad para el equipo operativo.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -298,17 +341,17 @@ export default function AdminHorarios() {
                 {WEEKDAY_ORDER.map((day) => {
                   const config = draftConfig.days[day];
                   return (
-                    <div key={day} className="rounded-3xl border border-zinc-800 bg-zinc-900/45 p-4">
+                    <div key={day} className="rounded-[1.75rem] border border-zinc-800 bg-zinc-900/45 p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="text-base font-semibold text-zinc-100">{DAY_NAMES[day]}</div>
-                          <div className="mt-1 text-sm text-zinc-500">{config.closed ? "Día cerrado" : "Día habilitado"}</div>
+                          <div className="mt-1 text-sm text-zinc-500">{config.closed ? "Dia cerrado" : "Dia habilitado"}</div>
                         </div>
                         <Badge tone={config.closed ? "warning" : "success"}>{config.closed ? "Cerrado" : "Abierto"}</Badge>
                       </div>
 
                       <Button variant="secondary" className="mt-4 w-full" onClick={() => handleDayToggle(day)}>
-                        {config.closed ? "Habilitar día" : "Marcar cierre"}
+                        {config.closed ? "Habilitar dia" : "Marcar cierre"}
                       </Button>
 
                       <label className="mt-4 block text-xs uppercase tracking-wider text-zinc-500">
@@ -317,7 +360,7 @@ export default function AdminHorarios() {
                           value={config.reason}
                           onChange={(event) => handleDayReason(day, event.target.value)}
                           disabled={!config.closed}
-                          placeholder={config.closed ? "Ej. Feriado, mantenimiento" : "Disponible mientras el día esté abierto"}
+                          placeholder={config.closed ? "Ej. Feriado, mantenimiento" : "Disponible mientras el dia este abierto"}
                           className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 disabled:cursor-not-allowed disabled:text-zinc-500"
                         />
                       </label>
@@ -333,21 +376,21 @@ export default function AdminHorarios() {
           <CardHeader>
             <CardTitle>Criterio operativo</CardTitle>
             <CardDescription>
-              Esta capa ya intenta sincronizar la disponibilidad real del backend y conserva fallback local para notas, cierres y disciplina mientras el endpoint no esté listo.
+              Esta capa ya intenta sincronizar la disponibilidad real del backend y conserva fallback local para notas, cierres y disciplina mientras el endpoint no este listo.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-zinc-400">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">1. Admin define días abiertos o cerrados para la sucursal.</div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">2. Admin habilita horarios base y duración por disciplina.</div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">3. Cuando availability exista, la apertura semanal se empuja al backend automáticamente.</div>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">1. Admin define dias abiertos o cerrados para la sucursal.</div>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">2. Admin habilita horarios base y duracion por disciplina.</div>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">3. Cuando availability exista, la apertura semanal se empuja al backend automaticamente.</div>
             <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/8 px-4 py-3 text-cyan-100">
               {savedNotice ??
                 (usingBackendAvailability
-                  ? "La disponibilidad semanal ya está conectada con el backend para esta sede."
-                  : "Todavía no hay availability publicado para esta sede. Guardamos localmente sin perder el flujo operativo.")}
+                  ? "La disponibilidad semanal ya esta conectada con el backend para esta sede."
+                  : "Todavia no hay availability publicado para esta sede. Guardamos localmente sin perder el flujo operativo.")}
             </div>
             <Button className="w-full" onClick={() => void handleSave()} disabled={!draftConfig || scheduleSaving}>
-              Guardar planificación semanal
+              Guardar planificacion semanal
             </Button>
           </CardContent>
         </Card>
@@ -358,7 +401,7 @@ export default function AdminHorarios() {
         <CardHeader className="relative -mt-4">
           <CardTitle>Franjas por disciplina</CardTitle>
           <CardDescription>
-            Define para cada disciplina si la sede puede operar, desde qué hora hasta qué hora y con qué duración de turno.
+            Define para cada disciplina si la sede puede operar, desde que hora hasta que hora y con que duracion de turno.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -369,11 +412,11 @@ export default function AdminHorarios() {
                 if (!item) return null;
 
                 return (
-                  <div key={discipline.idDiscipline} className="rounded-3xl border border-zinc-800 bg-zinc-900/45 p-4">
+                  <div key={discipline.idDiscipline} className="rounded-[1.75rem] border border-zinc-800 bg-zinc-900/45 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="text-lg font-semibold text-zinc-100">{discipline.name}</div>
-                        <div className="mt-1 text-sm text-zinc-500">Configuración operativa para la sucursal activa</div>
+                        <div className="mt-1 text-sm text-zinc-500">Configuracion operativa para la sucursal activa</div>
                       </div>
                       <Badge tone={item.enabled ? "success" : "neutral"}>{item.enabled ? "Habilitada" : "Pausada"}</Badge>
                     </div>
@@ -381,7 +424,7 @@ export default function AdminHorarios() {
                     <div className="mt-4 flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
                       <div>
                         <div className="text-sm font-medium text-zinc-100">Permitir turnos en esta disciplina</div>
-                        <div className="mt-1 text-xs text-zinc-500">Si está desactivada, el instructor no debería ofrecer nuevos horarios.</div>
+                        <div className="mt-1 text-xs text-zinc-500">Si esta desactivada, el instructor no deberia ofrecer nuevos horarios.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -415,7 +458,7 @@ export default function AdminHorarios() {
                       </label>
 
                       <label className="text-xs uppercase tracking-wider text-zinc-500">
-                        Duración
+                        Duracion
                         <select
                           value={item.slotDuration}
                           onChange={(event) => handleDisciplineChange(discipline.idDiscipline, "slotDuration", Number(event.target.value))}
@@ -455,7 +498,7 @@ export default function AdminHorarios() {
           <CardContent className="py-5">
             <div className="text-xs uppercase tracking-wider text-zinc-500">Clases</div>
             <div className="mt-3 text-3xl font-semibold text-zinc-100">{classes.length}</div>
-            <div className="mt-1 text-sm text-zinc-400">Registros detectados en el backend</div>
+            <div className="mt-1 text-sm text-zinc-400">Registros detectados en backend</div>
           </CardContent>
         </Card>
 
@@ -463,7 +506,7 @@ export default function AdminHorarios() {
           <CardContent className="py-5">
             <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas con agenda</div>
             <div className="mt-3 text-3xl font-semibold text-zinc-100">{uniqueDisciplines}</div>
-            <div className="mt-1 text-sm text-zinc-400">Rubros devueltos por `Classes/byBranch`</div>
+            <div className="mt-1 text-sm text-zinc-400">Devueltas por Classes/byBranch</div>
           </CardContent>
         </Card>
 
@@ -479,7 +522,7 @@ export default function AdminHorarios() {
           <CardContent className="py-5">
             <div className="text-xs uppercase tracking-wider text-zinc-500">Fuente actual</div>
             <div className="mt-3 text-lg font-semibold text-zinc-100">{usingBackendAvailability ? "Availability lista" : "Fallback local"}</div>
-            <div className="mt-1 text-sm text-zinc-400">Las clases siguen viniendo desde `Classes/byBranch`.</div>
+            <div className="mt-1 text-sm text-zinc-400">Las clases siguen viniendo desde Classes/byBranch.</div>
           </CardContent>
         </Card>
       </section>
@@ -489,14 +532,14 @@ export default function AdminHorarios() {
           <div className="h-20 bg-linear-to-r from-amber-500/12 to-transparent" />
           <CardContent className="relative -mt-2 space-y-2 py-5 text-sm text-zinc-400">
             <p>Cuando el backend publique la agenda de clases para esta sucursal, el resumen inferior va a mostrar las clases reales de la sede activa.</p>
-            <p>La fuente esperada es `/api/Classes/byBranch/{'{'}idBranch{'}'}`.</p>
+            <p>La fuente esperada es /api/Classes/byBranch/{'{'}idBranch{'}'}.</p>
           </CardContent>
         </Card>
       ) : classes.length === 0 ? (
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardHeader>
             <CardTitle>No hay horarios cargados</CardTitle>
-            <CardDescription>Esta sucursal todavía no devolvió clases desde el endpoint configurado.</CardDescription>
+            <CardDescription>Esta sucursal todavia no devolvio clases desde el endpoint configurado.</CardDescription>
           </CardHeader>
         </Card>
       ) : (
@@ -506,7 +549,7 @@ export default function AdminHorarios() {
             <CardHeader className="relative -mt-4">
               <CardTitle>Agenda real cargada en backend</CardTitle>
               <CardDescription>
-                Este bloque muestra las clases efectivamente creadas en `Classes/byBranch` para contrastarlas con la planificación semanal definida por administración.
+                Este bloque muestra las clases efectivamente creadas en Classes/byBranch para contrastarlas con la planificacion semanal definida por administracion.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -542,7 +585,7 @@ export default function AdminHorarios() {
                         </div>
 
                         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Duración</div>
+                          <div className="text-xs uppercase tracking-wider text-zinc-500">Duracion</div>
                           <div className="mt-2 text-sm text-zinc-100">{item.duration != null ? `${item.duration} min` : "No informada"}</div>
                         </div>
 
@@ -562,7 +605,7 @@ export default function AdminHorarios() {
                         </div>
 
                         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Créditos</div>
+                          <div className="text-xs uppercase tracking-wider text-zinc-500">Creditos</div>
                           <div className="mt-2 text-sm text-zinc-100">
                             {item.creditUsage != null ? `${item.creditUsage} uso / ${item.creditRefund ?? 0}% reintegro` : "Sin dato"}
                           </div>
