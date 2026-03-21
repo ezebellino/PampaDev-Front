@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UIProvider } from "../ui/UIContext";
@@ -77,7 +77,6 @@ describe("mobile shell", () => {
       expect(document.body.style.overflow).toBe("hidden");
     });
 
-    expect(screen.getByText("Company picker")).toBeTruthy();
 
     fireEvent.keyDown(window, { key: "Escape" });
 
@@ -86,3 +85,5 @@ describe("mobile shell", () => {
     });
   });
 });
+
+

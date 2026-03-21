@@ -3,8 +3,7 @@ import { useEffect, useMemo } from "react";
 import { useAuth } from "../../lib/auth/AuthContext";
 import { ROLES } from "../../lib/auth/roles";
 import { useUI } from "../../lib/ui/UIContext";
-import BranchPicker from "../branches/BranchPicker";
-import CompanyPicker from "~/lib/companies/CompanyPicker";
+import EntitySelector from "../companies/EntitySelector";
 
 type NavItem = { to: string; label: string; icon: string; hint?: string };
 
@@ -84,6 +83,7 @@ function SidebarContent({
   const { user } = useAuth();
   const role = user?.role ?? ROLES.USER;
   const items = useMemo(() => navByRole(role), [role]);
+  const showEntitySelector = role === ROLES.ADMIN || role === ROLES.DEVS;
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -107,13 +107,15 @@ function SidebarContent({
         ) : null}
       </div>
 
-      <div className="px-3 pt-4">
+      <div className="px-3 pt-4 space-y-3">
         {collapsed ? null : (
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
             <div className="text-xs uppercase tracking-wider text-zinc-500">Rol activo</div>
             <div className="mt-2 text-sm font-medium text-cyan-100">{role}</div>
           </div>
         )}
+
+        {!collapsed && showEntitySelector ? <EntitySelector onPick={onNavigate} compact /> : null}
       </div>
 
       <nav className="flex-1 space-y-1 p-3">
@@ -221,22 +223,6 @@ export default function Sidebar({
         >
           <div className="border-b border-zinc-800 px-4 py-4">
             <BrandBlock />
-
-            <div className="mt-4 space-y-4">
-              <div>
-                <div className="mb-2 text-xs uppercase tracking-wider text-zinc-500">Empresa activa</div>
-                <CompanyPicker onPick={closeMobileMenu} hideIfSingle />
-              </div>
-
-              <div>
-                <div className="mb-2 text-xs uppercase tracking-wider text-zinc-500">Sucursal activa</div>
-                <BranchPicker onPick={closeMobileMenu} />
-              </div>
-
-              <div className="rounded-2xl border border-cyan-500/10 bg-cyan-500/5 px-4 py-3 text-xs leading-5 text-zinc-400">
-                Elegí primero la empresa y después la sucursal para mantener el contexto correcto.
-              </div>
-            </div>
           </div>
 
           <SidebarContent onNavigate={closeMobileMenu} />

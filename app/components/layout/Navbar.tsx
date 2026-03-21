@@ -1,5 +1,5 @@
 ﻿import { useUI } from "../../lib/ui/UIContext";
-import CompanyPickerNavbar from "../companies/CompanyPickerNavbar";
+import EntitySelector from "../companies/EntitySelector";
 import UserMenu from "./UserMenu";
 
 export default function Navbar({ sidebarCollapsed }: { sidebarCollapsed: boolean }) {
@@ -32,8 +32,8 @@ export default function Navbar({ sidebarCollapsed }: { sidebarCollapsed: boolean
         </div>
 
         <div className="hidden flex-1 justify-center px-6 md:flex">
-          <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition hover:border-cyan-500/30">
-            <CompanyPickerNavbar />
+          <div className="w-full max-w-2xl transition hover:border-cyan-500/30">
+            <EntitySelector />
           </div>
         </div>
 
