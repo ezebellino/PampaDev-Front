@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+﻿import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "~/components/ui/Button";
 
 export type BranchFormData = {
@@ -51,7 +51,7 @@ export default function BranchForm({
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/55 px-4 py-3">
           <div className="text-xs uppercase tracking-wider text-zinc-500">Empresa vinculada</div>
           <div className="mt-1 text-sm font-medium text-zinc-200">
-            {companyName || "Selecciona una empresa activa antes de continuar."}
+            {companyName || "Seleccioná una empresa activa antes de continuar."}
           </div>
         </div>
 
@@ -67,23 +67,23 @@ export default function BranchForm({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-zinc-300">Direccion</label>
+            <label className="text-sm text-zinc-300">Dirección</label>
             <input
               value={address}
               onChange={(event) => setAddress(event.target.value)}
               className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
-              placeholder="Ej: Av. San Martin 123"
+              placeholder="Ej: Av. San Martín 123"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm text-zinc-300">Descripcion</label>
+          <label className="text-sm text-zinc-300">Descripción</label>
           <textarea
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             className="min-h-28 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
-            placeholder="Conta brevemente que ofrece esta sucursal o que la diferencia."
+            placeholder="Contá brevemente qué ofrece esta sucursal o qué la diferencia."
           />
         </div>
       </div>
@@ -101,3 +101,4 @@ export default function BranchForm({
     </form>
   );
 }
+

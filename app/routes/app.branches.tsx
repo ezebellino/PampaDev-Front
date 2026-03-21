@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import BranchForm, { type BranchFormData } from "../components/branches/BranchForm";
 import { Badge } from "../components/ui/Badge";
@@ -37,7 +37,7 @@ export default function BranchesPage() {
 
   async function handleCreate(data: BranchFormData) {
     if (!companyId || !activeCompany) {
-      alert("Elegi primero una empresa activa para crear la sucursal.");
+      alert("Elegí primero una empresa activa para crear la sucursal.");
       return;
     }
 
@@ -64,7 +64,7 @@ export default function BranchesPage() {
   }
 
   if (loading) {
-    return <ScreenLoader title="Cargando sucursales..." subtitle="Estamos preparando tu red de operacion." />;
+    return <ScreenLoader title="Cargando sucursales..." subtitle="Estamos preparando tu red de operación." />;
   }
 
   if (error) {
@@ -87,7 +87,7 @@ export default function BranchesPage() {
             <div className="text-sm text-zinc-400">{error.message}</div>
             {!activeCompany ? (
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-400">
-                Elegi una empresa activa para habilitar el alta de sucursales.
+                Elegí una empresa activa para habilitar el alta de sucursales.
               </div>
             ) : null}
           </CardContent>
@@ -118,8 +118,8 @@ export default function BranchesPage() {
         title="Sucursales"
         subtitle={
           activeCompany
-            ? `Estas viendo las sucursales vinculadas a ${activeCompany.fantasyName}.`
-            : "Elegi una empresa activa para filtrar la operacion y crear nuevas sucursales."
+            ? `Estás viendo las sucursales vinculadas a ${activeCompany.fantasyName}.`
+            : "Elegí una empresa activa para filtrar la operación y crear nuevas sucursales."
         }
         right={
           isDev ? (
@@ -138,7 +138,7 @@ export default function BranchesPage() {
       {mode === "local-fallback" ? (
         <Card className="border-amber-500/20 bg-amber-500/10">
           <CardContent className="py-4 text-sm text-amber-100">
-            La API de sucursales no esta disponible ahora mismo. Seguimos operando con el catalogo local para no bloquear la gestion.
+            La API de sucursales no está disponible ahora mismo. Seguimos operando con el catálogo local para no bloquear la gestión.
           </CardContent>
         </Card>
       ) : null}
@@ -159,10 +159,10 @@ export default function BranchesPage() {
       {activeCompany && visibleBranches.length === 0 ? (
         <Card>
           <CardContent className="space-y-4 py-6 text-sm text-zinc-400">
-            <div>No hay sucursales cargadas para esta empresa todavia.</div>
+            <div>No hay sucursales cargadas para esta empresa todavía.</div>
             {isDev ? (
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                Podes crear la primera sucursal para {activeCompany.fantasyName} desde este mismo panel.
+                Podés crear la primera sucursal para {activeCompany.fantasyName} desde este mismo panel.
               </div>
             ) : null}
           </CardContent>
@@ -201,7 +201,7 @@ export default function BranchesPage() {
                     </div>
 
                     <p className="text-sm leading-6 text-zinc-400">
-                      {branch.description || "Esta sucursal ya esta lista para usarse dentro del flujo operativo."}
+                      {branch.description || "Esta sucursal ya está lista para usarse dentro del flujo operativo."}
                     </p>
 
                     <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
@@ -253,3 +253,4 @@ export default function BranchesPage() {
     </div>
   );
 }
+

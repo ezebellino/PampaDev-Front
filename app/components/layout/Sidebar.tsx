@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router";
+﻿import { NavLink, useLocation } from "react-router";
 import { useEffect, useMemo } from "react";
 import { useAuth } from "../../lib/auth/AuthContext";
 import { ROLES } from "../../lib/auth/roles";
@@ -9,44 +9,44 @@ type NavItem = { to: string; label: string; icon: string; hint?: string };
 
 function navByRole(role: string): NavItem[] {
   const common: NavItem[] = [
-    { to: "/app", label: "Dashboard", icon: "DB", hint: "Resumen general" },
-    { to: "/app/rubros", label: "Rubros", icon: "RB", hint: "Catalogo activo" },
+    { to: "/app", label: "Dashboard", icon: "⌂", hint: "Resumen general" },
+    { to: "/app/rubros", label: "Rubros", icon: "◫", hint: "Catálogo activo" },
   ];
 
   if (role === ROLES.DEVS) {
     return [
       ...common,
-      { to: "/app/branches", label: "Sucursales", icon: "SC", hint: "Red operativa" },
-      { to: "/app/disciplines", label: "Disciplinas", icon: "DI", hint: "Catalogo global" },
-      { to: "/app/admin/requests", label: "Peticiones", icon: "RQ", hint: "Solicitudes de admins" },
-      { to: "/app/dev", label: "Dev Panel", icon: "DV", hint: "Logs y monitoreo" },
-      { to: "/app/profile", label: "Perfil", icon: "PF", hint: "Cuenta y seguridad" },
+      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Red operativa" },
+      { to: "/app/disciplines", label: "Disciplinas", icon: "◌", hint: "Catálogo global" },
+      { to: "/app/admin/requests", label: "Solicitudes", icon: "◎", hint: "Pedidos de admins" },
+      { to: "/app/dev", label: "Dev Panel", icon: "◈", hint: "Logs y monitoreo" },
+      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
     ];
   }
 
   if (role === ROLES.ADMIN) {
     return [
       ...common,
-      { to: "/app/branches", label: "Sucursales", icon: "SC", hint: "Sedes disponibles" },
-      { to: "/app/admin", label: "Admin", icon: "AD", hint: "Operacion y catalogo" },
-      { to: "/app/profile", label: "Perfil", icon: "PF", hint: "Cuenta y seguridad" },
+      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Sedes disponibles" },
+      { to: "/app/admin", label: "Admin", icon: "▣", hint: "Operación y catálogo" },
+      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
     ];
   }
 
   if (role === ROLES.INSTRUCTOR) {
     return [
       ...common,
-      { to: "/app/branches", label: "Sucursales", icon: "SC", hint: "Sede activa" },
-      { to: "/app/instructor", label: "Instructor", icon: "IN", hint: "Agenda y operacion" },
-      { to: "/app/profile", label: "Perfil", icon: "PF", hint: "Cuenta y seguridad" },
+      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Sede activa" },
+      { to: "/app/instructor", label: "Instructor", icon: "◍", hint: "Agenda y operación" },
+      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
     ];
   }
 
   return [
     ...common,
-    { to: "/app/memberships", label: "Membresias", icon: "MB", hint: "Planes y clases" },
-    { to: "/app/branches", label: "Sucursales", icon: "SC", hint: "Elegir sede" },
-    { to: "/app/profile", label: "Perfil", icon: "PF", hint: "Cuenta y seguridad" },
+    { to: "/app/memberships", label: "Membresías", icon: "◉", hint: "Planes y clases" },
+    { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Elegir sede" },
+    { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
   ];
 }
 
@@ -151,7 +151,7 @@ function SidebarContent({
 
       {collapsed ? null : (
         <div className="border-t border-zinc-800/80 px-4 py-4 text-xs leading-5 text-zinc-500">
-          Elegi empresa y sucursal antes de avanzar con configuracion, rubros u operacion diaria.
+          Elegí empresa y sucursal antes de avanzar con configuración, rubros u operación diaria.
         </div>
       )}
     </div>
@@ -231,3 +231,5 @@ export default function Sidebar({
     </>
   );
 }
+
+

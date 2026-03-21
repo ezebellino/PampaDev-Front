@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+﻿import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "~/components/ui/Button";
 
 export type CompanyFormData = {
@@ -67,7 +67,7 @@ export default function CompanyForm({
       <div className="space-y-4 rounded-[1.25rem] border border-zinc-800 bg-zinc-900/45 px-4 py-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm text-zinc-300">Nombre de fantasia</label>
+            <label className="text-sm text-zinc-300">Nombre de fantasía</label>
             <input
               value={fantasyName}
               onChange={(event) => setFantasyName(event.target.value)}
@@ -77,7 +77,7 @@ export default function CompanyForm({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-zinc-300">Razon social</label>
+            <label className="text-sm text-zinc-300">Razón social</label>
             <input
               value={tradeName}
               onChange={(event) => setTradeName(event.target.value)}
@@ -98,7 +98,7 @@ export default function CompanyForm({
         </div>
 
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/55 px-4 py-3 text-xs leading-5 text-zinc-500">
-          La API de Companies hoy requiere estos tres datos. Ciudad, provincia y pais quedan como informacion complementaria para completar cuando el backend lo soporte de forma nativa.
+          La API de Companies hoy requiere estos tres datos. Ciudad, provincia y país quedan como información complementaria para completar cuando el backend lo soporte de forma nativa.
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
@@ -123,7 +123,7 @@ export default function CompanyForm({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-zinc-300">Pais <span className="text-zinc-500">(opcional)</span></label>
+            <label className="text-sm text-zinc-300">País <span className="text-zinc-500">(opcional)</span></label>
             <input
               value={countryName}
               onChange={(event) => setCountryName(event.target.value)}
@@ -147,3 +147,4 @@ export default function CompanyForm({
     </form>
   );
 }
+
