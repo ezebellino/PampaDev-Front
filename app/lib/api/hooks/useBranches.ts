@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Branch } from "../models/branch";
 import { getBranches } from "../services/branches";
 import type { ApiError } from "../api";
@@ -12,6 +12,7 @@ export function useBranches() {
   const [data, setData] = useState<Branch[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiError | null>(null);
+  const [mode, setMode] = useState<"api" | "local-fallback">("api");
 
   const refresh = useCallback(() => {
     let alive = true;
@@ -23,10 +24,15 @@ export function useBranches() {
       .then((res) => {
         if (!alive) return;
         setData(mergeBranches(res));
+        setMode("api");
       })
-      .catch((e) => {
+      .catch((e: ApiError) => {
         if (!alive) return;
-        setError(e);
+
+        const localOnly = mergeBranches([]);
+        setData(localOnly);
+        setMode("local-fallback");
+        setError(localOnly.length > 0 ? null : e);
       })
       .finally(() => {
         if (!alive) return;
@@ -48,10 +54,11 @@ export function useBranches() {
       const existing = data ?? [];
       const newBranch = createLocalBranch(input, existing);
       setData(mergeBranches(existing, [newBranch]));
+      setMode("local-fallback");
       return newBranch;
     },
     [data]
   );
 
-  return { data, loading, error, refresh, create };
+  return { data, loading, error, refresh, create, mode };
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router";
 import BranchForm, { type BranchFormData } from "../components/branches/BranchForm";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "~/components/ui/Button";
@@ -7,6 +8,7 @@ import { Modal } from "../components/ui/Modal";
 import { PageHeader } from "../components/ui/PageHeader";
 import ScreenLoader from "../components/ui/ScreenLoader";
 import { useBranches } from "../lib/api/hooks/useBranches";
+import { useCompanies } from "../lib/api/hooks/useCompanies";
 import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
 import { useBranch } from "../lib/branches/BranchContext";
@@ -16,22 +18,26 @@ import { logInfo } from "../lib/utils/logger";
 export default function BranchesPage() {
   const { user } = useAuth();
   const { companyId } = useCompany();
-  const { data, loading, error, refresh, create } = useBranches();
+  const { data, loading, error, refresh, create, mode } = useBranches();
+  const { data: companies } = useCompanies();
   const { branchId, setBranchId } = useBranch();
   const [createOpen, setCreateOpen] = useState(false);
   const [createBusy, setCreateBusy] = useState(false);
 
   const isDev = user?.role === ROLES.DEVS;
-  const initialFormData = useMemo<Partial<BranchFormData>>(
-    () => ({
-      companyName: companyId ? `Empresa ${companyId}` : "",
-    }),
-    [companyId]
+  const activeCompany = useMemo(
+    () => (companies ?? []).find((company) => company.idCompany === companyId) ?? null,
+    [companies, companyId]
   );
+  const visibleBranches = useMemo(() => {
+    const all = data ?? [];
+    if (companyId == null) return all;
+    return all.filter((branch) => branch.idCompany === companyId);
+  }, [data, companyId]);
 
   async function handleCreate(data: BranchFormData) {
-    if (!companyId) {
-      alert("Elegí primero una empresa activa para crear la sucursal.");
+    if (!companyId || !activeCompany) {
+      alert("Elegi primero una empresa activa para crear la sucursal.");
       return;
     }
 
@@ -39,25 +45,26 @@ export default function BranchesPage() {
     try {
       const branch = await create({
         ...data,
+        companyName: activeCompany.fantasyName,
         idCompany: companyId,
       });
 
       setBranchId(branch.idBranch);
       setCreateOpen(false);
       logInfo(
-        "Branch created locally",
-        { idBranch: branch.idBranch, cityName: branch.cityName },
+        "Branch created in local fallback",
+        { idBranch: branch.idBranch, cityName: branch.cityName, idCompany: branch.idCompany },
         { feature: "branches", layer: "ui" }
       );
-    } catch (error: any) {
-      alert(error?.message || "No se pudo crear la sucursal.");
+    } catch (createError: any) {
+      alert(createError?.message || "No se pudo crear la sucursal.");
     } finally {
       setCreateBusy(false);
     }
   }
 
   if (loading) {
-    return <ScreenLoader title="Cargando sucursales…" subtitle="Estamos preparando tu red de operación." />;
+    return <ScreenLoader title="Cargando sucursales..." subtitle="Estamos preparando tu red de operacion." />;
   }
 
   if (error) {
@@ -65,40 +72,22 @@ export default function BranchesPage() {
       <div className="space-y-6">
         <PageHeader
           title="Sucursales"
-          subtitle="Elegí desde qué sede querés trabajar y mantené el contexto de operación siempre visible."
-        />
-        <Card>
-          <CardContent className="space-y-3 py-6">
-            <div className="text-sm font-medium text-red-300">No pudimos cargar las sucursales.</div>
-            <div className="text-sm text-zinc-400">{error.message}</div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if ((data?.length ?? 0) === 0) {
-    return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Sucursales"
-          subtitle="Todavía no hay sedes configuradas para operar desde este entorno."
+          subtitle="No pudimos cargar las sucursales desde la API en este momento."
           right={
             isDev ? (
-              <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!companyId}>
+              <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!activeCompany}>
                 + Nueva sucursal
               </Button>
             ) : undefined
           }
         />
         <Card>
-          <CardContent className="space-y-4 py-6 text-sm text-zinc-400">
-            <div>Cuando exista al menos una sucursal, vas a poder seleccionarla desde acá.</div>
-            {isDev ? (
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                {companyId
-                  ? "Podés crear la primera sucursal desde este mismo panel."
-                  : "Elegí una empresa activa para habilitar el alta de sucursales."}
+          <CardContent className="space-y-3 py-6">
+            <div className="text-sm font-medium text-red-300">No pudimos cargar las sucursales.</div>
+            <div className="text-sm text-zinc-400">{error.message}</div>
+            {!activeCompany ? (
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-400">
+                Elegi una empresa activa para habilitar el alta de sucursales.
               </div>
             ) : null}
           </CardContent>
@@ -112,7 +101,7 @@ export default function BranchesPage() {
           }}
         >
           <BranchForm
-            initialData={initialFormData}
+            companyName={activeCompany?.fantasyName}
             loading={createBusy}
             submitLabel="Crear sucursal"
             onSubmit={handleCreate}
@@ -127,14 +116,18 @@ export default function BranchesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Sucursales"
-        subtitle="Elegí la sede activa para filtrar la operación, los rubros y la configuración disponible."
+        subtitle={
+          activeCompany
+            ? `Estas viendo las sucursales vinculadas a ${activeCompany.fantasyName}.`
+            : "Elegi una empresa activa para filtrar la operacion y crear nuevas sucursales."
+        }
         right={
           isDev ? (
             <div className="flex flex-wrap items-center gap-2">
               <Button variant="ghost" onClick={() => void refresh()}>
                 Actualizar
               </Button>
-              <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!companyId}>
+              <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!activeCompany}>
                 + Nueva sucursal
               </Button>
             </div>
@@ -142,77 +135,105 @@ export default function BranchesPage() {
         }
       />
 
-      {isDev && !companyId ? (
-        <Card>
-          <CardContent className="py-4 text-sm text-zinc-400">
-            Elegí primero una empresa activa para habilitar el alta de nuevas sucursales.
+      {mode === "local-fallback" ? (
+        <Card className="border-amber-500/20 bg-amber-500/10">
+          <CardContent className="py-4 text-sm text-amber-100">
+            La API de sucursales no esta disponible ahora mismo. Seguimos operando con el catalogo local para no bloquear la gestion.
           </CardContent>
         </Card>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {data!.map((branch) => {
-          const active = branchId === branch.idBranch;
+      {!activeCompany ? (
+        <Card>
+          <CardContent className="space-y-3 py-5 text-sm text-zinc-400">
+            <div>Antes de operar con sucursales, selecciona una empresa activa desde Entidad.</div>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/app/companies" className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900">
+                Ir a empresas
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
-          return (
-            <article
-              key={branch.idBranch}
-              className={`relative overflow-hidden rounded-[1.75rem] border bg-zinc-950/70 transition duration-200 ${
-                active
-                  ? "border-cyan-400/40 shadow-[0_20px_50px_rgba(34,211,238,0.10)]"
-                  : "border-zinc-800 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/70"
-              }`}
-            >
-              <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(135deg,rgba(56,189,248,0.14),transparent_55%)]" />
-              <div className="relative p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="text-lg font-semibold text-zinc-100">{branch.companyName}</div>
-                    <div className="text-sm text-zinc-400">{branch.cityName}</div>
-                  </div>
-                  <Badge className="shrink-0 border-zinc-700 bg-zinc-900/80 text-zinc-300">
-                    #{branch.idBranch}
-                  </Badge>
-                </div>
-
-                <div className="mt-5 space-y-3">
-                  <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-300">
-                    {branch.address}
-                  </div>
-
-                  <p className="text-sm leading-6 text-zinc-400">
-                    {branch.description || "Esta sucursal ya está lista para usarse dentro del flujo operativo."}
-                  </p>
-
-                  <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
-                    <span>Creada {new Date(branch.createdAt).toLocaleDateString("es-AR")}</span>
-                    <span
-                      className={`rounded-full px-3 py-1 ${
-                        active
-                          ? "border border-cyan-500/20 bg-cyan-500/10 text-cyan-200"
-                          : "border border-zinc-800 bg-zinc-900/70 text-zinc-400"
-                      }`}
-                    >
-                      {active ? "Sucursal activa" : "Disponible"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                  <Button
-                    variant={active ? "primary" : "secondary"}
-                    size="sm"
-                    className="w-full"
-                    onClick={() => setBranchId(branch.idBranch)}
-                  >
-                    {active ? "Trabajando en esta sucursal" : "Usar esta sucursal"}
-                  </Button>
-                </div>
+      {activeCompany && visibleBranches.length === 0 ? (
+        <Card>
+          <CardContent className="space-y-4 py-6 text-sm text-zinc-400">
+            <div>No hay sucursales cargadas para esta empresa todavia.</div>
+            {isDev ? (
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                Podes crear la primera sucursal para {activeCompany.fantasyName} desde este mismo panel.
               </div>
-            </article>
-          );
-        })}
-      </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {visibleBranches.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {visibleBranches.map((branch) => {
+            const active = branchId === branch.idBranch;
+
+            return (
+              <article
+                key={branch.idBranch}
+                className={`relative overflow-hidden rounded-[1.75rem] border bg-zinc-950/70 transition duration-200 ${
+                  active
+                    ? "border-cyan-400/40 shadow-[0_20px_50px_rgba(34,211,238,0.10)]"
+                    : "border-zinc-800 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/70"
+                }`}
+              >
+                <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(135deg,rgba(56,189,248,0.14),transparent_55%)]" />
+                <div className="relative p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="text-lg font-semibold text-zinc-100">{branch.companyName}</div>
+                      <div className="text-sm text-zinc-400">{branch.cityName}</div>
+                    </div>
+                    <Badge className="shrink-0 border-zinc-700 bg-zinc-900/80 text-zinc-300">
+                      #{branch.idBranch}
+                    </Badge>
+                  </div>
+
+                  <div className="mt-5 space-y-3">
+                    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-300">
+                      {branch.address}
+                    </div>
+
+                    <p className="text-sm leading-6 text-zinc-400">
+                      {branch.description || "Esta sucursal ya esta lista para usarse dentro del flujo operativo."}
+                    </p>
+
+                    <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
+                      <span>Creada {new Date(branch.createdAt).toLocaleDateString("es-AR")}</span>
+                      <span
+                        className={`rounded-full px-3 py-1 ${
+                          active
+                            ? "border border-cyan-500/20 bg-cyan-500/10 text-cyan-200"
+                            : "border border-zinc-800 bg-zinc-900/70 text-zinc-400"
+                        }`}
+                      >
+                        {active ? "Sucursal activa" : "Disponible"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                    <Button
+                      variant={active ? "primary" : "secondary"}
+                      size="sm"
+                      className="w-full"
+                      onClick={() => setBranchId(branch.idBranch)}
+                    >
+                      {active ? "Trabajando en esta sucursal" : "Usar esta sucursal"}
+                    </Button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : null}
 
       <Modal
         open={createOpen}
@@ -222,7 +243,7 @@ export default function BranchesPage() {
         }}
       >
         <BranchForm
-          initialData={initialFormData}
+          companyName={activeCompany?.fantasyName}
           loading={createBusy}
           submitLabel="Crear sucursal"
           onSubmit={handleCreate}
