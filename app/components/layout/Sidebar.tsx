@@ -9,44 +9,44 @@ type NavItem = { to: string; label: string; icon: string; hint?: string };
 
 function navByRole(role: string): NavItem[] {
   const common: NavItem[] = [
-    { to: "/app", label: "Dashboard", icon: "⌂", hint: "Resumen general" },
-    { to: "/app/rubros", label: "Rubros", icon: "◫", hint: "Catálogo activo" },
+    { to: "/app", label: "Dashboard", icon: "\u2302", hint: "Resumen general" },
+    { to: "/app/rubros", label: "Rubros", icon: "\u25EB", hint: "Catálogo activo" },
   ];
 
   if (role === ROLES.DEVS) {
     return [
       ...common,
-      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Red operativa" },
-      { to: "/app/disciplines", label: "Disciplinas", icon: "◌", hint: "Catálogo global" },
-      { to: "/app/admin/requests", label: "Solicitudes", icon: "◎", hint: "Pedidos de admins" },
-      { to: "/app/dev", label: "Dev Panel", icon: "◈", hint: "Logs y monitoreo" },
-      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
+      { to: "/app/branches", label: "Sucursales", icon: "\u2318", hint: "Red operativa" },
+      { to: "/app/disciplines", label: "Disciplinas", icon: "\u25CC", hint: "Catálogo global" },
+      { to: "/app/admin/requests", label: "Solicitudes", icon: "\u25CE", hint: "Pedidos de admins" },
+      { to: "/app/dev", label: "Dev Panel", icon: "\u25C8", hint: "Logs y monitoreo" },
+      { to: "/app/profile", label: "Perfil", icon: "\u25CB", hint: "Cuenta y seguridad" },
     ];
   }
 
   if (role === ROLES.ADMIN) {
     return [
       ...common,
-      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Sedes disponibles" },
-      { to: "/app/admin", label: "Admin", icon: "▣", hint: "Operación y catálogo" },
-      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
+      { to: "/app/branches", label: "Sucursales", icon: "\u2318", hint: "Sedes disponibles" },
+      { to: "/app/admin", label: "Admin", icon: "\u25A3", hint: "Operación y catálogo" },
+      { to: "/app/profile", label: "Perfil", icon: "\u25CB", hint: "Cuenta y seguridad" },
     ];
   }
 
   if (role === ROLES.INSTRUCTOR) {
     return [
       ...common,
-      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Sede activa" },
-      { to: "/app/instructor", label: "Instructor", icon: "◍", hint: "Agenda y operación" },
-      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
+      { to: "/app/branches", label: "Sucursales", icon: "\u2318", hint: "Sede activa" },
+      { to: "/app/instructor", label: "Instructor", icon: "\u25CD", hint: "Agenda y operación" },
+      { to: "/app/profile", label: "Perfil", icon: "\u25CB", hint: "Cuenta y seguridad" },
     ];
   }
 
   return [
     ...common,
-    { to: "/app/memberships", label: "Membresías", icon: "◉", hint: "Planes y clases" },
-    { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Elegir sede" },
-    { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
+    { to: "/app/memberships", label: "Membresías", icon: "\u25C9", hint: "Planes y clases" },
+    { to: "/app/branches", label: "Sucursales", icon: "\u2318", hint: "Elegir sede" },
+    { to: "/app/profile", label: "Perfil", icon: "\u25CB", hint: "Cuenta y seguridad" },
   ];
 }
 
@@ -135,7 +135,7 @@ function SidebarContent({
             }
             title={collapsed ? it.label : undefined}
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/15 bg-black/10 text-[11px] font-semibold uppercase tracking-wide">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/15 bg-black/10 text-base">
               {it.icon}
             </span>
 
@@ -231,5 +231,3 @@ export default function Sidebar({
     </>
   );
 }
-
-

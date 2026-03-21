@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+Ôªøimport { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { Card, CardContent } from "../components/ui/Card";
 import { useAuth } from "../lib/auth/AuthContext";
@@ -132,25 +132,25 @@ export default function AppDashboard() {
       return [
         {
           title: "Empresas",
-          desc: "Cre· la estructura empresarial base con ciudad, provincia y paÌs para ordenar toda la plataforma.",
+          desc: "Cre√° la estructura empresarial base con ciudad, provincia y pa√≠s para ordenar toda la plataforma.",
           to: "/app/companies",
           cta: "Gestionar empresas",
         },
         {
           title: "Sucursales",
-          desc: "Vincul· nuevas sedes a una empresa activa y dej· la red operativa lista para administraciÛn.",
+          desc: "Vincul√° nuevas sedes a una empresa activa y dej√° la red operativa lista para administraci√≥n.",
           to: "/app/branches",
           cta: "Gestionar sucursales",
         },
         {
           title: "Disciplinas",
-          desc: "MantenÈ el cat·logo global que luego se adapta por sucursal como oferta operativa.",
+          desc: "Manten√© el cat√°logo global que luego se adapta por sucursal como oferta operativa.",
           to: "/app/disciplines",
           cta: "Abrir disciplinas",
         },
         {
           title: "Dev Panel",
-          desc: "Revis· logs, mÈtricas internas y seÒales ˙tiles para el seguimiento tÈcnico.",
+          desc: "Revis√° logs, m√©tricas internas y se√±ales √∫tiles para el seguimiento t√©cnico.",
           to: "/app/dev",
           cta: "Abrir Dev Panel",
         },
@@ -161,27 +161,27 @@ export default function AppDashboard() {
       return [
         {
           title: "Panel Admin",
-          desc: "Entr· al workspace administrativo principal y seguÌ desde ahÌ.",
+          desc: "Entr√° al workspace administrativo principal y segu√≠ desde ah√≠.",
           to: "/app/admin",
           cta: "Abrir admin",
         },
         {
           title: "Horarios base",
-          desc: "DefinÌ la disponibilidad semanal para ordenar turnos y operaciÛn.",
+          desc: "Defin√≠ la disponibilidad semanal para ordenar turnos y operaci√≥n.",
           to: "/app/admin/horarios",
-          cta: needsBranch && !branchSelected ? "ElegÌ sucursal primero" : "Configurar horarios",
+          cta: needsBranch && !branchSelected ? "Eleg√≠ sucursal primero" : "Configurar horarios",
           disabled: needsBranch && !branchSelected,
         },
         {
-          title: "MembresÌas",
-          desc: "Gestion· la oferta comercial de la sucursal activa.",
+          title: "Membres√≠as",
+          desc: "Gestion√° la oferta comercial de la sucursal activa.",
           to: "/app/admin/memberships",
-          cta: needsBranch && !branchSelected ? "ElegÌ sucursal primero" : "Gestionar planes",
+          cta: needsBranch && !branchSelected ? "Eleg√≠ sucursal primero" : "Gestionar planes",
           disabled: needsBranch && !branchSelected,
         },
         {
           title: "Solicitudes",
-          desc: "Gestion· la empresa y las sucursales ya creadas, y canaliz· pedidos estructurales hacia Devs.",
+          desc: "Gestion√° la empresa y las sucursales ya creadas, y canaliz√° pedidos estructurales hacia Devs.",
           to: "/app/admin/requests",
           cta: "Ver requests",
         },
@@ -192,25 +192,25 @@ export default function AppDashboard() {
       return [
         {
           title: "Panel Instructor",
-          desc: "Entr· a la agenda operativa y administr· la actividad de tu sucursal.",
+          desc: "Entr√° a la agenda operativa y administr√° la actividad de tu sucursal.",
           to: "/app/instructor",
           cta: "Abrir panel",
         },
         {
           title: "Rubros",
-          desc: "Consult· servicios disponibles y valid· el contexto operativo de la sede.",
+          desc: "Consult√° servicios disponibles y valid√° el contexto operativo de la sede.",
           to: "/app/rubros",
           cta: "Ver rubros",
         },
         {
           title: "Sucursales",
-          desc: "ElegÌ o revis· la sede activa antes de tomar nuevos turnos.",
+          desc: "Eleg√≠ o revis√° la sede activa antes de tomar nuevos turnos.",
           to: "/app/branches",
           cta: "Cambiar sucursal",
         },
         {
           title: "Mi perfil",
-          desc: "Revis· tus datos y dej· tu cuenta lista para operar.",
+          desc: "Revis√° tus datos y dej√° tu cuenta lista para operar.",
           to: "/app/profile",
           cta: "Editar perfil",
         },
@@ -219,26 +219,26 @@ export default function AppDashboard() {
 
     return [
       {
-        title: "MembresÌas",
-        desc: "Compar· planes disponibles y consult· si esta sucursal ofrece clase particular.",
+        title: "Membres√≠as",
+        desc: "Compar√° planes disponibles y consult√° si esta sucursal ofrece clase particular.",
         to: "/app/memberships",
         cta: "Ver planes",
       },
       {
         title: "Mi perfil",
-        desc: "Actualiz· tus datos personales y mantenÈ tu cuenta al dÌa.",
+        desc: "Actualiz√° tus datos personales y manten√© tu cuenta al d√≠a.",
         to: "/app/profile",
         cta: "Editar perfil",
       },
       {
         title: "Explorar rubros",
-        desc: "Revis· servicios disponibles y seguÌ desde ahÌ con tu prÛxima reserva.",
+        desc: "Revis√° servicios disponibles y segu√≠ desde ah√≠ con tu pr√≥xima reserva.",
         to: "/app/rubros",
         cta: "Ver rubros",
       },
       {
         title: "Sucursales",
-        desc: "Consult· las sedes activas y elegÌ dÛnde querÈs operar.",
+        desc: "Consult√° las sedes activas y eleg√≠ d√≥nde quer√©s operar.",
         to: "/app/branches",
         cta: "Ver sucursales",
       },
@@ -258,7 +258,7 @@ export default function AppDashboard() {
           </h1>
 
           <p className="max-w-3xl text-sm text-zinc-300 md:text-base md:leading-7">
-            Este punto de entrada prioriza accesos reales seg˙n tu rol para que no tengas botones vacÌos ni desvÌos innecesarios.
+            Este punto de entrada prioriza accesos reales seg√∫n tu rol para que no tengas botones vac√≠os ni desv√≠os innecesarios.
           </p>
         </div>
 
@@ -271,8 +271,8 @@ export default function AppDashboard() {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-zinc-100">Accesos r·pidos</h2>
-          <p className="text-sm text-zinc-500">Solo acciones que hoy tienen destino ˙til dentro de la aplicaciÛn.</p>
+          <h2 className="text-lg font-semibold tracking-tight text-zinc-100">Accesos r√°pidos</h2>
+          <p className="text-sm text-zinc-500">Solo acciones que hoy tienen destino √∫til dentro de la aplicaci√≥n.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -311,7 +311,7 @@ export default function AppDashboard() {
           <CardContent className="relative -mt-2 space-y-4 py-5">
             <div className="text-sm font-semibold text-zinc-100">
               {isDev
-                ? "Resumen tÈcnico"
+                ? "Resumen t√©cnico"
                 : isAdmin
                   ? "Siguiente paso admin"
                   : isInstructor
@@ -358,7 +358,7 @@ export default function AppDashboard() {
             ) : isAdmin ? (
               <>
                 <div className="text-sm leading-6 text-zinc-400">
-                  Tu recorrido principal hoy queda concentrado en administrar la empresa y las sucursales ya creadas: horarios, membresÌas, rubros y requests reales.
+                  Tu recorrido principal hoy queda concentrado en administrar la empresa y las sucursales ya creadas: horarios, membres√≠as, rubros y requests reales.
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-2">
@@ -400,7 +400,7 @@ export default function AppDashboard() {
             ) : (
               <>
                 <div className="text-sm leading-6 text-zinc-400">
-                  Revis· los planes disponibles para tu sucursal y despuÈs complet· tu perfil para dejar tu cuenta lista.
+                  Revis√° los planes disponibles para tu sucursal y despu√©s complet√° tu perfil para dejar tu cuenta lista.
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-2">
@@ -408,7 +408,7 @@ export default function AppDashboard() {
                     to="/app/memberships"
                     className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
                   >
-                    Ver membresÌas
+                    Ver membres√≠as
                   </Link>
 
                   <Link
@@ -426,4 +426,5 @@ export default function AppDashboard() {
     </div>
   );
 }
+
 

@@ -88,10 +88,10 @@ export default function Instructor() {
             <div className="text-xs uppercase tracking-widest text-zinc-500">Panel instructor</div>
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 md:text-3xl">
-                Gestion operativa de turnos
+                Gestión operativa de turnos
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 md:text-base">
-                Esta vista combina la planificacion semanal definida por administracion con las clases reales creadas para la sucursal activa.
+                Esta vista combina la planificación semanal definida por administración con las clases reales creadas para la sucursal activa.
               </p>
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function Instructor() {
         {!hasBranch ? (
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardHeader>
-              <CardTitle>Elegi una sucursal para continuar</CardTitle>
+              <CardTitle>Elegí una sucursal para continuar</CardTitle>
               <CardDescription>
                 El instructor trabaja siempre sobre una sede activa para evitar conflictos con agenda, rubros y disponibilidad.
               </CardDescription>
@@ -197,7 +197,7 @@ export default function Instructor() {
             <CardHeader>
               <CardTitle>Agenda no disponible</CardTitle>
               <CardDescription>
-                Todavia no se pudo consultar la agenda de la sucursal desde el backend.
+                Todavía no se pudo consultar la agenda de la sucursal desde el backend.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -249,7 +249,7 @@ export default function Instructor() {
                 <CardContent className="space-y-4">
                   {classes.length === 0 ? (
                     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-5 text-sm text-zinc-400">
-                      No hay clases cargadas todavia para esta sucursal.
+                      No hay clases cargadas todavía para esta sucursal.
                     </div>
                   ) : (
                     grouped.map((group) => (
@@ -315,7 +315,7 @@ export default function Instructor() {
               <div className="space-y-4">
                 <Card className="border-zinc-800 bg-zinc-950/80">
                   <CardHeader>
-                    <CardTitle>Planificacion de administracion</CardTitle>
+                    <CardTitle>Planificación de administración</CardTitle>
                     <CardDescription>
                       Esta referencia ayuda a ordenar pedidos sobre la base semanal definida por el Admin para la sucursal activa.
                     </CardDescription>
@@ -343,7 +343,7 @@ export default function Instructor() {
                       <div className="text-sm font-medium text-zinc-100">Franjas habilitadas por disciplina</div>
                       <div className="mt-3 space-y-3">
                         {enabledSchedules.length === 0 ? (
-                          <div className="text-sm text-zinc-400">Todavia no hay disciplinas habilitadas en la planificacion semanal.</div>
+                          <div className="text-sm text-zinc-400">Todavía no hay disciplinas habilitadas en la planificación semanal.</div>
                         ) : (
                           enabledSchedules.map((item) => {
                             const disciplineName = disciplines.find((discipline) => discipline.idDiscipline === item.idDiscipline)?.name ?? `Disciplina ${item.idDiscipline}`;
@@ -375,10 +375,10 @@ export default function Instructor() {
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm text-zinc-400">
                     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                      1. Revisar si el dia esta abierto segun la planificacion del Admin.
+                      1. Revisar si el día está abierto según la planificación del Admin.
                     </div>
                     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                      2. Confirmar cupos, duracion y creditos antes de asignar.
+                      2. Confirmar cupos, duración y créditos antes de asignar.
                     </div>
                     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
                       3. Contrastar la clase real del backend con la franja habilitada por disciplina.
@@ -388,7 +388,7 @@ export default function Instructor() {
 
                 <Card className="border-zinc-800 bg-zinc-950/80">
                   <CardHeader>
-                    <CardTitle>Acciones rapidas</CardTitle>
+                    <CardTitle>Acciones rápidas</CardTitle>
                     <CardDescription>
                       Entradas directas para seguir operando sin salir del contexto de la sucursal activa.
                     </CardDescription>
@@ -401,7 +401,7 @@ export default function Instructor() {
                       to="/app/rubros"
                       className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
                     >
-                      Ver catalogo por sucursal
+                      Ver catálogo por sucursal
                     </Link>
                   </CardContent>
                 </Card>
@@ -413,3 +413,4 @@ export default function Instructor() {
     </Protected>
   );
 }
+
