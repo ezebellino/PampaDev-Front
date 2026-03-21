@@ -41,14 +41,14 @@ export default function RequestDetailModal({
 
         <div className="grid gap-3 rounded-3xl border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm text-zinc-300">
           <div>
-            <span className="text-zinc-500">Solicitó:</span> {request.requestedBy}
+            <span className="text-zinc-500">Solicito:</span> {request.requestedBy}
           </div>
           <div>
             <span className="text-zinc-500">Rol:</span> {request.requestedByRole}
           </div>
           {request.description ? (
             <div>
-              <span className="text-zinc-500">Descripción:</span> {request.description}
+              <span className="text-zinc-500">Descripcion:</span> {request.description}
             </div>
           ) : null}
           {request.exampleServices ? (
@@ -58,12 +58,12 @@ export default function RequestDetailModal({
           ) : null}
           {request.notes ? (
             <div>
-              <span className="text-zinc-500">Notas:</span> {request.notes}
+              <span className="text-zinc-500">Notas de contexto:</span> {request.notes}
             </div>
           ) : null}
           {request.reviewedBy && request.reviewedAt ? (
             <div>
-              <span className="text-zinc-500">Última revisión:</span> {request.reviewedBy} · {formatRequestDate(request.reviewedAt)}
+              <span className="text-zinc-500">Ultima revision:</span> {request.reviewedBy} · {formatRequestDate(request.reviewedAt)}
             </div>
           ) : null}
         </div>
@@ -75,7 +75,11 @@ export default function RequestDetailModal({
             onChange={(event) => setNotes(event.target.value)}
             disabled={!canReview}
             className="min-h-32 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600 disabled:cursor-default disabled:opacity-80"
-            placeholder={canReview ? "Dejá una observación para aprobación o rechazo" : "El feedback interno va a aparecer acá cuando Devs revise la solicitud"}
+            placeholder={
+              canReview
+                ? "Deja una observacion para aprobar o rechazar la solicitud"
+                : "El feedback interno aparecera aqui cuando Devs revise la solicitud"
+            }
           />
         </div>
 

@@ -47,19 +47,19 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
     {
       label: "Pendientes",
       value: counts.pending,
-      helper: "Esperando revisión",
+      helper: "Esperando revision",
       accent: "from-amber-300/18 via-amber-300/6 to-transparent",
     },
     {
       label: "Aprobadas",
       value: counts.approved,
-      helper: "Listas para catálogo",
+      helper: "Listas para el catalogo base",
       accent: "from-emerald-400/18 via-emerald-400/6 to-transparent",
     },
     {
       label: "Rechazadas",
       value: counts.rejected,
-      helper: "Necesitan ajustes",
+      helper: "Necesitan ajuste",
       accent: "from-rose-400/18 via-rose-400/6 to-transparent",
     },
   ] as const;
@@ -68,10 +68,7 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metricCards.map((card) => (
-          <article
-            key={card.label}
-            className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/75 p-5"
-          >
+          <article key={card.label} className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/75 p-5">
             <div className={`absolute inset-x-0 top-0 h-20 bg-linear-to-r ${card.accent}`} />
             <div className="relative">
               <div className="text-xs uppercase tracking-widest text-zinc-500">{card.label}</div>
@@ -86,7 +83,7 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
         <CardHeader>
           <CardTitle>Listado de solicitudes</CardTitle>
           <CardDescription>
-            Buscá, abrí el detalle y seguí el estado de cada propuesta enviada a Devs.
+            Busca, abre el detalle y sigue el estado de cada propuesta enviada para ampliar o ajustar el catalogo.
           </CardDescription>
         </CardHeader>
 
@@ -95,7 +92,7 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar por nombre, estado, notas o solicitante…"
+              placeholder="Buscar por nombre, estado, notas o solicitante..."
               className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600 sm:w-96"
             />
 
@@ -138,9 +135,7 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
                       ) : null}
 
                       {request.exampleServices ? (
-                        <div className="break-words text-xs text-zinc-400">
-                          Servicios sugeridos: {request.exampleServices}
-                        </div>
+                        <div className="break-words text-xs text-zinc-400">Servicios sugeridos: {request.exampleServices}</div>
                       ) : null}
 
                       {request.notes ? (
@@ -149,7 +144,7 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
 
                       {request.devNotes ? (
                         <div className="break-words rounded-xl border border-zinc-800 bg-zinc-900/55 px-3 py-2 text-xs text-zinc-300">
-                          {request.devNotes}
+                          Feedback interno: {request.devNotes}
                         </div>
                       ) : null}
 
@@ -175,5 +170,3 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
     </div>
   );
 }
-
-

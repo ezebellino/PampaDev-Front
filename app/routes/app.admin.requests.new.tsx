@@ -68,7 +68,7 @@ function AdminNewDisciplineRequest() {
 
     const name = p.name.trim();
     if (!name) {
-      setError("El nombre del rubro es obligatorio.");
+      setError("El nombre de la disciplina o propuesta es obligatorio.");
       return;
     }
 
@@ -91,25 +91,25 @@ function AdminNewDisciplineRequest() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Nueva solicitud de rubro"
-        subtitle="Prepara el pedido para Devs con el contexto suficiente para que puedan evaluar, crear o ajustar el catalogo sin ida y vuelta innecesaria."
+        title="Nueva solicitud"
+        subtitle="Prepara el pedido con el contexto suficiente para que Devs pueda evaluarlo rapido y sumarlo al catalogo base sin ida y vuelta innecesaria."
       />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]">
         <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
           <div className="h-24 bg-linear-to-r from-cyan-500/12 via-emerald-500/8 to-transparent" />
           <CardHeader className="relative -mt-4">
-            <CardTitle className="text-xl text-zinc-100">Solicitar nuevo rubro</CardTitle>
+            <CardTitle className="text-xl text-zinc-100">Solicitar nueva disciplina o ajuste</CardTitle>
             <CardDescription>
-              Completa la informacion clave para que el equipo Devs pueda revisar la solicitud y tomar una decision.
+              Completa la informacion clave para que el equipo Devs pueda revisar la propuesta y decidir si entra al catalogo base.
             </CardDescription>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={submit} className="space-y-5">
               <Field
-                label="Nombre del rubro"
-                hint="Usa un nombre claro y directamente reutilizable en el catalogo."
+                label="Nombre"
+                hint="Usa un nombre claro y reutilizable en el catalogo general."
                 required
               >
                 <input
@@ -134,7 +134,7 @@ function AdminNewDisciplineRequest() {
 
               <Field
                 label="Ejemplos de servicios"
-                hint="Podes listar formatos, variantes o productos que deberian existir dentro del rubro."
+                hint="Puedes listar formatos, variantes o productos que deberian existir dentro de la propuesta."
               >
                 <input
                   value={p.exampleServices}
@@ -177,7 +177,7 @@ function AdminNewDisciplineRequest() {
             <CardHeader>
               <CardTitle>Que conviene incluir</CardTitle>
               <CardDescription>
-                Una buena solicitud reduce friccion y acelera la incorporacion del rubro.
+                Una buena solicitud reduce friccion y acelera la incorporacion al catalogo.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-zinc-400">
@@ -195,15 +195,14 @@ function AdminNewDisciplineRequest() {
 
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardHeader>
-              <CardTitle>Flujo posterior</CardTitle>
+              <CardTitle>Como sigue despues</CardTitle>
               <CardDescription>
-                Despues de enviarla, la solicitud queda visible para Devs en la bandeja completa.
+                La solicitud queda visible para Devs y luego vuelve al flujo operativo cuando se aprueba.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-zinc-400">
               <p>
-                Desde tu cuenta de Admin vas a poder seguir el estado, revisar feedback interno y confirmar si la
-                propuesta fue aprobada, rechazada o necesita ajustes.
+                Desde tu cuenta de Admin vas a poder seguir el estado, revisar feedback interno y confirmar si la propuesta fue aprobada, rechazada o necesita ajustes.
               </p>
               <Button variant="ghost" className="w-full" onClick={() => nav("/app/admin/requests")}>
                 Ver mis solicitudes

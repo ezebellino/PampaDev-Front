@@ -7,9 +7,9 @@ export function statusTone(status: RubroRequestStatus) {
 }
 
 export function statusLabel(status: RubroRequestStatus) {
-  if (status === "approved") return "APROBADA";
-  if (status === "rejected") return "RECHAZADA";
-  return "PENDIENTE";
+  if (status === "approved") return "Aprobada";
+  if (status === "rejected") return "Rechazada";
+  return "Pendiente";
 }
 
 export function formatRequestDate(iso: string) {
