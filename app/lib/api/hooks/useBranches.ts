@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import type { Branch } from "../models/branch";
-import { getBranches } from "../services/branches";
+import { createBranch, getBranches } from "../services/branches";
 import type { ApiError } from "../api";
 import {
   createLocalBranch,
@@ -52,6 +52,39 @@ export function useBranches() {
   const create = useCallback(
     async (input: BranchCreateInput) => {
       const existing = data ?? [];
+
+      try {
+        const created = await createBranch({
+          address: input.address.trim(),
+          description: input.description.trim(),
+          idCompany: input.idCompany,
+          idCity: input.idCity,
+        });
+
+        if (created) {
+          setData(mergeBranches(existing, [created]));
+          setMode("api");
+          return created;
+        }
+
+        const fresh = await getBranches();
+        const merged = mergeBranches(fresh);
+        setData(merged);
+        setMode("api");
+
+        const fetchedCreated =
+          merged.find(
+            (branch) =>
+              branch.idCompany === input.idCompany &&
+              branch.idCity === input.idCity &&
+              branch.address.trim().toLowerCase() === input.address.trim().toLowerCase()
+          ) ?? null;
+
+        if (fetchedCreated) return fetchedCreated;
+      } catch {
+        // fallback local below
+      }
+
       const newBranch = createLocalBranch(input, existing);
       setData(mergeBranches(existing, [newBranch]));
       setMode("local-fallback");

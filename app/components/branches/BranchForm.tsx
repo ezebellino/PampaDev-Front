@@ -1,14 +1,16 @@
 ﻿import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "~/components/ui/Button";
+import type { City } from "~/lib/api/services/locations";
 
 export type BranchFormData = {
-  cityName: string;
+  idCity: number;
   address: string;
   description: string;
 };
 
 type BranchFormProps = {
   companyName?: string;
+  cities: City[];
   initialData?: Partial<BranchFormData>;
   loading?: boolean;
   submitLabel?: string;
@@ -18,32 +20,38 @@ type BranchFormProps = {
 
 export default function BranchForm({
   companyName,
+  cities,
   initialData,
   loading = false,
   submitLabel = "Guardar sucursal",
   onSubmit,
   onCancel,
 }: BranchFormProps) {
-  const [cityName, setCityName] = useState(initialData?.cityName ?? "");
+  const [cityId, setCityId] = useState(initialData?.idCity ? String(initialData.idCity) : "");
   const [address, setAddress] = useState(initialData?.address ?? "");
   const [description, setDescription] = useState(initialData?.description ?? "");
 
   useEffect(() => {
-    setCityName(initialData?.cityName ?? "");
+    setCityId(initialData?.idCity ? String(initialData.idCity) : "");
     setAddress(initialData?.address ?? "");
     setDescription(initialData?.description ?? "");
-  }, [initialData?.cityName, initialData?.address, initialData?.description]);
+  }, [initialData?.idCity, initialData?.address, initialData?.description]);
+
+  useEffect(() => {
+    if (cityId || cities.length === 0) return;
+    setCityId(String(cities[0]?.idCity ?? ""));
+  }, [cities, cityId]);
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     void onSubmit({
-      cityName: cityName.trim(),
+      idCity: Number(cityId),
       address: address.trim(),
       description: description.trim(),
     });
   }
 
-  const disabled = loading || !companyName || !cityName.trim() || !address.trim();
+  const disabled = loading || !companyName || !cityId || !address.trim();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -58,12 +66,19 @@ export default function BranchForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <label className="text-sm text-zinc-300">Ciudad</label>
-            <input
-              value={cityName}
-              onChange={(event) => setCityName(event.target.value)}
+            <select
+              value={cityId}
+              onChange={(event) => setCityId(event.target.value)}
               className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
-              placeholder="Ej: Santa Rosa"
-            />
+              disabled={loading || cities.length === 0}
+            >
+              <option value="">Seleccionar ciudad</option>
+              {cities.map((city) => (
+                <option key={city.idCity} value={city.idCity}>
+                  {city.name} ({city.provinceName})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-2">
@@ -101,4 +116,3 @@ export default function BranchForm({
     </form>
   );
 }
-

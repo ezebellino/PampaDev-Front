@@ -5,6 +5,7 @@ const BRANCHES_STORAGE_KEY = "pampadev:branches:local:v1";
 export type BranchCreateInput = {
   address: string;
   description: string;
+  idCity: number;
   cityName: string;
   companyName: string;
   idCompany: number;
@@ -53,7 +54,7 @@ export function createLocalBranch(input: BranchCreateInput, existingBranches: Br
     address: input.address.trim(),
     description: input.description.trim(),
     idCompany: input.idCompany,
-    idCity: nextId,
+    idCity: input.idCity,
     companyName: input.companyName.trim(),
     cityName: input.cityName.trim(),
     createdAt: new Date().toISOString(),

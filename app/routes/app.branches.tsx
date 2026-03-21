@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import BranchForm, { type BranchFormData } from "../components/branches/BranchForm";
 import { Badge } from "../components/ui/Badge";
@@ -9,6 +9,7 @@ import { PageHeader } from "../components/ui/PageHeader";
 import ScreenLoader from "../components/ui/ScreenLoader";
 import { useBranches } from "../lib/api/hooks/useBranches";
 import { useCompanies } from "../lib/api/hooks/useCompanies";
+import { getCities, type City } from "../lib/api/services/locations";
 import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
 import { useBranch } from "../lib/branches/BranchContext";
@@ -23,6 +24,8 @@ export default function BranchesPage() {
   const { branchId, setBranchId } = useBranch();
   const [createOpen, setCreateOpen] = useState(false);
   const [createBusy, setCreateBusy] = useState(false);
+  const [cities, setCities] = useState<City[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(true);
 
   const isDev = user?.role === ROLES.DEVS;
   const activeCompany = useMemo(
@@ -35,6 +38,29 @@ export default function BranchesPage() {
     return all.filter((branch) => branch.idCompany === companyId);
   }, [data, companyId]);
 
+  useEffect(() => {
+    let alive = true;
+
+    setCitiesLoading(true);
+    getCities()
+      .then((items) => {
+        if (!alive) return;
+        setCities(items);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setCities([]);
+      })
+      .finally(() => {
+        if (!alive) return;
+        setCitiesLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   async function handleCreate(data: BranchFormData) {
     if (!companyId || !activeCompany) {
       alert("Elegí primero una empresa activa para crear la sucursal.");
@@ -43,8 +69,12 @@ export default function BranchesPage() {
 
     setCreateBusy(true);
     try {
+      const city = cities.find((item) => item.idCity === data.idCity);
       const branch = await create({
-        ...data,
+        address: data.address,
+        description: data.description,
+        idCity: data.idCity,
+        cityName: city?.name ?? `Ciudad ${data.idCity}`,
         companyName: activeCompany.fantasyName,
         idCompany: companyId,
       });
@@ -52,7 +82,7 @@ export default function BranchesPage() {
       setBranchId(branch.idBranch);
       setCreateOpen(false);
       logInfo(
-        "Branch created in local fallback",
+        mode === "api" ? "Branch created via API" : "Branch created in local fallback",
         { idBranch: branch.idBranch, cityName: branch.cityName, idCompany: branch.idCompany },
         { feature: "branches", layer: "ui" }
       );
@@ -75,7 +105,7 @@ export default function BranchesPage() {
           subtitle="No pudimos cargar las sucursales desde la API en este momento."
           right={
             isDev ? (
-              <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!activeCompany}>
+              <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!activeCompany || citiesLoading || cities.length === 0}>
                 + Nueva sucursal
               </Button>
             ) : undefined
@@ -102,6 +132,7 @@ export default function BranchesPage() {
         >
           <BranchForm
             companyName={activeCompany?.fantasyName}
+            cities={cities}
             loading={createBusy}
             submitLabel="Crear sucursal"
             onSubmit={handleCreate}
@@ -127,7 +158,7 @@ export default function BranchesPage() {
               <Button variant="ghost" onClick={() => void refresh()}>
                 Actualizar
               </Button>
-              <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!activeCompany}>
+              <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!activeCompany || citiesLoading || cities.length === 0}>
                 + Nueva sucursal
               </Button>
             </div>
@@ -244,6 +275,7 @@ export default function BranchesPage() {
       >
         <BranchForm
           companyName={activeCompany?.fantasyName}
+          cities={cities}
           loading={createBusy}
           submitLabel="Crear sucursal"
           onSubmit={handleCreate}
@@ -253,4 +285,3 @@ export default function BranchesPage() {
     </div>
   );
 }
-
