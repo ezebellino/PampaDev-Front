@@ -1,3 +1,4 @@
+﻿
 import { useMemo } from "react";
 import { Link } from "react-router";
 import { Badge } from "../components/ui/Badge";
@@ -7,8 +8,8 @@ import { PageHeader } from "../components/ui/PageHeader";
 import ScreenLoader from "../components/ui/ScreenLoader";
 import Protected from "../lib/auth/Protected";
 import { ROLES } from "../lib/auth/roles";
-import { useBranch } from "../lib/branches/BranchContext";
 import { useBranches } from "../lib/api/hooks/useBranches";
+import { useBranch } from "../lib/branches/BranchContext";
 import { useDisciplines } from "../lib/disciplines/useDisciplines";
 import { useBranchMembershipCatalog } from "../lib/memberships/useBranchMembershipCatalog";
 import { BILLING_CYCLE_OPTIONS } from "../lib/memberships/types";
@@ -41,7 +42,7 @@ export default function MembershipsPage() {
   const { branchId } = useBranch();
   const { data: branches } = useBranches();
   const { disciplines, loading: disciplinesLoading } = useDisciplines();
-  const { data, loading, error: catalogError } = useBranchMembershipCatalog(branchId);
+  const { data, loading, error: catalogError, syncMode } = useBranchMembershipCatalog(branchId);
 
   const activeBranch = useMemo(() => {
     if (branchId == null || !branches) return null;
@@ -52,19 +53,23 @@ export default function MembershipsPage() {
     return (data?.plans ?? []).filter((plan) => plan.isActive && plan.isVisible);
   }, [data]);
 
+  const syncedPlans = useMemo(() => visiblePlans.filter((plan) => plan.syncSource === "api").length, [visiblePlans]);
+
   const disciplineNameMap = useMemo(() => {
     return new Map(disciplines.map((discipline) => [discipline.idDiscipline, discipline.name]));
   }, [disciplines]);
 
   const recommendedPlanId = useMemo(() => getRecommendedPlanId(visiblePlans), [visiblePlans]);
+  const privateClass = data?.privateClass;
+  const hasPrivateClass = Boolean(privateClass?.enabled && privateClass?.isActive);
 
   if (branchId == null) {
     return (
       <Protected allowRoles={[ROLES.USER, ROLES.ADMIN, ROLES.INSTRUCTOR, ROLES.DEVS]}>
         <div className="space-y-6">
           <PageHeader
-            title="Membresías"
-            subtitle="Elegí una sucursal para ver los planes disponibles y la opción de clase particular."
+            title="Membresias"
+            subtitle="Elige una sucursal para ver los planes disponibles y la opcion de clase particular."
           />
           <Card>
             <CardContent className="py-6 text-sm text-zinc-400">No hay una sucursal activa seleccionada.</CardContent>
@@ -78,41 +83,94 @@ export default function MembershipsPage() {
     return (
       <Protected allowRoles={[ROLES.USER, ROLES.ADMIN, ROLES.INSTRUCTOR, ROLES.DEVS]}>
         <ScreenLoader
-          title="Cargando membresías..."
+          title="Cargando membresias..."
           subtitle="Estamos preparando la oferta comercial disponible para esta sucursal."
         />
       </Protected>
     );
   }
 
-  const privateClass = data?.privateClass;
-  const hasPrivateClass = Boolean(privateClass?.enabled && privateClass?.isActive);
+  if (catalogError) {
+    return (
+      <Protected allowRoles={[ROLES.USER, ROLES.ADMIN, ROLES.INSTRUCTOR, ROLES.DEVS]}>
+        <div className="space-y-6">
+          <PageHeader
+            title="Membresias"
+            subtitle="No pudimos cargar la oferta disponible para esta sucursal."
+          />
+          <Card>
+            <CardContent className="py-6 text-sm text-red-300">{catalogError.message}</CardContent>
+          </Card>
+        </div>
+      </Protected>
+    );
+  }
 
   return (
     <Protected allowRoles={[ROLES.USER, ROLES.ADMIN, ROLES.INSTRUCTOR, ROLES.DEVS]}>
       <div className="space-y-6">
         <PageHeader
-          title="Membresías"
+          title="Membresias"
           subtitle={
             activeBranch
-              ? `Conocé los planes disponibles en ${activeBranch.companyName} · ${activeBranch.cityName}.`
-              : `Conocé los planes disponibles para la sucursal ${branchId}.`
+              ? `Conoce los planes disponibles en ${activeBranch.companyName} · ${activeBranch.cityName}.`
+              : `Conoce los planes disponibles para la sucursal ${branchId}.`
           }
         />
+
+        <Card className="border-sky-500/15 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_38%),linear-gradient(135deg,rgba(24,24,27,0.96),rgba(9,9,11,0.98))]">
+          <CardContent className="grid gap-5 py-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(260px,0.65fr)]">
+            <div className="space-y-3">
+              <div className="text-xs uppercase tracking-[0.24em] text-sky-200/80">Oferta activa</div>
+              <div className="max-w-2xl text-2xl font-semibold leading-tight text-white">
+                Elige el plan que mejor acompane tu frecuencia de entrenamiento.
+              </div>
+              <p className="max-w-3xl text-sm leading-6 text-zinc-300">
+                Esta vista ya toma el nucleo de memberships desde la API. Algunos detalles comerciales siguen completandose desde el frontend para que la experiencia sea mas clara mientras el backend termina de expandirse.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Badge tone="success">{visiblePlans.length} planes visibles</Badge>
+                <Badge tone="neutral">{syncedPlans} sincronizados con API</Badge>
+                <Badge tone={hasPrivateClass ? "success" : "warning"}>
+                  {hasPrivateClass ? "Clase particular disponible" : "Sin clase particular"}
+                </Badge>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+                <div className="text-xs uppercase tracking-wider text-zinc-400">Sucursal</div>
+                <div className="mt-2 text-lg font-semibold text-white">{activeBranch?.cityName ?? `#${branchId}`}</div>
+                <div className="mt-1 text-sm text-zinc-400">{activeBranch?.companyName ?? "Contexto actual"}</div>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+                <div className="text-xs uppercase tracking-wider text-zinc-400">Estado de sync</div>
+                <div className="mt-2 text-sm font-medium text-white">
+                  {syncMode === "api+local" ? "API activa + detalles de experiencia" : "Fallback local temporal"}
+                </div>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+                <div className="text-xs uppercase tracking-wider text-zinc-400">Plan sugerido</div>
+                <div className="mt-2 text-sm font-medium text-white">
+                  {recommendedPlanId ? "Marcado en la grilla" : "Sin sugerencia por ahora"}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardContent className="py-5">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Sucursal</div>
-              <div className="mt-3 text-lg font-semibold text-zinc-100">{activeBranch?.cityName ?? `#${branchId}`}</div>
-              <div className="mt-1 text-sm text-zinc-400">{activeBranch?.companyName ?? "Contexto actual"}</div>
+              <div className="text-xs uppercase tracking-wider text-zinc-500">Planes visibles</div>
+              <div className="mt-3 text-3xl font-semibold text-zinc-100">{visiblePlans.length}</div>
+              <div className="mt-1 text-sm text-zinc-400">Opciones listas para consultar</div>
             </CardContent>
           </Card>
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardContent className="py-5">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Planes visibles</div>
-              <div className="mt-3 text-3xl font-semibold text-zinc-100">{visiblePlans.length}</div>
-              <div className="mt-1 text-sm text-zinc-400">Opciones listas para contratar</div>
+              <div className="text-xs uppercase tracking-wider text-zinc-500">Sincronizados</div>
+              <div className="mt-3 text-3xl font-semibold text-zinc-100">{syncedPlans}</div>
+              <div className="mt-1 text-sm text-zinc-400">Planes respaldados por API</div>
             </CardContent>
           </Card>
           <Card className="border-zinc-800 bg-zinc-950/80">
@@ -126,9 +184,9 @@ export default function MembershipsPage() {
             <CardContent className="py-5">
               <div className="text-xs uppercase tracking-wider text-zinc-500">Plan sugerido</div>
               <div className="mt-3 text-lg font-semibold text-zinc-100">
-                {recommendedPlanId ? "Recomendado en la grilla" : "Sin sugerencia todavía"}
+                {recommendedPlanId ? "Recomendado en la grilla" : "Sin sugerencia todavia"}
               </div>
-              <div className="mt-1 text-sm text-zinc-400">Destacado automático según duración y propuesta del plan</div>
+              <div className="mt-1 text-sm text-zinc-400">Balance entre duracion, cupo y precio</div>
             </CardContent>
           </Card>
         </section>
@@ -139,7 +197,7 @@ export default function MembershipsPage() {
             <CardHeader className="relative -mt-4">
               <CardTitle>Planes disponibles</CardTitle>
               <CardDescription>
-                Propuesta comercial visible para esta sucursal. Elegí la modalidad que mejor acompañe tu frecuencia de entrenamiento.
+                Compara modalidad, disciplinas y beneficios para encontrar la opcion que mejor encaja con tu ritmo.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -147,93 +205,89 @@ export default function MembershipsPage() {
                 <div className="grid gap-4 xl:grid-cols-2">
                   {visiblePlans.map((plan) => {
                     const isRecommended = plan.idMembershipPlan === recommendedPlanId;
+                    const cycleLabel = BILLING_CYCLE_OPTIONS.find((item) => item.value === plan.billingCycle)?.label;
+                    const visibleDisciplines = plan.disciplineIds.length;
 
                     return (
                       <article
                         key={plan.idMembershipPlan}
                         className={[
-                          "group relative overflow-hidden rounded-3xl border transition duration-300 hover:-translate-y-1",
+                          "group relative overflow-hidden rounded-[1.9rem] border transition duration-300 hover:-translate-y-1",
                           isRecommended
-                            ? "border-cyan-400/40 bg-zinc-900/80 shadow-sm hover:border-cyan-300/50"
+                            ? "border-cyan-400/40 bg-zinc-900/85 shadow-[0_22px_60px_rgba(34,211,238,0.10)]"
                             : "border-zinc-800 bg-zinc-900/45 hover:border-cyan-500/30 hover:bg-zinc-900/70",
                         ].join(" ")}
                       >
-                        <div
-                          className={[
-                            "pointer-events-none absolute inset-0 bg-linear-to-br via-transparent to-transparent transition duration-300",
-                            isRecommended ? "from-cyan-500/14 opacity-100" : "from-cyan-500/10 opacity-70 group-hover:opacity-100",
-                          ].join(" ")}
-                        />
-                        <div
-                          className={[
-                            "pointer-events-none absolute -left-16 top-0 h-40 w-32 rotate-12 bg-linear-to-b from-cyan-300/18 to-transparent blur-2xl transition duration-500",
-                            isRecommended ? "translate-x-6 opacity-100" : "opacity-0 group-hover:translate-x-8 group-hover:opacity-100",
-                          ].join(" ")}
-                        />
-                        <div
-                          className={[
-                            "pointer-events-none absolute inset-x-6 top-0 h-px bg-linear-to-r from-transparent via-cyan-200/60 to-transparent transition duration-300",
-                            isRecommended ? "opacity-100" : "opacity-0 group-hover:opacity-100",
-                          ].join(" ")}
-                        />
-
-                        {isRecommended ? (
-                          <div className="absolute right-4 top-4 z-10 rounded-full border border-cyan-300/30 bg-cyan-400/12 px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-cyan-100">
-                            Recomendado
-                          </div>
-                        ) : null}
-
+                        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(145deg,rgba(56,189,248,0.14),transparent_42%,transparent)]" />
                         <div className="relative">
                           <CardHeader>
-                            <div className="flex flex-wrap items-start justify-between gap-3 pr-28">
+                            <div className="flex flex-wrap items-start justify-between gap-3 pr-20">
                               <div>
                                 <CardTitle className="text-lg text-zinc-100 transition duration-300 group-hover:text-white">{plan.name}</CardTitle>
                                 <CardDescription className="mt-1 text-sm text-zinc-400">
-                                  {plan.description || "Plan pensado para acompañar tu ritmo de clases."}
+                                  {plan.description || "Plan pensado para acompanar tu ritmo de clases."}
                                 </CardDescription>
                               </div>
-                              <Badge tone="success">{BILLING_CYCLE_OPTIONS.find((item) => item.value === plan.billingCycle)?.label}</Badge>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge tone="success">{cycleLabel}</Badge>
+                                <Badge tone={plan.syncSource === "api" ? "success" : "neutral"}>
+                                  {plan.syncSource === "api" ? "API" : "Local"}
+                                </Badge>
+                              </div>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4 text-sm text-zinc-300">
                             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 px-4 py-3 transition duration-300 group-hover:border-cyan-500/20 group-hover:bg-zinc-950">
+                              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 px-4 py-3">
                                 <div className="text-xs uppercase tracking-wider text-zinc-500">Precio</div>
                                 <div className="mt-2 text-zinc-100">{formatMoney(plan.price)}</div>
                               </div>
-                              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 px-4 py-3 transition duration-300 group-hover:border-cyan-500/20 group-hover:bg-zinc-950">
-                                <div className="text-xs uppercase tracking-wider text-zinc-500">Duración</div>
+                              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 px-4 py-3">
+                                <div className="text-xs uppercase tracking-wider text-zinc-500">Duracion</div>
                                 <div className="mt-2 text-zinc-100">{plan.months} mes{plan.months === 1 ? "" : "es"}</div>
                               </div>
-                              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 px-4 py-3 transition duration-300 group-hover:border-cyan-500/20 group-hover:bg-zinc-950">
+                              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 px-4 py-3">
                                 <div className="text-xs uppercase tracking-wider text-zinc-500">Modalidad</div>
                                 <div className="mt-2 text-zinc-100">{plan.unlimited ? "Ilimitado" : `${plan.classLimit ?? 0} clases`}</div>
                               </div>
                             </div>
 
-                            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 px-4 py-3 transition duration-300 group-hover:border-cyan-500/20 group-hover:bg-zinc-950">
-                              <div className="text-xs uppercase tracking-wider text-zinc-500">Incluye</div>
+                            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 px-4 py-3">
+                              <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas</div>
                               <div className="mt-2 flex flex-wrap gap-2">
-                                {plan.disciplineIds.length > 0 ? (
+                                {visibleDisciplines > 0 ? (
                                   plan.disciplineIds.map((idDiscipline) => (
-                                    <Badge key={idDiscipline} tone="neutral">{disciplineNameMap.get(idDiscipline) ?? `Disciplina ${idDiscipline}`}</Badge>
+                                    <Badge key={idDiscipline} tone="neutral">
+                                      {disciplineNameMap.get(idDiscipline) ?? `Disciplina ${idDiscipline}`}
+                                    </Badge>
                                   ))
                                 ) : (
-                                  <span className="text-zinc-400">Sin disciplinas informadas</span>
+                                  <span className="text-zinc-400">
+                                    {plan.disciplinesCount > 0
+                                      ? `${plan.disciplinesCount} disciplina${plan.disciplinesCount === 1 ? "" : "s"} cargadas`
+                                      : "Sin disciplinas informadas"}
+                                  </span>
                                 )}
                               </div>
                             </div>
 
                             {plan.benefits ? (
-                              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 px-4 py-3 transition duration-300 group-hover:border-cyan-500/20 group-hover:bg-zinc-950">
+                              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 px-4 py-3">
                                 <div className="text-xs uppercase tracking-wider text-zinc-500">Beneficios</div>
                                 <div className="mt-2 leading-6 text-zinc-100">{plan.benefits}</div>
                               </div>
                             ) : null}
 
-                            <Button className="w-full transition duration-300 group-hover:bg-white" disabled>
-                              Próximamente vas a poder contratar este plan
-                            </Button>
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                              <Button className="w-full transition duration-300 group-hover:bg-white" disabled>
+                                Proximamente podras contratar este plan
+                              </Button>
+                              {isRecommended ? (
+                                <div className="inline-flex items-center justify-center rounded-2xl border border-cyan-400/25 bg-cyan-400/10 px-4 py-3 text-center text-xs font-medium uppercase tracking-widest text-cyan-100 sm:w-auto">
+                                  Recomendado
+                                </div>
+                              ) : null}
+                            </div>
                           </CardContent>
                         </div>
                       </article>
@@ -242,7 +296,7 @@ export default function MembershipsPage() {
                 </div>
               ) : (
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-5 text-sm text-zinc-400">
-                  Esta sucursal todavía no tiene planes visibles configurados.
+                  Esta sucursal todavia no tiene planes visibles configurados.
                 </div>
               )}
             </CardContent>
@@ -264,7 +318,7 @@ export default function MembershipsPage() {
                       <div className="mt-2 text-lg font-semibold text-zinc-100">{formatMoney(privateClass.price)}</div>
                     </div>
                     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                      <div className="text-xs uppercase tracking-wider text-zinc-500">Duración</div>
+                      <div className="text-xs uppercase tracking-wider text-zinc-500">Duracion</div>
                       <div className="mt-2 text-zinc-100">{privateClass.duration} min</div>
                     </div>
                     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
@@ -272,10 +326,12 @@ export default function MembershipsPage() {
                       <div className="mt-2 flex flex-wrap gap-2">
                         {privateClass.disciplineIds.length > 0 ? (
                           privateClass.disciplineIds.map((idDiscipline) => (
-                            <Badge key={idDiscipline} tone="neutral">{disciplineNameMap.get(idDiscipline) ?? `Disciplina ${idDiscipline}`}</Badge>
+                            <Badge key={idDiscipline} tone="neutral">
+                              {disciplineNameMap.get(idDiscipline) ?? `Disciplina ${idDiscipline}`}
+                            </Badge>
                           ))
                         ) : (
-                          <span className="text-zinc-400">Disponible según coordinación con la sede</span>
+                          <span className="text-zinc-400">Disponible segun coordinacion con la sede</span>
                         )}
                       </div>
                     </div>
@@ -285,12 +341,12 @@ export default function MembershipsPage() {
                       </div>
                     ) : null}
                     <Button variant="secondary" className="w-full" disabled>
-                      Próximamente vas a poder reservar una clase particular
+                      Proximamente podras reservar una clase particular
                     </Button>
                   </>
                 ) : (
                   <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-5 text-zinc-400">
-                    Por ahora no hay una opción de clase particular visible para esta sucursal.
+                    Por ahora no hay una opcion de clase particular visible para esta sucursal.
                   </div>
                 )}
               </CardContent>
@@ -298,26 +354,26 @@ export default function MembershipsPage() {
 
             <Card className="border-zinc-800 bg-zinc-950/80">
               <CardHeader>
-                <CardTitle>Cómo seguir</CardTitle>
+                <CardTitle>Como seguir</CardTitle>
                 <CardDescription>
-                  Mientras se completa la contratación online, esta vista te ayuda a comparar la oferta disponible.
+                  Mientras se completa la contratacion online, esta vista te ayuda a comparar la oferta real de la sede.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-zinc-400">
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                  1. Elegí una sucursal activa para ver su oferta real.
+                  1. Elige una sucursal activa para ver su oferta real.
                 </div>
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                  2. Compará planes, beneficios y disciplinas incluidas.
+                  2. Compara planes, beneficios y disciplinas incluidas.
                 </div>
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                  3. Próximamente se podrá contratar o reservar desde este mismo flujo.
+                  3. Muy pronto vas a poder contratar o reservar desde este mismo flujo.
                 </div>
                 <Link
                   to="/app/rubros"
-                  className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
+                  className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 transition hover:bg-zinc-900"
                 >
-                  Ver rubros disponibles
+                  Ver oferta por rubros
                 </Link>
               </CardContent>
             </Card>
