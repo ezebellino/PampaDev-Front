@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "~/components/ui/Button";
 
 export type CompanyFormData = {
@@ -60,21 +60,14 @@ export default function CompanyForm({
     });
   }
 
-  const disabled =
-    loading ||
-    !fantasyName.trim() ||
-    !tradeName.trim() ||
-    !cuitCuilDNI.trim() ||
-    !cityName.trim() ||
-    !provinceName.trim() ||
-    !countryName.trim();
+  const disabled = loading || !fantasyName.trim() || !tradeName.trim() || !cuitCuilDNI.trim();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-4 rounded-[1.25rem] border border-zinc-800 bg-zinc-900/45 px-4 py-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm text-zinc-300">Nombre de fantasía</label>
+            <label className="text-sm text-zinc-300">Nombre de fantasia</label>
             <input
               value={fantasyName}
               onChange={(event) => setFantasyName(event.target.value)}
@@ -84,7 +77,7 @@ export default function CompanyForm({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-zinc-300">Razón social</label>
+            <label className="text-sm text-zinc-300">Razon social</label>
             <input
               value={tradeName}
               onChange={(event) => setTradeName(event.target.value)}
@@ -104,9 +97,13 @@ export default function CompanyForm({
           />
         </div>
 
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/55 px-4 py-3 text-xs leading-5 text-zinc-500">
+          La API de Companies hoy requiere estos tres datos. Ciudad, provincia y pais quedan como informacion complementaria para completar cuando el backend lo soporte de forma nativa.
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <label className="text-sm text-zinc-300">Ciudad</label>
+            <label className="text-sm text-zinc-300">Ciudad <span className="text-zinc-500">(opcional)</span></label>
             <input
               value={cityName}
               onChange={(event) => setCityName(event.target.value)}
@@ -116,7 +113,7 @@ export default function CompanyForm({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-zinc-300">Provincia</label>
+            <label className="text-sm text-zinc-300">Provincia <span className="text-zinc-500">(opcional)</span></label>
             <input
               value={provinceName}
               onChange={(event) => setProvinceName(event.target.value)}
@@ -126,7 +123,7 @@ export default function CompanyForm({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-zinc-300">País</label>
+            <label className="text-sm text-zinc-300">Pais <span className="text-zinc-500">(opcional)</span></label>
             <input
               value={countryName}
               onChange={(event) => setCountryName(event.target.value)}
@@ -144,7 +141,7 @@ export default function CompanyForm({
           </Button>
         ) : null}
         <Button type="submit" disabled={disabled}>
-          {loading ? "Guardando…" : submitLabel}
+          {loading ? "Guardando..." : submitLabel}
         </Button>
       </div>
     </form>

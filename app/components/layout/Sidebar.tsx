@@ -1,4 +1,4 @@
-﻿import { NavLink, useLocation } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import { useEffect, useMemo } from "react";
 import { useAuth } from "../../lib/auth/AuthContext";
 import { ROLES } from "../../lib/auth/roles";
@@ -9,44 +9,44 @@ type NavItem = { to: string; label: string; icon: string; hint?: string };
 
 function navByRole(role: string): NavItem[] {
   const common: NavItem[] = [
-    { to: "/app", label: "Dashboard", icon: "⌂", hint: "Resumen general" },
-    { to: "/app/rubros", label: "Rubros", icon: "◫", hint: "Catálogo activo" },
+    { to: "/app", label: "Dashboard", icon: "DB", hint: "Resumen general" },
+    { to: "/app/rubros", label: "Rubros", icon: "RB", hint: "Catalogo activo" },
   ];
 
   if (role === ROLES.DEVS) {
     return [
       ...common,
-      { to: "/app/companies", label: "Empresas", icon: "◩", hint: "Estructura empresarial" },
-      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Red operativa" },
-      { to: "/app/disciplines", label: "Disciplinas", icon: "◌", hint: "Catálogo global" },
-      { to: "/app/dev", label: "Dev Panel", icon: "◈", hint: "Logs y monitoreo" },
-      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
+      { to: "/app/branches", label: "Sucursales", icon: "SC", hint: "Red operativa" },
+      { to: "/app/disciplines", label: "Disciplinas", icon: "DI", hint: "Catalogo global" },
+      { to: "/app/admin/requests", label: "Peticiones", icon: "RQ", hint: "Solicitudes de admins" },
+      { to: "/app/dev", label: "Dev Panel", icon: "DV", hint: "Logs y monitoreo" },
+      { to: "/app/profile", label: "Perfil", icon: "PF", hint: "Cuenta y seguridad" },
     ];
   }
 
   if (role === ROLES.ADMIN) {
     return [
       ...common,
-      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Sedes disponibles" },
-      { to: "/app/admin", label: "Admin", icon: "▣", hint: "Operación y catálogo" },
-      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
+      { to: "/app/branches", label: "Sucursales", icon: "SC", hint: "Sedes disponibles" },
+      { to: "/app/admin", label: "Admin", icon: "AD", hint: "Operacion y catalogo" },
+      { to: "/app/profile", label: "Perfil", icon: "PF", hint: "Cuenta y seguridad" },
     ];
   }
 
   if (role === ROLES.INSTRUCTOR) {
     return [
       ...common,
-      { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Sede activa" },
-      { to: "/app/instructor", label: "Instructor", icon: "◍", hint: "Agenda y operación" },
-      { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
+      { to: "/app/branches", label: "Sucursales", icon: "SC", hint: "Sede activa" },
+      { to: "/app/instructor", label: "Instructor", icon: "IN", hint: "Agenda y operacion" },
+      { to: "/app/profile", label: "Perfil", icon: "PF", hint: "Cuenta y seguridad" },
     ];
   }
 
   return [
     ...common,
-    { to: "/app/memberships", label: "Membresías", icon: "◉", hint: "Planes y clases" },
-    { to: "/app/branches", label: "Sucursales", icon: "⌘", hint: "Elegir sede" },
-    { to: "/app/profile", label: "Perfil", icon: "○", hint: "Cuenta y seguridad" },
+    { to: "/app/memberships", label: "Membresias", icon: "MB", hint: "Planes y clases" },
+    { to: "/app/branches", label: "Sucursales", icon: "SC", hint: "Elegir sede" },
+    { to: "/app/profile", label: "Perfil", icon: "PF", hint: "Cuenta y seguridad" },
   ];
 }
 
@@ -107,7 +107,7 @@ function SidebarContent({
         ) : null}
       </div>
 
-      <div className="px-3 pt-4 space-y-3">
+      <div className="space-y-3 px-3 pt-4">
         {collapsed ? null : (
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
             <div className="text-xs uppercase tracking-wider text-zinc-500">Rol activo</div>
@@ -135,7 +135,7 @@ function SidebarContent({
             }
             title={collapsed ? it.label : undefined}
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/15 bg-black/10 text-base">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/15 bg-black/10 text-[11px] font-semibold uppercase tracking-wide">
               {it.icon}
             </span>
 
@@ -151,7 +151,7 @@ function SidebarContent({
 
       {collapsed ? null : (
         <div className="border-t border-zinc-800/80 px-4 py-4 text-xs leading-5 text-zinc-500">
-          Elegí empresa y sucursal antes de avanzar con configuración, rubros u operación diaria.
+          Elegi empresa y sucursal antes de avanzar con configuracion, rubros u operacion diaria.
         </div>
       )}
     </div>

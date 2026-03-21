@@ -1,4 +1,4 @@
-﻿import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
   index("routes/_index.tsx"),
@@ -11,6 +11,7 @@ export default [
 
     route("profile", "routes/app.profile.tsx"),
     route("branches", "routes/app.branches.tsx"),
+    route("companies", "routes/app.companies.tsx"),
     route("memberships", "routes/app.memberships.tsx"),
 
     route("rubros", "routes/app.rubros.tsx", [
@@ -25,8 +26,8 @@ export default [
       index("routes/app.admin._index.tsx"),
       route("rubros", "routes/app.admin.rubros.tsx"),
       route("memberships", "routes/app.admin.memberships.tsx"),
-      route("solicitudes", "routes/app.admin.requests.tsx"),
-      route("solicitudes/nueva", "routes/app.admin.requests.new.tsx"),
+      route("requests", "routes/app.admin.requests.tsx"),
+      route("requests/new", "routes/app.admin.requests.new.tsx"),
       route("horarios", "routes/app.admin.horarios.tsx"),
     ]),
 
@@ -37,3 +38,4 @@ export default [
 
   route("rubros", "routes/rubros.tsx"),
 ] satisfies RouteConfig;
+

@@ -1,4 +1,4 @@
-﻿import type { Company } from "../api/models/company";
+import type { Company } from "../api/models/company";
 
 const COMPANIES_STORAGE_KEY = "pampadev:companies:local:v1";
 
@@ -6,9 +6,9 @@ export type CompanyCreateInput = {
   fantasyName: string;
   tradeName: string;
   cuitCuilDNI: string;
-  cityName: string;
-  provinceName: string;
-  countryName: string;
+  cityName?: string;
+  provinceName?: string;
+  countryName?: string;
 };
 
 function isCompany(value: unknown): value is Company {
@@ -51,9 +51,9 @@ export function createLocalCompany(input: CompanyCreateInput, existingCompanies:
     fantasyName: input.fantasyName.trim(),
     tradeName: input.tradeName.trim(),
     cuitCuilDNI: input.cuitCuilDNI.trim(),
-    cityName: input.cityName.trim(),
-    provinceName: input.provinceName.trim(),
-    countryName: input.countryName.trim(),
+    cityName: input.cityName?.trim() ?? "",
+    provinceName: input.provinceName?.trim() ?? "",
+    countryName: input.countryName?.trim() ?? "",
     createdAt: new Date().toISOString(),
   };
 
