@@ -5,27 +5,20 @@ export function getClassesByBranch(idBranch: number, signal?: AbortSignal) {
   return apiGet<BranchClassRecord[]>(`/api/Classes/byBranch/${idBranch}`, signal);
 }
 
-export type ClassReservationRequest = {
-  branchId: number;
-  rubroId: string;
-  slotId: string;
-  userId: string;
+export type CreateClassPayload = {
   date: string;
   time: string;
+  idBranchDiscipline: number;
+  idUser: number;
+  capacity: number;
+  duration: number;
+  creditUsage: number;
+  creditRefund: number;
+  status: number;
 };
 
-export type ClassReservationResponse = {
-  id: string;
-  branchId: number;
-  rubroId: string;
-  slotId: string;
-  userId: string;
-  date: string;
-  time: string;
-  status: "pending" | "confirmed" | "cancelled";
-  createdAt: string;
-};
+export type CreatedClassResponse = BranchClassRecord & Record<string, unknown>;
 
-export function createClassReservation(payload: ClassReservationRequest) {
-  return apiPost<ClassReservationResponse>("/api/Reservations", payload);
+export function createClass(payload: CreateClassPayload) {
+  return apiPost<CreatedClassResponse | void>("/api/Classes", payload);
 }

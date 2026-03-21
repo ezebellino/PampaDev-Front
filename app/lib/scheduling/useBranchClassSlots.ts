@@ -1,13 +1,60 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import {
-  getClassesByBranch,
-  createClassReservation,
-  type ClassReservationRequest,
-} from "../api/services/classes";
+import { createClass, getClassesByBranch, type CreateClassPayload } from "../api/services/classes";
 import type { BranchClassRecord } from "../api/models/branchClass";
 import { persistInstructorReservationRequest } from "./useInstructorRequests";
+
+function readNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function resolveBranchDisciplineId(slot: BranchClassRecord) {
+  return (
+    readNumber(slot.idBranchDiscipline) ??
+    readNumber(slot["branchDisciplineId"]) ??
+    readNumber(slot["idBranchDisciplineId"])
+  );
+}
+
+function resolveIsoDate(date: string, time: string) {
+  const candidate = new Date(`${date}T${time}`);
+  if (!Number.isNaN(candidate.getTime())) {
+    return candidate.toISOString();
+  }
+
+  const fallback = new Date(date);
+  if (!Number.isNaN(fallback.getTime())) {
+    return fallback.toISOString();
+  }
+
+  throw new Error("No pudimos construir la fecha del turno con el slot seleccionado.");
+}
+
+function buildCreateClassPayload(slot: BranchClassRecord, userId: string): CreateClassPayload {
+  const idUser = readNumber(userId);
+  if (idUser == null) {
+    throw new Error("La sesion actual no tiene un idUser numerico para enviar al backend.");
+  }
+
+  const idBranchDiscipline = resolveBranchDisciplineId(slot);
+  if (idBranchDiscipline == null) {
+    throw new Error("El slot seleccionado no informa idBranchDiscipline. Necesitamos ese dato desde backend para crear la clase.");
+  }
+
+  return {
+    date: resolveIsoDate(slot.date, slot.time),
+    time: slot.time,
+    idBranchDiscipline,
+    idUser,
+    capacity: readNumber(slot.capacity) ?? 1,
+    duration: readNumber(slot.duration) ?? 60,
+    creditUsage: readNumber(slot.creditUsage) ?? 0,
+    creditRefund: readNumber(slot.creditRefund) ?? 0,
+    status: readNumber(slot.status) ?? 0,
+  };
+}
 
 export function useBranchClassSlots(branchId: number | null, rubroId: string | null) {
   const queryClient = useQueryClient();
@@ -33,7 +80,7 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
   }, [classesQuery.data, rubroId]);
 
   const reservationMutation = useMutation({
-    mutationFn: (payload: ClassReservationRequest) => createClassReservation(payload),
+    mutationFn: (payload: CreateClassPayload) => createClass(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["branch-classes", branchId] });
     },
@@ -44,14 +91,8 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
     if (!rubroId) throw new Error("Rubro no seleccionado");
     if (slot.available <= 0) throw new Error("No hay cupos disponibles");
 
-    const response = await reservationMutation.mutateAsync({
-      branchId,
-      rubroId,
-      slotId: slot.id,
-      userId,
-      date: slot.date,
-      time: slot.time,
-    });
+    const payload = buildCreateClassPayload(slot, userId);
+    const response = await reservationMutation.mutateAsync(payload);
 
     try {
       persistInstructorReservationRequest({
@@ -60,6 +101,7 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
         rubroId,
         slotId: slot.id,
         userId,
+        backendClassId: readNumber(response?.id) ?? String(response?.id ?? ""),
         date: slot.date,
         time: slot.time,
         status: "pending",

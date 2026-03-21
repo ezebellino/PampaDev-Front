@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 
 type InstructorReservationStatus = "pending" | "confirmed" | "rejected";
 
@@ -8,6 +8,7 @@ export type InstructorReservationRequest = {
   rubroId: string;
   slotId: string;
   userId: string;
+  backendClassId?: string | number;
   date?: string;
   time?: string;
   status: InstructorReservationStatus;
@@ -67,15 +68,21 @@ export function useInstructorReservationRequests(branchId: number | null) {
     setRequests(items);
   }, [branchId]);
 
-  const confirmRequest = useCallback((requestId: string) => {
-    const next = updateInstructorReservationStatus(requestId, "confirmed");
-    setRequests(next.filter((item) => (branchId == null ? true : item.branchId === branchId)));
-  }, [branchId]);
+  const confirmRequest = useCallback(
+    (requestId: string) => {
+      const next = updateInstructorReservationStatus(requestId, "confirmed");
+      setRequests(next.filter((item) => (branchId == null ? true : item.branchId === branchId)));
+    },
+    [branchId]
+  );
 
-  const rejectRequest = useCallback((requestId: string) => {
-    const next = updateInstructorReservationStatus(requestId, "rejected");
-    setRequests(next.filter((item) => (branchId == null ? true : item.branchId === branchId)));
-  }, [branchId]);
+  const rejectRequest = useCallback(
+    (requestId: string) => {
+      const next = updateInstructorReservationStatus(requestId, "rejected");
+      setRequests(next.filter((item) => (branchId == null ? true : item.branchId === branchId)));
+    },
+    [branchId]
+  );
 
   const pending = useMemo(() => requests.filter((item) => item.status === "pending"), [requests]);
   const confirmed = useMemo(() => requests.filter((item) => item.status === "confirmed"), [requests]);
