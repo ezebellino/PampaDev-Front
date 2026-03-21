@@ -1,8 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MembershipPlanInput } from "./types";
 import {
   createMembershipPlan,
+  hideMembershipPlan,
   loadBranchMembershipCatalog,
+  mergeApiMembershipCatalog,
   saveMembershipPrivateClass,
   subscribeToBranchMembershipCatalog,
   updateMembershipPlan,
@@ -36,6 +38,7 @@ describe("memberships storage domain", () => {
 
     expect(createdCatalog.plans).toHaveLength(1);
     expect(createdPlan.name).toBe("Plan Base");
+    expect(createdPlan.disciplinesCount).toBe(2);
 
     const updatedCatalog = updateMembershipPlan(branchId, createdPlan.idMembershipPlan, {
       ...basePlan,
@@ -46,6 +49,28 @@ describe("memberships storage domain", () => {
 
     expect(updatedCatalog.plans[0]?.name).toBe("Plan Premium");
     expect(updatedCatalog.plans[0]?.unlimited).toBe(true);
+  });
+
+  it("merges api memberships while preserving local metadata and hide state", () => {
+    createMembershipPlan(branchId, basePlan);
+
+    const merged = mergeApiMembershipCatalog(branchId, [
+      {
+        idMembership: 77,
+        name: "Plan Sync",
+        price: 31000,
+        disciplinesCount: 3,
+        createdAt: "2026-03-21T10:00:00.000Z",
+        updatedAt: "2026-03-21T11:00:00.000Z",
+      },
+    ]);
+
+    expect(merged.plans.some((plan) => plan.idMembershipPlan === 77)).toBe(true);
+    expect(merged.plans.find((plan) => plan.idMembershipPlan === 77)?.syncSource).toBe("api");
+
+    const hidden = hideMembershipPlan(branchId, 77);
+    expect(hidden.plans.some((plan) => plan.idMembershipPlan === 77)).toBe(false);
+    expect(hidden.hiddenPlanIds).toContain(77);
   });
 
   it("persists private class config and emits sync notifications", () => {

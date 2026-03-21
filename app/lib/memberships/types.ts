@@ -15,6 +15,7 @@ export type MembershipPlan = {
   name: string;
   description: string;
   price: number;
+  disciplinesCount: number;
   billingCycle: BillingCycle;
   months: number;
   classLimit: number | null;
@@ -27,6 +28,7 @@ export type MembershipPlan = {
   disciplineIds: number[];
   createdAt: string;
   updatedAt?: string;
+  syncSource?: "api" | "local";
 };
 
 export type MembershipPlanInput = {
@@ -58,4 +60,5 @@ export type BranchMembershipCatalog = {
   plans: MembershipPlan[];
   privateClass: PrivateClassOffer;
   updatedAt?: string;
+  hiddenPlanIds?: number[];
 };

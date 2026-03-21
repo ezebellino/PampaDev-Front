@@ -1,3 +1,4 @@
+﻿
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -6,8 +7,8 @@ import { PageHeader } from "../components/ui/PageHeader";
 import ScreenLoader from "../components/ui/ScreenLoader";
 import Protected from "../lib/auth/Protected";
 import { ROLES } from "../lib/auth/roles";
-import { useBranch } from "../lib/branches/BranchContext";
 import { useBranches } from "../lib/api/hooks/useBranches";
+import { useBranch } from "../lib/branches/BranchContext";
 import { useDisciplines } from "../lib/disciplines/useDisciplines";
 import { useBranchMembershipCatalog } from "../lib/memberships/useBranchMembershipCatalog";
 import {
@@ -41,7 +42,17 @@ export default function AdminMembershipsPage() {
   const { branchId } = useBranch();
   const { data: branches } = useBranches();
   const { disciplines, loading: disciplinesLoading, error: disciplinesError } = useDisciplines();
-  const { data, loading, error: catalogError, createPlan, updatePlan, removePlan, savePrivateClass, saving } = useBranchMembershipCatalog(branchId);
+  const {
+    data,
+    loading,
+    error: catalogError,
+    createPlan,
+    updatePlan,
+    removePlan,
+    savePrivateClass,
+    saving,
+    syncMode,
+  } = useBranchMembershipCatalog(branchId);
 
   const [planForm, setPlanForm] = useState<MembershipPlanInput>(DEFAULT_PLAN_FORM);
   const [editingPlanId, setEditingPlanId] = useState<number | null>(null);
@@ -69,9 +80,8 @@ export default function AdminMembershipsPage() {
 
   const activePlans = useMemo(() => data?.plans.filter((plan) => plan.isActive).length ?? 0, [data]);
   const visiblePlans = useMemo(() => data?.plans.filter((plan) => plan.isVisible).length ?? 0, [data]);
-  const estimatedRevenue = useMemo(() => {
-    return (data?.plans ?? []).reduce((total, plan) => total + plan.price, 0);
-  }, [data]);
+  const syncedPlans = useMemo(() => data?.plans.filter((plan) => plan.syncSource === "api").length ?? 0, [data]);
+  const estimatedRevenue = useMemo(() => (data?.plans ?? []).reduce((total, plan) => total + plan.price, 0), [data]);
 
   function resetPlanForm() {
     setPlanForm(DEFAULT_PLAN_FORM);
@@ -99,24 +109,27 @@ export default function AdminMembershipsPage() {
     }
 
     if (!planForm.unlimited && (!planForm.classLimit || planForm.classLimit <= 0)) {
-      setError("Definí la cantidad de clases o marcá el plan como ilimitado.");
+      setError("Defini la cantidad de clases o marca el plan como ilimitado.");
       return;
     }
 
     if (planForm.disciplineIds.length === 0) {
-      setError("Seleccioná al menos una disciplina para el plan.");
+      setError("Selecciona al menos una disciplina para el plan.");
       return;
     }
 
-    if (editingPlanId != null) {
-      updatePlan(editingPlanId, planForm);
-      setFeedback("Plan actualizado correctamente.");
-    } else {
-      createPlan(planForm);
-      setFeedback("Plan creado correctamente.");
+    try {
+      if (editingPlanId != null) {
+        await updatePlan(editingPlanId, planForm);
+        setFeedback("Plan actualizado correctamente.");
+      } else {
+        await createPlan(planForm);
+        setFeedback("Plan creado correctamente.");
+      }
+      resetPlanForm();
+    } catch (submitError: any) {
+      setError(submitError?.message || "No pudimos guardar el plan.");
     }
-
-    resetPlanForm();
   }
 
   function startEditPlan(plan: MembershipPlan) {
@@ -139,25 +152,39 @@ export default function AdminMembershipsPage() {
     setError(null);
   }
 
-  function handleRemovePlan(idMembershipPlan: number) {
-    if (!window.confirm("¿Querés eliminar este plan de la sucursal activa?")) return;
-    removePlan(idMembershipPlan);
-    if (editingPlanId === idMembershipPlan) resetPlanForm();
-    setFeedback("Plan eliminado correctamente.");
-    setError(null);
+  async function handleRemovePlan(plan: MembershipPlan) {
+    const actionLabel = plan.syncSource === "api" ? "ocultar" : "eliminar";
+    if (!window.confirm(`¿Quieres ${actionLabel} este plan de la sucursal activa?`)) return;
+
+    try {
+      await removePlan(plan.idMembershipPlan);
+      if (editingPlanId === plan.idMembershipPlan) resetPlanForm();
+      setFeedback(
+        plan.syncSource === "api"
+          ? "Plan ocultado localmente. La API no expone eliminacion todavia."
+          : "Plan eliminado correctamente."
+      );
+      setError(null);
+    } catch (removeError: any) {
+      setError(removeError?.message || "No pudimos actualizar la lista de planes.");
+    }
   }
 
-  function handleSavePrivateClass() {
+  async function handleSavePrivateClass() {
     setFeedback(null);
     setError(null);
 
     if (privateClassForm.enabled && privateClassForm.price <= 0) {
-      setError("Definí un precio válido para la clase particular.");
+      setError("Define un precio valido para la clase particular.");
       return;
     }
 
-    savePrivateClass(privateClassForm);
-    setFeedback("Configuración de clase particular guardada.");
+    try {
+      await savePrivateClass(privateClassForm);
+      setFeedback("Configuracion de clase particular guardada.");
+    } catch (saveError: any) {
+      setError(saveError?.message || "No pudimos guardar la clase particular.");
+    }
   }
 
   if (branchId == null) {
@@ -165,8 +192,8 @@ export default function AdminMembershipsPage() {
       <Protected allowRoles={[ROLES.ADMIN]}>
         <div className="space-y-6">
           <PageHeader
-            title="Membresías"
-            subtitle="Elegí una sucursal para definir la oferta comercial y los planes disponibles."
+            title="Membresias"
+            subtitle="Elige una sucursal para definir la oferta comercial y los planes disponibles."
           />
           <Card>
             <CardContent className="py-6 text-sm text-zinc-400">No hay una sucursal activa seleccionada.</CardContent>
@@ -180,23 +207,23 @@ export default function AdminMembershipsPage() {
     return (
       <Protected allowRoles={[ROLES.ADMIN]}>
         <ScreenLoader
-          title="Cargando membresías..."
-          subtitle="Estamos preparando la configuración comercial de la sucursal activa."
+          title="Cargando membresias..."
+          subtitle="Estamos preparando la configuracion comercial de la sucursal activa."
         />
       </Protected>
     );
   }
 
-  if (disciplinesError) {
+  if (disciplinesError || catalogError) {
     return (
       <Protected allowRoles={[ROLES.ADMIN]}>
         <div className="space-y-6">
           <PageHeader
-            title="Membresías"
-            subtitle="No pudimos cargar las disciplinas necesarias para armar los planes."
+            title="Membresias"
+            subtitle="No pudimos cargar toda la informacion necesaria para administrar este modulo."
           />
           <Card>
-            <CardContent className="py-6 text-sm text-red-300">{disciplinesError}</CardContent>
+            <CardContent className="py-6 text-sm text-red-300">{disciplinesError ?? catalogError?.message}</CardContent>
           </Card>
         </div>
       </Protected>
@@ -207,13 +234,42 @@ export default function AdminMembershipsPage() {
     <Protected allowRoles={[ROLES.ADMIN]}>
       <div className="space-y-6">
         <PageHeader
-          title="Membresías"
+          title="Membresias"
           subtitle={
             activeBranch
-              ? `Definí los planes y la clase particular de ${activeBranch.companyName} en ${activeBranch.cityName}.`
-              : `Definí los planes y la clase particular para la sucursal ${branchId}.`
+              ? `Define los planes y la clase particular de ${activeBranch.companyName} en ${activeBranch.cityName}.`
+              : `Define los planes y la clase particular para la sucursal ${branchId}.`
           }
         />
+
+        <Card className="border-cyan-500/20 bg-[linear-gradient(135deg,rgba(34,211,238,0.12),rgba(24,24,27,0.94)_50%,rgba(24,24,27,0.98))]">
+          <CardContent className="grid gap-4 py-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,0.6fr)]">
+            <div className="space-y-2 text-sm text-zinc-300">
+              <div className="text-xs uppercase tracking-[0.24em] text-cyan-200/80">Estado de sincronizacion</div>
+              <div className="text-lg font-semibold text-white">
+                {syncMode === "api+local" ? "API activa con metadatos extendidos locales" : "Modo local temporal"}
+              </div>
+              <p className="max-w-3xl leading-6 text-zinc-300/90">
+                La API de memberships hoy sincroniza nombre, precio y cantidad de disciplinas. La descripcion comercial,
+                beneficios, visibilidad y clase particular siguen persistidos localmente para no frenar la operacion.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+                <div className="text-xs uppercase tracking-wider text-zinc-400">Planes sincronizados</div>
+                <div className="mt-2 text-2xl font-semibold text-white">{syncedPlans}</div>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+                <div className="text-xs uppercase tracking-wider text-zinc-400">Delete en API</div>
+                <div className="mt-2 text-sm font-medium text-amber-200">Todavia no disponible</div>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
+                <div className="text-xs uppercase tracking-wider text-zinc-400">Clase particular</div>
+                <div className="mt-2 text-sm font-medium text-zinc-100">Solo local por sucursal</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Card className="border-zinc-800 bg-zinc-950/80">
@@ -241,7 +297,7 @@ export default function AdminMembershipsPage() {
             <CardContent className="py-5">
               <div className="text-xs uppercase tracking-wider text-zinc-500">Ticket estimado</div>
               <div className="mt-3 text-2xl font-semibold text-zinc-100">{formatMoney(estimatedRevenue)}</div>
-              <div className="mt-1 text-sm text-zinc-400">Suma de precios de planes cargados</div>
+              <div className="mt-1 text-sm text-zinc-400">Suma de precios cargados en este tablero</div>
             </CardContent>
           </Card>
         </section>
@@ -252,7 +308,7 @@ export default function AdminMembershipsPage() {
             <CardHeader className="relative -mt-4">
               <CardTitle>{editingPlanId != null ? "Editar plan" : "Nuevo plan"}</CardTitle>
               <CardDescription>
-                Definí nombre, ciclo, precio, beneficios y disciplinas alcanzadas por cada membresía.
+                Configura el plan comercial de la sucursal y deja claro que parte se sincroniza con backend y que parte vive localmente.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -280,7 +336,7 @@ export default function AdminMembershipsPage() {
               </div>
 
               <label className="block text-xs uppercase tracking-wider text-zinc-500">
-                Descripción comercial
+                Descripcion comercial
                 <textarea
                   value={planForm.description}
                   onChange={(event) => setPlanForm((current) => ({ ...current, description: event.target.value }))}
@@ -295,7 +351,9 @@ export default function AdminMembershipsPage() {
                   Ciclo
                   <select
                     value={planForm.billingCycle}
-                    onChange={(event) => setPlanForm((current) => ({ ...current, billingCycle: event.target.value as MembershipPlanInput["billingCycle"] }))}
+                    onChange={(event) =>
+                      setPlanForm((current) => ({ ...current, billingCycle: event.target.value as MembershipPlanInput["billingCycle"] }))
+                    }
                     className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none"
                   >
                     {BILLING_CYCLE_OPTIONS.map((option) => (
@@ -316,7 +374,7 @@ export default function AdminMembershipsPage() {
                 </label>
 
                 <label className="text-xs uppercase tracking-wider text-zinc-500">
-                  Límite de clases
+                  Limite de clases
                   <input
                     type="number"
                     min={0}
@@ -334,7 +392,7 @@ export default function AdminMembershipsPage() {
                 </label>
 
                 <label className="text-xs uppercase tracking-wider text-zinc-500">
-                  Créditos
+                  Creditos
                   <input
                     type="number"
                     min={0}
@@ -411,7 +469,10 @@ export default function AdminMembershipsPage() {
               </div>
 
               <div className="space-y-3">
-                <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas incluidas</div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas incluidas</div>
+                  <Badge tone="neutral">API: {planForm.disciplineIds.length} disciplina{planForm.disciplineIds.length === 1 ? "" : "s"}</Badge>
+                </div>
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {disciplines.map((discipline) => {
                     const selected = planForm.disciplineIds.includes(discipline.idDiscipline);
@@ -440,10 +501,12 @@ export default function AdminMembershipsPage() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Button onClick={() => void handlePlanSubmit()} disabled={saving}>{editingPlanId != null ? "Guardar cambios" : "Crear plan"}</Button>
+                <Button onClick={() => void handlePlanSubmit()} disabled={saving}>
+                  {editingPlanId != null ? "Guardar cambios" : "Crear plan"}
+                </Button>
                 {editingPlanId != null ? (
                   <Button variant="secondary" onClick={resetPlanForm} disabled={saving}>
-                    Cancelar edición
+                    Cancelar edicion
                   </Button>
                 ) : null}
               </div>
@@ -455,7 +518,7 @@ export default function AdminMembershipsPage() {
               <CardHeader>
                 <CardTitle>Clase particular</CardTitle>
                 <CardDescription>
-                  Configurá la alternativa para usuarios que prefieran pagar una clase puntual sin tomar una membresía.
+                  Configura la alternativa para usuarios que prefieren pagar una clase puntual sin tomar una membresia.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -482,7 +545,7 @@ export default function AdminMembershipsPage() {
                   </label>
 
                   <label className="text-xs uppercase tracking-wider text-zinc-500">
-                    Duración
+                    Duracion
                     <select
                       value={privateClassForm.duration}
                       onChange={(event) =>
@@ -544,7 +607,7 @@ export default function AdminMembershipsPage() {
                     value={privateClassForm.notes}
                     onChange={(event) => setPrivateClassForm((current) => ({ ...current, notes: event.target.value }))}
                     rows={3}
-                    placeholder="Ej. Sujeto a disponibilidad del instructor o reserva con anticipación."
+                    placeholder="Ej. Sujeto a disponibilidad del instructor o reserva con anticipacion."
                     className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none"
                   />
                 </label>
@@ -555,17 +618,20 @@ export default function AdminMembershipsPage() {
 
             <Card className="border-zinc-800 bg-zinc-950/80">
               <CardHeader>
-                <CardTitle>Estado de edición</CardTitle>
+                <CardTitle>Notas del modulo</CardTitle>
                 <CardDescription>
-                  Esta pantalla hoy persiste localmente por sucursal para avanzar la UX mientras se completa el backend.
+                  Dejamos visible el alcance real del backend para que el equipo admin no se confunda con lo que ya esta sincronizado.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-zinc-400">
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                  1. Admin define la oferta comercial disponible para su sucursal.
+                  1. Nombre, precio y cantidad de disciplinas ya viajan a la API de memberships.
                 </div>
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                  2. Después se conecta a los endpoints de membresías sin cambiar la experiencia visual.
+                  2. Beneficios, visibilidad y clase particular siguen persistiendo por sucursal en frontend.
+                </div>
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                  3. Si un plan viene desde API, hoy puede editarse pero no eliminarse del backend; solo ocultarse localmente.
                 </div>
                 {feedback ? (
                   <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 text-cyan-100">{feedback}</div>
@@ -583,7 +649,7 @@ export default function AdminMembershipsPage() {
           <CardHeader className="relative -mt-4">
             <CardTitle>Planes cargados</CardTitle>
             <CardDescription>
-              Resumen de la oferta comercial definida hasta ahora para esta sucursal.
+              Resumen de la oferta comercial actual. Los badges distinguen lo que viene de API y lo que todavia es local.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -595,11 +661,16 @@ export default function AdminMembershipsPage() {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <CardTitle className="text-lg text-zinc-100">{plan.name}</CardTitle>
-                          <CardDescription className="mt-1 text-sm text-zinc-400">{plan.description || "Sin descripción comercial"}</CardDescription>
+                          <CardDescription className="mt-1 text-sm text-zinc-400">
+                            {plan.description || "Sin descripcion comercial cargada"}
+                          </CardDescription>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <Badge tone={plan.isActive ? "success" : "warning"}>{plan.isActive ? "Activo" : "Pausado"}</Badge>
                           <Badge tone={plan.isVisible ? "neutral" : "warning"}>{plan.isVisible ? "Visible" : "Oculto"}</Badge>
+                          <Badge tone={plan.syncSource === "api" ? "success" : "neutral"}>
+                            {plan.syncSource === "api" ? "API + local" : "Local"}
+                          </Badge>
                         </div>
                       </div>
                     </CardHeader>
@@ -610,24 +681,24 @@ export default function AdminMembershipsPage() {
                           <div className="mt-2 text-zinc-100">{formatMoney(plan.price)}</div>
                         </div>
                         <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Duración</div>
+                          <div className="text-xs uppercase tracking-wider text-zinc-500">Ciclo</div>
                           <div className="mt-2 text-zinc-100">{BILLING_CYCLE_OPTIONS.find((item) => item.value === plan.billingCycle)?.label}</div>
+                        </div>
+                        <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
+                          <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas</div>
+                          <div className="mt-2 text-zinc-100">{plan.disciplineIds.length || plan.disciplinesCount}</div>
                         </div>
                         <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
                           <div className="text-xs uppercase tracking-wider text-zinc-500">Clases</div>
                           <div className="mt-2 text-zinc-100">{plan.unlimited ? "Ilimitado" : plan.classLimit ?? "Sin dato"}</div>
                         </div>
                         <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Créditos</div>
+                          <div className="text-xs uppercase tracking-wider text-zinc-500">Creditos</div>
                           <div className="mt-2 text-zinc-100">{plan.creditAmount ?? "No definido"}</div>
                         </div>
                         <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
                           <div className="text-xs uppercase tracking-wider text-zinc-500">Rollover</div>
-                          <div className="mt-2 text-zinc-100">{plan.rolloverEnabled ? "Sí" : "No"}</div>
-                        </div>
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas</div>
-                          <div className="mt-2 text-zinc-100">{plan.disciplineIds.length}</div>
+                          <div className="mt-2 text-zinc-100">{plan.rolloverEnabled ? "Si" : "No"}</div>
                         </div>
                       </div>
 
@@ -642,8 +713,8 @@ export default function AdminMembershipsPage() {
                         <Button variant="secondary" onClick={() => startEditPlan(plan)} disabled={saving}>
                           Editar plan
                         </Button>
-                        <Button variant="ghost" onClick={() => void handleRemovePlan(plan.idMembershipPlan)} disabled={saving}>
-                          Eliminar
+                        <Button variant="ghost" onClick={() => void handleRemovePlan(plan)} disabled={saving}>
+                          {plan.syncSource === "api" ? "Ocultar localmente" : "Eliminar"}
                         </Button>
                       </div>
                     </CardContent>
@@ -652,7 +723,7 @@ export default function AdminMembershipsPage() {
               </div>
             ) : (
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-5 text-sm text-zinc-400">
-                Todavía no hay planes cargados para esta sucursal.
+                Todavia no hay planes cargados para esta sucursal.
               </div>
             )}
           </CardContent>
