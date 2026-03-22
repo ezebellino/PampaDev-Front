@@ -1,4 +1,5 @@
 ﻿import { Link } from "react-router";
+import { useAuth } from "~/lib/auth/AuthContext";
 import { Card } from "../ui/Card";
 
 type Discipline = {
@@ -12,6 +13,18 @@ type Props = {
 };
 
 export default function DisciplinePublicCard({ discipline, imageUrl }: Props) {
+  const { isAuthed } = useAuth();
+
+  const primaryAction = isAuthed
+    ? {
+        to: "/app/rubros",
+        label: "Ir al panel para reservar",
+      }
+    : {
+        to: "/login",
+        label: "Ingresar para reservar",
+      };
+
   return (
     <Card className="group overflow-hidden rounded-[1.75rem] border-zinc-800 bg-zinc-950/75 transition duration-300 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/70">
       <div className="relative h-48 overflow-hidden sm:h-52">
@@ -33,16 +46,16 @@ export default function DisciplinePublicCard({ discipline, imageUrl }: Props) {
           <h3 className="text-lg font-semibold tracking-tight text-zinc-100">{discipline.name}</h3>
 
           <p className="text-sm leading-relaxed text-zinc-400">
-            Una disciplina base que despues puede publicarse como rubro operativo en una o varias sucursales.
+            Una disciplina base que después puede publicarse como rubro operativo en una o varias sucursales.
           </p>
         </div>
 
         <div className="mt-5 flex flex-col gap-2 sm:flex-row">
           <Link
-            to="/login"
+            to={primaryAction.to}
             className="inline-flex items-center justify-center rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-white"
           >
-            Ingresar para reservar
+            {primaryAction.label}
           </Link>
 
           <Link
