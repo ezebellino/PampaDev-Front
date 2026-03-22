@@ -26,6 +26,12 @@ import {
   getReservationSyncLabel,
   getReservationSyncTone,
 } from "../lib/scheduling/reservationPresentation";
+import {
+  getPublishedAgendaSlotStatusLabel,
+  getPublishedAgendaSlotStatusTone,
+  summarizeAgendaByDay,
+  usePublishedBranchAgenda,
+} from "../lib/scheduling/publishedAgenda";
 import { useBranchScheduleConfig } from "../lib/scheduling/useBranchScheduleConfig";
 import { useInstructorReservationRequests } from "../lib/scheduling/useInstructorRequests";
 import type { InstructorReservationRequest } from "../lib/scheduling/useInstructorRequests";
@@ -86,6 +92,9 @@ export default function Instructor() {
     if (!scheduleConfig) return [];
     return scheduleConfig.disciplines.filter((item) => item.enabled);
   }, [scheduleConfig]);
+
+  const publishedAgenda = usePublishedBranchAgenda(branchId, disciplines, scheduleConfig);
+  const agendaByDay = useMemo(() => summarizeAgendaByDay(publishedAgenda.items), [publishedAgenda.items]);
 
   const { requests, pending, confirmed, refresh: refreshRequests, confirmRequest, rejectRequest } = useInstructorReservationRequests(branchId);
 
@@ -203,6 +212,72 @@ export default function Instructor() {
         </section>
 
         {hasBranch ? (
+          <>
+          <section className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+            <Card className="border-zinc-800 bg-zinc-950/80">
+              <CardHeader>
+                <CardTitle>Agenda publicada</CardTitle>
+                <CardDescription>Horarios visibles para el usuario en esta sucursal.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {publishedAgenda.items.length === 0 ? (
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-4 text-sm text-zinc-400">
+                    Todavia no hay horarios publicados.
+                  </div>
+                ) : (
+                  publishedAgenda.items.slice(0, 8).map((item) => (
+                    <div key={item.id} className="flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-zinc-100">{String(item.rubroName ?? item.disciplineName ?? item.rubroId)}</div>
+                        <div className="mt-1 text-xs text-zinc-500">{item.date} - {item.time} - {item.available}/{item.capacity}</div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge tone={getPublishedAgendaSlotStatusTone(item)}>{getPublishedAgendaSlotStatusLabel(item)}</Badge>
+                        <Button size="sm" variant="secondary" onClick={() => publishedAgenda.toggleSlot(item.id)}>
+                          {item.agendaStatus === "closed" ? "Publicar" : "Cerrar"}
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-zinc-800 bg-zinc-950/80">
+              <CardHeader>
+                <CardTitle>Resumen de agenda</CardTitle>
+                <CardDescription>Lo que hoy esta abierto para reserva.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+                    <div className="text-xs uppercase tracking-wider text-zinc-500">Publicados</div>
+                    <div className="mt-2 text-2xl font-semibold text-zinc-100">{publishedAgenda.openCount}</div>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+                    <div className="text-xs uppercase tracking-wider text-zinc-500">Cerrados</div>
+                    <div className="mt-2 text-2xl font-semibold text-zinc-100">{publishedAgenda.closedCount}</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {agendaByDay.length === 0 ? (
+                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-4 text-sm text-zinc-400">
+                      Sin dias publicados por ahora.
+                    </div>
+                  ) : (
+                    agendaByDay.slice(0, 6).map((day) => (
+                      <div key={day.date} className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm">
+                        <span className="text-zinc-200">{day.date}</span>
+                        <span className="text-zinc-400">{day.open}/{day.count} disponibles</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
           <section className="rounded-3xl border border-zinc-800 bg-zinc-950/80 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
@@ -339,6 +414,7 @@ export default function Instructor() {
               </div>
             )}
           </section>
+          </>
         ) : null}
 
         {!hasBranch ? (

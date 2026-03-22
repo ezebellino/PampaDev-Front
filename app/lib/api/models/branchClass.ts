@@ -14,6 +14,6 @@
   creditRefund?: number;
   status?: string | number;
   disciplineName?: string;
-  bookingSource?: "api" | "planned";
+  bookingSource?: "api" | "planned" | "published";
   syncStatus?: "synced" | "pending-backend";
 } & Record<string, unknown>;

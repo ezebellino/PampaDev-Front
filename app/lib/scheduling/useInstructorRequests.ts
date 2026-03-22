@@ -1,4 +1,5 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { releasePublishedAgendaSlot } from "./publishedAgenda";
 
 export type InstructorReservationStatus = "pending" | "confirmed" | "rejected" | "cancelled";
 export type InstructorReservationSyncStatus = "synced" | "pending-backend";
@@ -111,7 +112,25 @@ export function subscribeToInstructorReservationRequests(onChange: () => void) {
 
 export function updateInstructorReservationStatus(requestId: string, status: InstructorReservationStatus) {
   const all = readRequestsFromStorage();
-  const next = sortRequests(all.map((item) => (item.id === requestId ? { ...item, status } : item)));
+  let releasedBranchId: number | null = null;
+  let releasedSlotId: string | null = null;
+  const next = sortRequests(
+    all.map((item) => {
+      if (item.id !== requestId) return item;
+      const previousStatus = item.status;
+      const shouldRelease = (status === "rejected" || status === "cancelled") && previousStatus !== "rejected" && previousStatus !== "cancelled";
+      if (shouldRelease) {
+        releasedBranchId = item.branchId;
+        releasedSlotId = item.slotId;
+      }
+      return { ...item, status };
+    })
+  );
+
+  if (releasedBranchId != null && releasedSlotId) {
+    releasePublishedAgendaSlot(releasedBranchId, releasedSlotId);
+  }
+
   writeRequestsToStorage(next);
   return next;
 }

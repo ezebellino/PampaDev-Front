@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+﻿import { useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { Button } from "../components/ui/Button";
@@ -10,7 +10,7 @@ import { ROLES } from "../lib/auth/roles";
 import { useBranch } from "../lib/branches/BranchContext";
 import { useDisciplines } from "../lib/disciplines/useDisciplines";
 import { mockRubros } from "../lib/rubros/mockRubros";
-import { buildPlannedSlots } from "../lib/scheduling/bookableSlots";
+import { usePublishedBranchAgenda } from "../lib/scheduling/publishedAgenda";
 import { useBranchClassSlots } from "../lib/scheduling/useBranchClassSlots";
 import { useBranchScheduleConfig } from "../lib/scheduling/useBranchScheduleConfig";
 import { useTenantConfig } from "../lib/tenant/useTenantConfig";
@@ -34,19 +34,12 @@ export default function RubroDetailPage() {
   const { data: scheduleConfig, loading: scheduleLoading } = useBranchScheduleConfig(branchId, disciplines);
 
   const isEnabled = !!id && config.enabledRubroIds.includes(id);
-  const rubro = useMemo(() => mockRubros.find((item) => item.id === id), [id]);
+  const rubro = mockRubros.find((item) => item.id === id);
 
-  const plannedSlots = useMemo(() => {
-    if (!branchId || !rubro) return [];
-    return buildPlannedSlots({
-      branchId,
-      rubroId: rubro.id,
-      rubroName: rubro.name,
-      baseDurationMin: rubro.durationMin,
-      disciplines,
-      scheduleConfig,
-    });
-  }, [branchId, disciplines, rubro, scheduleConfig]);
+  const publishedAgenda = usePublishedBranchAgenda(branchId, disciplines, scheduleConfig, {
+    rubroId: rubro?.id ?? null,
+    rubroName: rubro?.name ?? null,
+  });
 
   const {
     slots,
@@ -56,7 +49,7 @@ export default function RubroDetailPage() {
     reserving,
     usingFallbackSlots,
     hasBackendSlots,
-  } = useBranchClassSlots(branchId, id ?? null, plannedSlots);
+  } = useBranchClassSlots(branchId, id ?? null, publishedAgenda.publishedItems);
 
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

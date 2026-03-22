@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { BranchClassRecord } from "../api/models/branchClass";
 import { createClass, type CreateClassPayload } from "../api/services/classes";
 import { matchesRubroCandidate } from "../rubros/rubroMatching";
+import { releasePublishedAgendaSlot, reservePublishedAgendaSlot } from "./publishedAgenda";
 import { persistInstructorReservationRequest } from "./useInstructorRequests";
 
 export type ReservationActor = {
@@ -129,6 +130,9 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
     if (!branchId) throw new Error("Sucursal no seleccionada");
     if (!rubroId) throw new Error("Rubro no seleccionado");
     if (slot.available <= 0) throw new Error("No hay cupos disponibles");
+    if (slot.bookingSource === "published" && String(slot.status ?? "").toLowerCase().includes("cerr")) {
+      throw new Error("Este horario ya no esta publicado para nuevas reservas.");
+    }
 
     const requestPayload = {
       id: createRequestId(),
@@ -149,6 +153,10 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
     const canSyncWithBackend = slot.bookingSource !== "planned" && resolveBranchDisciplineId(slot) != null;
 
     if (!canSyncWithBackend) {
+      if (slot.bookingSource === "published") {
+        reservePublishedAgendaSlot(branchId, slot.id);
+      }
+
       const saved = persistInstructorReservationRequest({
         ...requestPayload,
         bookingSource: slot.bookingSource === "planned" ? "planned" : "api",
@@ -178,6 +186,10 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
         syncStatus: "synced",
       };
     } catch {
+      if (slot.bookingSource === "published") {
+        reservePublishedAgendaSlot(branchId, slot.id);
+      }
+
       const saved = persistInstructorReservationRequest({
         ...requestPayload,
         bookingSource: "api",
