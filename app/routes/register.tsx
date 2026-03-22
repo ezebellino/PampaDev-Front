@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
@@ -77,7 +77,7 @@ export default function RegisterPage() {
         }));
       } catch (e: any) {
         if (!alive) return;
-        setError(e?.message || "No pudimos cargar la información de ubicación.");
+        setError(e?.message || "No pudimos cargar la informaci?n de ubicaci?n.");
       } finally {
         if (alive) {
           setLoadingLocations(false);
@@ -144,27 +144,27 @@ export default function RegisterPage() {
     };
 
     if (!payload.firstName || !payload.lastname || !payload.email || !payload.password) {
-      setError("Completá todos los campos obligatorios.");
+      setError("Complet? todos los campos obligatorios.");
       return;
     }
 
     if (!isValidEmail(payload.email)) {
-      setError("Ingresá un email válido.");
+      setError("Ingres? un email v?lido.");
       return;
     }
 
     if (payload.password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
+      setError("La contrase?a debe tener al menos 6 caracteres.");
       return;
     }
 
     if (payload.password !== payload.repeatPassword) {
-      setError("La contraseña y su repetición no coinciden.");
+      setError("La contrase?a y su repetici?n no coinciden.");
       return;
     }
 
     if (!payload.idCity) {
-      setError("Seleccioná una ciudad para continuar.");
+      setError("Seleccion? una ciudad para continuar.");
       return;
     }
 
@@ -190,48 +190,43 @@ export default function RegisterPage() {
 
   return (
     <main className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-zinc-950 text-zinc-100">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.12),transparent_24%),radial-gradient(circle_at_80%_15%,rgba(56,189,248,0.1),transparent_20%),linear-gradient(180deg,rgba(24,24,27,0.2),rgba(9,9,11,0.95))]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.10),transparent_26%),linear-gradient(180deg,rgba(24,24,27,0.2),rgba(9,9,11,0.96))]" />
 
-      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl items-center gap-8 px-4 py-8 md:px-6 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-5xl items-center gap-10 px-4 py-10 md:px-6 lg:grid-cols-[0.9fr_1.1fr]">
         <section className="space-y-6">
-          <div className="inline-flex rounded-full border border-zinc-700/80 bg-zinc-900/80 px-3 py-1 text-xs font-medium text-zinc-200">
+          <div className="inline-flex rounded-full border border-zinc-800 bg-zinc-900/75 px-3 py-1 text-xs font-medium text-zinc-300">
             Nuevo acceso
           </div>
 
-          <div className="space-y-4">
-            <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-white md:text-5xl md:leading-tight">
-              Creá tu cuenta y empezá como Usuario.
+          <div className="space-y-3">
+            <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-white md:text-5xl md:leading-tight">
+              Cre? tu cuenta.
             </h1>
-            <p className="max-w-xl text-sm leading-7 text-zinc-300 md:text-lg md:leading-8">
-              El alta pública crea cuentas con rol Usuario. Si después hace falta subir privilegios a
-              Instructor o Admin, eso puede resolverse desde un flujo interno o por solicitud.
+            <p className="max-w-md text-base leading-7 text-zinc-400">
+              El registro p?blico crea cuentas de usuario.
             </p>
           </div>
 
-          <div className="rounded-[1.5rem] border border-zinc-800 bg-zinc-950/70 px-5 py-4 text-sm text-zinc-400">
-            País, provincia y ciudad se cargan dinámicamente desde la API, así que las opciones nuevas
-            van a aparecer solas a medida que crezcan los datos.
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm text-zinc-300">
+            Complet? tus datos y eleg? tu ubicaci?n.
           </div>
         </section>
 
-        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
-          <div className="h-24 bg-[linear-gradient(135deg,rgba(34,197,94,0.14),transparent_55%)]" />
-          <CardHeader className="relative -mt-6">
-            <CardTitle className="text-xl text-zinc-100">Crear cuenta</CardTitle>
-            <CardDescription>
-              Completá tus datos para registrarte con rol Usuario.
-            </CardDescription>
+        <Card className="border-zinc-800 bg-zinc-950/88 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+          <CardHeader className="space-y-2 pb-2">
+            <CardTitle className="text-2xl text-zinc-100">Crear cuenta</CardTitle>
+            <CardDescription>Complet? tus datos.</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
             {created ? (
               <div className="space-y-4">
                 <div className="rounded-[1.25rem] border border-emerald-500/20 bg-emerald-500/10 px-4 py-4 text-sm leading-6 text-emerald-100">
-                  Tu cuenta fue creada correctamente. Ya podés ingresar con tu email y contraseña.
+                  Tu cuenta ya est? lista.
                 </div>
 
                 <div className="grid gap-2">
-                  <Button className="w-full" onClick={() => navigate("/login") }>
+                  <Button className="w-full" onClick={() => navigate("/login")}>
                     Ir a login
                   </Button>
                   <Button
@@ -255,7 +250,7 @@ export default function RegisterPage() {
                     <input
                       value={form.firstName}
                       onChange={(event) => updateField("firstName", event.target.value)}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-emerald-500/50"
                     />
                   </div>
 
@@ -264,7 +259,7 @@ export default function RegisterPage() {
                     <input
                       value={form.lastname}
                       onChange={(event) => updateField("lastname", event.target.value)}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-emerald-500/50"
                     />
                   </div>
                 </div>
@@ -274,40 +269,40 @@ export default function RegisterPage() {
                   <input
                     value={form.email}
                     onChange={(event) => updateField("email", event.target.value)}
-                    className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                    className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-emerald-500/50"
                     autoComplete="email"
                   />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="text-sm text-zinc-300">Contraseña</label>
+                    <label className="text-sm text-zinc-300">Contrase?a</label>
                     <input
                       type="password"
                       value={form.password}
                       onChange={(event) => updateField("password", event.target.value)}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-emerald-500/50"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm text-zinc-300">Repetir contraseña</label>
+                    <label className="text-sm text-zinc-300">Repetir contrase?a</label>
                     <input
                       type="password"
                       value={form.repeatPassword}
                       onChange={(event) => updateField("repeatPassword", event.target.value)}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-emerald-500/50"
                     />
                   </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="space-y-2">
-                    <label className="text-sm text-zinc-300">País</label>
+                    <label className="text-sm text-zinc-300">Pa?s</label>
                     <select
                       value={form.countryName}
                       onChange={(event) => handleCountryChange(event.target.value)}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-emerald-500/50"
                       disabled={loadingLocations}
                     >
                       <option value="">Seleccionar</option>
@@ -324,7 +319,7 @@ export default function RegisterPage() {
                     <select
                       value={form.provinceName}
                       onChange={(event) => handleProvinceChange(event.target.value)}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-emerald-500/50"
                       disabled={loadingLocations || filteredProvinces.length === 0}
                     >
                       <option value="">Seleccionar</option>
@@ -341,7 +336,7 @@ export default function RegisterPage() {
                     <select
                       value={form.cityId}
                       onChange={(event) => updateField("cityId", event.target.value)}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-emerald-500/50"
                       disabled={loadingLocations || filteredCities.length === 0}
                     >
                       <option value="">Seleccionar</option>
@@ -364,8 +359,8 @@ export default function RegisterPage() {
                   {loading ? "Creando cuenta..." : "Crear cuenta"}
                 </Button>
 
-                <div className="grid gap-2">
-                  <Button type="button" variant="secondary" className="w-full" onClick={() => navigate("/login") }>
+                <div className="grid gap-2 pt-2">
+                  <Button type="button" variant="secondary" className="w-full" onClick={() => navigate("/login")}>
                     Volver a login
                   </Button>
 

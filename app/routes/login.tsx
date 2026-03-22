@@ -1,13 +1,13 @@
-﻿import { useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
 import { useAuth } from "../lib/auth/AuthContext";
 
 const LOGIN_POINTS = [
-  "Ingresá a tu panel según tu rol",
-  "Continuá con la sucursal y contexto activo",
-  "Gestioná operación, reservas y configuración",
+  "Ingres? a tu panel",
+  "Retom? tu sucursal activa",
+  "Segu? con tus turnos y gesti?n",
 ];
 
 export default function LoginPage() {
@@ -32,10 +32,10 @@ export default function LoginPage() {
     } catch (err: any) {
       const message =
         err?.status === 500
-          ? "El servidor no está respondiendo correctamente en este momento. Probá de nuevo más tarde."
+          ? "El servidor no respondi? bien. Prob? de nuevo m?s tarde."
           : err?.message === "Failed to fetch"
-          ? "No pudimos conectarnos con el servidor."
-          : err?.message ?? "No se pudo iniciar sesión.";
+            ? "No pudimos conectarnos con el servidor."
+            : err?.message ?? "No se pudo iniciar sesi?n.";
 
       setError(message);
     } finally {
@@ -45,21 +45,20 @@ export default function LoginPage() {
 
   return (
     <main className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-zinc-950 text-zinc-100">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_25%),radial-gradient(circle_at_80%_15%,rgba(245,158,11,0.1),transparent_20%),linear-gradient(180deg,rgba(24,24,27,0.2),rgba(9,9,11,0.95))]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.10),transparent_26%),linear-gradient(180deg,rgba(24,24,27,0.2),rgba(9,9,11,0.96))]" />
 
-      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl items-center gap-8 px-4 py-8 md:px-6 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-5xl items-center gap-10 px-4 py-10 md:px-6 lg:grid-cols-[0.95fr_1.05fr]">
         <section className="space-y-6">
-          <div className="inline-flex rounded-full border border-zinc-700/80 bg-zinc-900/80 px-3 py-1 text-xs font-medium text-zinc-200">
-            Acceso a MultiRubro
+          <div className="inline-flex rounded-full border border-zinc-800 bg-zinc-900/75 px-3 py-1 text-xs font-medium text-zinc-300">
+            Acceso
           </div>
 
-          <div className="space-y-4">
-            <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-white md:text-5xl md:leading-tight">
-              Ingresá para continuar con tu operación desde un solo lugar.
+          <div className="space-y-3">
+            <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-white md:text-5xl md:leading-tight">
+              Ingres? y segu? donde quedaste.
             </h1>
-            <p className="max-w-xl text-sm leading-7 text-zinc-300 md:text-lg md:leading-8">
-              Accedé a tus herramientas, recuperá tu contexto de trabajo y seguí gestionando
-              sucursales, rubros, horarios y reservas con una experiencia clara.
+            <p className="max-w-md text-base leading-7 text-zinc-400">
+              Entr? a tu panel y continu? con tu trabajo.
             </p>
           </div>
 
@@ -67,26 +66,18 @@ export default function LoginPage() {
             {LOGIN_POINTS.map((point) => (
               <div
                 key={point}
-                className="rounded-2xl border border-zinc-800/80 bg-zinc-900/55 px-4 py-3 text-sm text-zinc-300"
+                className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-300"
               >
                 {point}
               </div>
             ))}
           </div>
-
-          <div className="rounded-[1.5rem] border border-zinc-800 bg-zinc-950/70 px-5 py-4 text-sm text-zinc-400">
-            Si todavía no tenés acceso o necesitás ayuda con tu cuenta, podés volver al sitio o
-            iniciar el flujo de recuperación.
-          </div>
         </section>
 
-        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
-          <div className="h-24 bg-[linear-gradient(135deg,rgba(56,189,248,0.14),transparent_55%)]" />
-          <CardHeader className="relative -mt-6">
-            <CardTitle className="text-xl text-zinc-100">Iniciar sesión</CardTitle>
-            <CardDescription>
-              Accedé con tu email y contraseña para entrar al panel correspondiente.
-            </CardDescription>
+        <Card className="border-zinc-800 bg-zinc-950/88 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+          <CardHeader className="space-y-2 pb-2">
+            <CardTitle className="text-2xl text-zinc-100">Iniciar sesi?n</CardTitle>
+            <CardDescription>Us? tu email y contrase?a.</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -96,20 +87,20 @@ export default function LoginPage() {
                 <input
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-cyan-500/50"
                   placeholder="devs@example.com"
                   autoComplete="email"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-zinc-300">Contraseña</label>
+                <label className="text-sm text-zinc-300">Contrase?a</label>
                 <input
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   type="password"
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
-                  placeholder="••••••••"
+                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-cyan-500/50"
+                  placeholder="????????"
                   autoComplete="current-password"
                 />
               </div>
@@ -124,7 +115,7 @@ export default function LoginPage() {
                 {loading ? "Ingresando..." : "Ingresar"}
               </Button>
 
-              <div className="grid gap-2">
+              <div className="grid gap-2 pt-2">
                 <Button
                   type="button"
                   variant="secondary"
@@ -142,7 +133,7 @@ export default function LoginPage() {
                   disabled={loading}
                   onClick={() => navigate("/forgot-password")}
                 >
-                  Olvidé mi contraseña
+                  Olvid? mi contrase?a
                 </Button>
 
                 <Link
