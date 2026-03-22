@@ -6,6 +6,9 @@ import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
 import { useBranch } from "../lib/branches/BranchContext";
 import { useCompany } from "../lib/companies/CompanyContext";
+import { useDisciplines } from "../lib/disciplines/useDisciplines";
+import { usePublishedBranchAgenda } from "../lib/scheduling/publishedAgenda";
+import { useBranchScheduleConfig } from "../lib/scheduling/useBranchScheduleConfig";
 import { useNextTurnos } from "../lib/scheduling/useNextTurnos";
 
 const USER_ACTIONS = [
@@ -98,10 +101,14 @@ export default function User() {
   const { user } = useAuth();
   const { companyId } = useCompany();
   const { branchId } = useBranch();
+  const { disciplines } = useDisciplines();
+  const { data: scheduleConfig } = useBranchScheduleConfig(branchId, disciplines);
+  const publishedAgenda = usePublishedBranchAgenda(branchId, disciplines, scheduleConfig);
 
   const { turnos, loading: turnosLoading, error: turnosError, pendingCount, confirmedCount } = useNextTurnos(user?.id ?? null, branchId);
 
   const nextTurno = turnos[0] ?? null;
+  const nextPublishedSlots = publishedAgenda.publishedItems.filter((item) => item.available > 0).slice(0, 4);
   const priorityActions = USER_ACTIONS.filter((action) => action.priority);
   const secondaryActions = USER_ACTIONS.filter((action) => !action.priority);
 
@@ -175,21 +182,45 @@ export default function User() {
                 >
                   {nextTurno ? "Ver mis turnos" : "Explorar rubros"}
                 </Link>
-                <Link
-                  to="/app/profile"
-                  className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
-                >
-                  Revisar perfil
-                </Link>
               </div>
             </CardContent>
           </Card>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-2">
-          {secondaryActions.map((action) => (
-            <UserActionCard key={action.title} {...action} />
-          ))}
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+          <Card className="border-zinc-800 bg-zinc-950/80">
+            <CardHeader>
+              <CardTitle>Agenda disponible</CardTitle>
+              <CardDescription>Horarios publicados para reservar desde esta sucursal.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {nextPublishedSlots.length === 0 ? (
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-4 text-sm text-zinc-400">
+                  Todavia no hay horarios publicados.
+                </div>
+              ) : (
+                nextPublishedSlots.map((slot) => (
+                  <Link
+                    key={slot.id}
+                    to={`/app/rubros/${slot.rubroId}`}
+                    className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm transition hover:bg-zinc-900"
+                  >
+                    <div>
+                      <div className="font-medium text-zinc-100">{String(slot.rubroName ?? slot.disciplineName ?? slot.rubroId)}</div>
+                      <div className="mt-1 text-xs text-zinc-500">{slot.date} - {slot.time}</div>
+                    </div>
+                    <div className="text-xs text-cyan-200">{slot.available}/{slot.capacity}</div>
+                  </Link>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          <section className="grid gap-4 md:grid-cols-1">
+            {secondaryActions.map((action) => (
+              <UserActionCard key={action.title} {...action} />
+            ))}
+          </section>
         </section>
 
         <Card className="border-zinc-800 bg-zinc-950/80">

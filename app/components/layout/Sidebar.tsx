@@ -20,7 +20,6 @@ function navByRole(role: string): NavItem[] {
       { to: "/app/disciplines", label: "Disciplinas", icon: "\u25CC", hint: "Catálogo global" },
       { to: "/app/dev/requests", label: "Solicitudes", icon: "\u25CE", hint: "Pedidos de admins" },
       { to: "/app/dev", label: "Dev Panel", icon: "\u25C8", hint: "Logs y monitoreo" },
-      { to: "/app/profile", label: "Perfil", icon: "\u25CB", hint: "Cuenta y seguridad" },
     ];
   }
 
@@ -47,7 +46,6 @@ function navByRole(role: string): NavItem[] {
     { to: "/app/bookings", label: "Mis turnos", icon: "\u25D4", hint: "Solicitudes y agenda" },
     { to: "/app/memberships", label: "Membresías", icon: "\u25C9", hint: "Planes y clases" },
     { to: "/app/branches", label: "Sucursales", icon: "\u2318", hint: "Elegir sede" },
-    { to: "/app/profile", label: "Perfil", icon: "\u25CB", hint: "Cuenta y seguridad" },
   ];
 }
 
