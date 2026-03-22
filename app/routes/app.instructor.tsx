@@ -138,6 +138,70 @@ export default function Instructor() {
           </div>
         </section>
 
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+          <Card className="border-zinc-800 bg-zinc-950/80">
+            <CardHeader>
+              <CardTitle>Lo importante ahora</CardTitle>
+              <CardDescription>Lo esencial del rol instructor quedo bien a mano: reservas, agenda y contexto de sucursal.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-3">
+              <Link
+                to={hasBranch ? "/app/instructor" : "/app/branches"}
+                className="rounded-3xl border border-amber-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-amber-400/30 hover:bg-zinc-900/85"
+              >
+                <div className="text-lg font-semibold text-zinc-100">Reservas pendientes</div>
+                <div className="mt-2 text-3xl font-semibold text-amber-200">{pending.length}</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-400">Confirma o rechaza rapido lo que todav?a espera respuesta de la sucursal.</div>
+              </Link>
+
+              <Link
+                to={hasBranch ? "/app/rubros" : "/app/branches"}
+                className="rounded-3xl border border-cyan-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-zinc-900/85"
+              >
+                <div className="text-lg font-semibold text-zinc-100">Agenda y rubros</div>
+                <div className="mt-2 text-3xl font-semibold text-cyan-200">{classes.length}</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-400">Revisa la agenda disponible y el catalogo de la sucursal activa para seguir operando.</div>
+              </Link>
+
+              <Link
+                to="/app/branches"
+                className="rounded-3xl border border-emerald-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-emerald-400/30 hover:bg-zinc-900/85"
+              >
+                <div className="text-lg font-semibold text-zinc-100">Contexto de trabajo</div>
+                <div className="mt-2 text-sm font-medium text-emerald-200">{branchId ?? "Elegi sucursal"}</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-400">Cambiar de sucursal desde aca evita mezclar reservas, horarios y clases entre sedes.</div>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="border-zinc-800 bg-zinc-950/80">
+            <CardHeader>
+              <CardTitle>Atajos del turno</CardTitle>
+              <CardDescription>Accesos pensados para resolver lo mas frecuente sin recorrer todo el panel.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button variant="secondary" className="w-full" onClick={() => refreshRequests()}>
+                Actualizar reservas
+              </Button>
+              <Button variant="secondary" className="w-full" onClick={() => refresh()}>
+                Actualizar agenda
+              </Button>
+              <Link
+                to="/app/rubros"
+                className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
+              >
+                Ver catalogo por sucursal
+              </Link>
+              <Link
+                to="/app/branches"
+                className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
+              >
+                Cambiar sucursal activa
+              </Link>
+            </CardContent>
+          </Card>
+        </section>
+
         {hasBranch ? (
           <section className="rounded-3xl border border-zinc-800 bg-zinc-950/80 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

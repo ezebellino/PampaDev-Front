@@ -1,10 +1,12 @@
 ﻿import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
 import LogsChart from "../components/dev/LogChart";
 import Protected from "../lib/auth/Protected";
 import { ROLES } from "../lib/auth/roles";
+import { useRubroRequests } from "../lib/rubros/useRubroRequests";
 import {
   clearLogs,
   getLogs,
@@ -228,6 +230,7 @@ export default function Dev() {
 }
 
 function DevPanel() {
+  const { requests } = useRubroRequests();
   const storedFilters = useMemo(() => readStoredFilters(), []);
   const [query, setQuery] = useState(storedFilters?.query ?? "");
   const [level, setLevel] = useState<LevelFilter>(storedFilters?.level ?? "all");
@@ -353,6 +356,8 @@ function DevPanel() {
       .slice(0, 8);
   }, [logs]);
 
+  const pendingRequests = useMemo(() => requests.filter((request) => request.status === "pending").length, [requests]);
+
   const metricCards = [
     {
       label: "Logs",
@@ -394,6 +399,70 @@ function DevPanel() {
           </p>
         </div>
       </section>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+        <Card className="border-zinc-800 bg-zinc-950/75">
+          <CardHeader>
+            <CardTitle>Lo mas importante para Devs</CardTitle>
+            <CardDescription>Entradas directas para incidentes, solicitudes tecnicas y observabilidad.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-3">
+            <Link
+              to="/app/dev/requests"
+              className="rounded-3xl border border-cyan-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-zinc-900/85"
+            >
+              <div className="text-lg font-semibold text-zinc-100">Solicitudes tecnicas</div>
+              <div className="mt-2 text-3xl font-semibold text-cyan-200">{pendingRequests}</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-400">Pedidos pendientes para aprobar o rechazar sin entrar al workspace admin.</div>
+            </Link>
+
+            <Link
+              to="/app/companies"
+              className="rounded-3xl border border-emerald-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-emerald-400/30 hover:bg-zinc-900/85"
+            >
+              <div className="text-lg font-semibold text-zinc-100">Estructura base</div>
+              <div className="mt-2 text-sm font-medium text-emerald-200">Empresas y sucursales</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-400">Entra rapido a la estructura principal de la plataforma antes de tocar operacion o catalogo.</div>
+            </Link>
+
+            <Link
+              to="/app/dev"
+              className="rounded-3xl border border-amber-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-amber-400/30 hover:bg-zinc-900/85"
+            >
+              <div className="text-lg font-semibold text-zinc-100">Monitoreo</div>
+              <div className="mt-2 text-sm font-medium text-amber-200">Logs, errores y features</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-400">Usa esta pantalla como centro rapido para diagnostico, ruido tecnico y seguimiento.</div>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="border-zinc-800 bg-zinc-950/75">
+          <CardHeader>
+            <CardTitle>Atajos tecnicos</CardTitle>
+            <CardDescription>Lo mas usado del rol, siempre visible y a mano.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Link
+              to="/app/dev/requests"
+              className="block rounded-2xl bg-cyan-300 px-4 py-3 text-center text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+            >
+              Resolver solicitudes pendientes
+            </Link>
+            <Link
+              to="/app/disciplines"
+              className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
+            >
+              Gestionar disciplinas
+            </Link>
+            <Link
+              to="/app/branches"
+              className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
+            >
+              Gestionar sucursales
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metricCards.map((card) => (
