@@ -1,5 +1,6 @@
 ﻿import type { BranchClassRecord } from "../api/models/branchClass";
 import type { Discipline } from "../api/services/disciplines";
+import { matchesRubroCandidate, normalizeRubroKey } from "../rubros/rubroMatching";
 import type { BranchScheduleConfig, Weekday } from "./types";
 
 type BuildPlannedSlotsParams = {
@@ -21,15 +22,6 @@ const DEFAULT_CAPACITY_BY_RUBRO: Record<string, number> = {
   taekwondo: 16,
   gym: 20,
 };
-
-function normalizeKey(value: string | null | undefined) {
-  return (value ?? "")
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "");
-}
 
 function toDateKey(date: Date) {
   const year = date.getFullYear();
@@ -56,7 +48,7 @@ function formatMinutes(totalMinutes: number) {
 }
 
 function getDefaultCapacity(rubroId: string) {
-  return DEFAULT_CAPACITY_BY_RUBRO[normalizeKey(rubroId)] ?? 8;
+  return DEFAULT_CAPACITY_BY_RUBRO[normalizeRubroKey(rubroId)] ?? 8;
 }
 
 export function buildPlannedSlots({
@@ -72,13 +64,7 @@ export function buildPlannedSlots({
     return [];
   }
 
-  const normalizedRubroId = normalizeKey(rubroId);
-  const normalizedRubroName = normalizeKey(rubroName);
-
-  const discipline = disciplines.find((item) => {
-    const normalizedName = normalizeKey(item.name);
-    return normalizedName === normalizedRubroId || normalizedName === normalizedRubroName;
-  });
+  const discipline = disciplines.find((item) => matchesRubroCandidate(rubroId, rubroName, item.name));
 
   if (!discipline) {
     return [];
@@ -117,7 +103,7 @@ export function buildPlannedSlots({
       const time = formatMinutes(currentMinutes);
 
       slots.push({
-        id: `planned-${branchId}-${normalizeKey(rubroId)}-${date}-${time}`,
+        id: `planned-${branchId}-${normalizeRubroKey(rubroId)}-${date}-${time}`,
         rubroId,
         branchId,
         date,

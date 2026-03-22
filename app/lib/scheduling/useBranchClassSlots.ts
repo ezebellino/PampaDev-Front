@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { BranchClassRecord } from "../api/models/branchClass";
 import { createClass, type CreateClassPayload } from "../api/services/classes";
+import { matchesRubroCandidate } from "../rubros/rubroMatching";
 import { persistInstructorReservationRequest } from "./useInstructorRequests";
 
 export type ReservationActor = {
@@ -19,15 +20,6 @@ export type ReservationResult = {
 function readNumber(value: unknown) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function normalizeKey(value: string | null | undefined) {
-  return (value ?? "")
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "");
 }
 
 function resolveBranchDisciplineId(slot: BranchClassRecord) {
@@ -73,18 +65,17 @@ function buildCreateClassPayload(slot: BranchClassRecord, userId: string): Creat
 }
 
 function matchesRubro(slot: BranchClassRecord, rubroId: string) {
-  const expected = normalizeKey(rubroId);
-  if (!expected) return true;
-
+  const rubroName = typeof slot.rubroId === "string" ? slot.rubroId : rubroId;
   const candidates = [
     typeof slot.rubroId === "string" ? slot.rubroId : null,
     typeof slot.disciplineName === "string" ? slot.disciplineName : null,
     typeof slot["disciplineName"] === "string" ? String(slot["disciplineName"]) : null,
     typeof slot["rubro"] === "string" ? String(slot["rubro"]) : null,
     typeof slot["categoryName"] === "string" ? String(slot["categoryName"]) : null,
+    typeof slot["title"] === "string" ? String(slot["title"]) : null,
   ];
 
-  return candidates.some((candidate) => normalizeKey(candidate) === expected);
+  return candidates.some((candidate) => matchesRubroCandidate(rubroId, rubroName, candidate));
 }
 
 function createRequestId() {

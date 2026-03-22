@@ -144,7 +144,7 @@ export default function RubroDetailPage() {
     <div className="space-y-6">
       <PageHeader
         title={`Agenda del rubro · ${rubro.name}`}
-        subtitle={rubro.description}
+        subtitle="Elegi un horario y reserva en pocos pasos."
         right={
           <Link to="/app/rubros">
             <Button variant="secondary">Volver</Button>
@@ -185,7 +185,7 @@ export default function RubroDetailPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Detalle</CardTitle>
+            <CardTitle>Resumen</CardTitle>
             <CardDescription>Información general del rubro y su agenda operativa</CardDescription>
           </CardHeader>
 
@@ -228,7 +228,7 @@ export default function RubroDetailPage() {
               2. El frontend sincroniza con backend si la clase ya existe o deja la solicitud lista para conectar después.
             </div>
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-              3. El instructor confirma o rechaza desde su panel operativo.
+              3. El instructor la confirma o la rechaza.
             </div>
             {isBackOffice ? (
               <Link to="/app/instructor" className="block">
@@ -241,7 +241,7 @@ export default function RubroDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Horarios disponibles</CardTitle>
+          <CardTitle>Agenda disponible</CardTitle>
           <CardDescription>Elegí un turno dentro de la agenda habilitada para esta sucursal</CardDescription>
         </CardHeader>
 
@@ -288,7 +288,7 @@ export default function RubroDetailPage() {
                         {slot.bookingSource === "api" ? "Clase real" : "Franja planificada"}
                       </Badge>
                       <Badge tone={syncReady ? "success" : "warning"}>
-                        {syncReady ? "Lista para API" : "Solicitud local preparada"}
+                        {syncReady ? "Lista para API" : "Lista para solicitud"}
                       </Badge>
                     </div>
 
