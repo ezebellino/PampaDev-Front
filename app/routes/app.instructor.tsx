@@ -1,4 +1,4 @@
-﻿import { useMemo } from "react";
+﻿import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -19,9 +19,31 @@ import {
 } from "../lib/scheduling/classPresentation";
 import { useBranchScheduleConfig } from "../lib/scheduling/useBranchScheduleConfig";
 import { useInstructorReservationRequests } from "../lib/scheduling/useInstructorRequests";
+import type { InstructorReservationRequest } from "../lib/scheduling/useInstructorRequests";
 import type { Weekday } from "../lib/scheduling/types";
 
 const WEEKDAY_ORDER: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
+type RequestFilter = "all" | "pending" | "confirmed" | "backlog";
+
+function requestStatusTone(status: InstructorReservationRequest["status"]) {
+  if (status === "confirmed") return "success" as const;
+  if (status === "pending") return "warning" as const;
+  return "neutral" as const;
+}
+
+function requestStatusLabel(status: InstructorReservationRequest["status"]) {
+  if (status === "confirmed") return "Confirmada";
+  if (status === "rejected") return "Rechazada";
+  if (status === "cancelled") return "Cancelada";
+  return "Pendiente";
+}
+
+function requestMatchesFilter(request: InstructorReservationRequest, filter: RequestFilter) {
+  if (filter === "pending") return request.status === "pending";
+  if (filter === "confirmed") return request.status === "confirmed";
+  if (filter === "backlog") return request.syncStatus !== "synced";
+  return true;
+}
 
 export default function Instructor() {
   const { user } = useAuth();
@@ -30,6 +52,7 @@ export default function Instructor() {
   const { disciplines, loading: disciplinesLoading } = useDisciplines();
   const { data: scheduleConfig, loading: scheduleLoading } = useBranchScheduleConfig(branchId, disciplines);
   const { data, loading, error, unavailable, refresh } = useBranchClasses(branchId);
+  const [requestFilter, setRequestFilter] = useState<RequestFilter>("all");
 
   const hasBranch = branchId !== null;
 
@@ -68,7 +91,10 @@ export default function Instructor() {
     return scheduleConfig.disciplines.filter((item) => item.enabled);
   }, [scheduleConfig]);
 
-  const { pending, confirmed, refresh: refreshRequests, confirmRequest, rejectRequest } = useInstructorReservationRequests(branchId);
+  const { requests, pending, confirmed, refresh: refreshRequests, confirmRequest, rejectRequest } = useInstructorReservationRequests(branchId);
+
+  const syncBacklog = useMemo(() => requests.filter((request) => request.syncStatus !== "synced"), [requests]);
+  const visibleRequests = useMemo(() => requests.filter((request) => requestMatchesFilter(request, requestFilter)), [requests, requestFilter]);
 
   if (loading || disciplinesLoading || scheduleLoading) {
     return (
@@ -91,7 +117,7 @@ export default function Instructor() {
                 Gestión operativa de turnos
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 md:text-base">
-                Esta vista combina la planificación semanal definida por administración con las clases reales creadas para la sucursal activa.
+                Esta vista combina la planificación semanal definida por administración con las solicitudes de usuarios y las clases reales creadas para la sucursal activa.
               </p>
             </div>
           </div>
@@ -118,79 +144,144 @@ export default function Instructor() {
 
         {hasBranch ? (
           <section className="rounded-3xl border border-zinc-800 bg-zinc-950/80 p-5">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-zinc-100">Solicitudes de usuarios</h2>
-                <p className="text-sm text-zinc-400">Acá recibís los pedidos que llegan desde rubros y podés confirmarlos o rechazarlos para tu sucursal.</p>
+                <p className="text-sm text-zinc-400">
+                  Acá recibís los pedidos que llegan desde rubros y podés confirmar, rechazar o detectar rápido qué sigue pendiente de backend.
+                </p>
               </div>
               <Button variant="ghost" onClick={refreshRequests} size="sm">
                 Actualizar
               </Button>
             </div>
 
-            {pending.length === 0 && confirmed.length === 0 ? (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+                <div className="text-xs uppercase tracking-wider text-zinc-500">Total</div>
+                <div className="mt-2 text-2xl font-semibold text-zinc-100">{requests.length}</div>
+              </div>
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+                <div className="text-xs uppercase tracking-wider text-zinc-500">Pendientes</div>
+                <div className="mt-2 text-2xl font-semibold text-amber-200">{pending.length}</div>
+              </div>
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+                <div className="text-xs uppercase tracking-wider text-zinc-500">Confirmadas</div>
+                <div className="mt-2 text-2xl font-semibold text-emerald-200">{confirmed.length}</div>
+              </div>
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+                <div className="text-xs uppercase tracking-wider text-zinc-500">Pendientes backend</div>
+                <div className="mt-2 text-2xl font-semibold text-cyan-200">{syncBacklog.length}</div>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                { id: "all", label: "Todas", count: requests.length },
+                { id: "pending", label: "Pendientes", count: pending.length },
+                { id: "confirmed", label: "Confirmadas", count: confirmed.length },
+                { id: "backlog", label: "Listas para backend", count: syncBacklog.length },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setRequestFilter(item.id as RequestFilter)}
+                  className={[
+                    "inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm transition",
+                    requestFilter === item.id
+                      ? "border-cyan-500/35 bg-cyan-400/10 text-cyan-50"
+                      : "border-zinc-800 bg-zinc-900/45 text-zinc-300 hover:bg-zinc-900",
+                  ].join(" ")}
+                >
+                  <span>{item.label}</span>
+                  <span className="rounded-full border border-current/15 px-2 py-0.5 text-xs">{item.count}</span>
+                </button>
+              ))}
+            </div>
+
+            {visibleRequests.length === 0 ? (
               <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-900/65 p-4 text-sm text-zinc-400">
-                No hay solicitudes en estado pendiente o confirmadas para esta sucursal.
+                No hay solicitudes para este filtro en la sucursal activa.
               </div>
-            ) : null}
+            ) : (
+              <div className="mt-4 space-y-4">
+                {visibleRequests.map((request) => {
+                  const canOperate = request.status === "pending";
 
-            {pending.length > 0 ? (
-              <div className="mt-4 space-y-3">
-                <div className="text-sm font-medium text-amber-300">Pendientes</div>
-                {pending.map((request) => (
-                  <div
-                    key={request.id}
-                    className="rounded-2xl border border-amber-800 bg-zinc-900/65 p-4"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <div className="text-sm font-medium text-zinc-100">{request.userName ?? request.userId}</div>
-                        <div className="mt-1 text-sm text-zinc-300">{request.rubroName ?? request.rubroId} · {request.date ?? "Fecha a confirmar"} · {request.time ?? "Hora a confirmar"}</div>
-                        <div className="mt-1 text-xs text-zinc-500">{request.slotLabel ?? "Solicitud enviada desde agenda de rubro"}</div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge tone={request.bookingSource === "api" ? "success" : "neutral"}>
-                          {request.bookingSource === "api" ? "Desde clase API" : "Desde franja planificada"}
-                        </Badge>
-                        <Badge tone={request.syncStatus === "synced" ? "success" : "warning"}>
-                          {request.syncStatus === "synced" ? "Sincronizada" : "Pendiente backend"}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      <Button size="sm" onClick={() => confirmRequest(request.id)}>
-                        Confirmar
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => rejectRequest(request.id)}>
-                        Rechazar
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
+                  return (
+                    <div
+                      key={request.id}
+                      className="rounded-[1.75rem] border border-zinc-800 bg-zinc-900/55 p-4 shadow-[0_14px_34px_rgba(0,0,0,0.14)]"
+                    >
+                      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                        <div className="space-y-3">
+                          <div>
+                            <div className="text-base font-semibold text-zinc-100">{request.userName ?? request.userId}</div>
+                            <div className="mt-1 text-sm text-zinc-300">
+                              {request.rubroName ?? request.rubroId} · {request.date ?? "Fecha a confirmar"} · {request.time ?? "Hora a confirmar"}
+                            </div>
+                          </div>
 
-            {confirmed.length > 0 ? (
-              <div className="mt-4 space-y-3">
-                <div className="text-sm font-medium text-cyan-300">Confirmadas</div>
-                {confirmed.map((request) => (
-                  <div key={request.id} className="rounded-2xl border border-emerald-800 bg-zinc-900/65 p-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <div className="text-sm font-medium text-zinc-100">{request.userName ?? request.userId}</div>
-                        <div className="mt-1 text-sm text-zinc-300">{request.rubroName ?? request.rubroId} · {request.date ?? "Fecha a confirmar"} · {request.time ?? "Hora a confirmar"}</div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge tone="success">Confirmada</Badge>
-                        <Badge tone={request.syncStatus === "synced" ? "success" : "neutral"}>
-                          {request.syncStatus === "synced" ? "Sincronizada" : "Lista para backend"}
-                        </Badge>
+                          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
+                              <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Estado</div>
+                              <div className="mt-2">
+                                <Badge tone={requestStatusTone(request.status)}>{requestStatusLabel(request.status)}</Badge>
+                              </div>
+                            </div>
+                            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
+                              <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Origen</div>
+                              <div className="mt-2">
+                                <Badge tone={request.bookingSource === "api" ? "success" : "neutral"}>
+                                  {request.bookingSource === "api" ? "Clase real" : "Franja planificada"}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
+                              <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Sincronización</div>
+                              <div className="mt-2">
+                                <Badge tone={request.syncStatus === "synced" ? "success" : "warning"}>
+                                  {request.syncStatus === "synced" ? "Sincronizada" : "Pendiente backend"}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-sm text-zinc-400">
+                            <div className="font-medium text-zinc-200">Detalle operativo</div>
+                            <div className="mt-1">{request.slotLabel ?? "Solicitud enviada desde agenda de rubro"}</div>
+                            <div className="mt-2 text-xs text-zinc-500">
+                              {request.syncStatus === "synced"
+                                ? "La clase ya quedó vinculada al backend y solo resta la decisión operativa del instructor."
+                                : "La solicitud está visible en frontend y lista para conectarse cuando el backend cierre esa parte del flujo."}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex w-full flex-col gap-2 xl:w-56">
+                          {canOperate ? (
+                            <>
+                              <Button size="sm" onClick={() => confirmRequest(request.id)}>
+                                Confirmar solicitud
+                              </Button>
+                              <Button size="sm" variant="secondary" onClick={() => rejectRequest(request.id)}>
+                                Rechazar solicitud
+                              </Button>
+                            </>
+                          ) : null}
+
+                          <Link
+                            to="/app/rubros"
+                            className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 transition hover:bg-zinc-900"
+                          >
+                            Ver agenda pública
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-            ) : null}
+            )}
           </section>
         ) : null}
 
