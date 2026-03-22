@@ -392,7 +392,7 @@ function DevPanel() {
         <div className="relative space-y-4">
           <div className="text-xs uppercase tracking-widest text-zinc-500">Dev Panel</div>
           <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
-            Observabilidad y monitoreo del frontend.
+            Estado t?cnico del frontend
           </h1>
           <p className="max-w-2xl text-sm text-zinc-400 md:text-base md:leading-7">
             Ahora el panel recuerda tus filtros para que puedas retomar el análisis técnico sin rearmar el contexto.
@@ -403,8 +403,8 @@ function DevPanel() {
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
         <Card className="border-zinc-800 bg-zinc-950/75">
           <CardHeader>
-            <CardTitle>Lo mas importante para Devs</CardTitle>
-            <CardDescription>Entradas directas para incidentes, solicitudes tecnicas y observabilidad.</CardDescription>
+            <CardTitle>Resumen</CardTitle>
+            <CardDescription>Lo clave del rol.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <Link
@@ -413,7 +413,7 @@ function DevPanel() {
             >
               <div className="text-lg font-semibold text-zinc-100">Solicitudes tecnicas</div>
               <div className="mt-2 text-3xl font-semibold text-cyan-200">{pendingRequests}</div>
-              <div className="mt-2 text-sm leading-6 text-zinc-400">Pedidos pendientes para aprobar o rechazar sin entrar al workspace admin.</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-400">Pendientes por resolver.</div>
             </Link>
 
             <Link
@@ -422,7 +422,7 @@ function DevPanel() {
             >
               <div className="text-lg font-semibold text-zinc-100">Estructura base</div>
               <div className="mt-2 text-sm font-medium text-emerald-200">Empresas y sucursales</div>
-              <div className="mt-2 text-sm leading-6 text-zinc-400">Entra rapido a la estructura principal de la plataforma antes de tocar operacion o catalogo.</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-400">Base de la plataforma.</div>
             </Link>
 
             <Link
@@ -431,37 +431,11 @@ function DevPanel() {
             >
               <div className="text-lg font-semibold text-zinc-100">Monitoreo</div>
               <div className="mt-2 text-sm font-medium text-amber-200">Logs, errores y features</div>
-              <div className="mt-2 text-sm leading-6 text-zinc-400">Usa esta pantalla como centro rapido para diagnostico, ruido tecnico y seguimiento.</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-400">Se?ales del sistema.</div>
             </Link>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/75">
-          <CardHeader>
-            <CardTitle>Atajos tecnicos</CardTitle>
-            <CardDescription>Lo mas usado del rol, siempre visible y a mano.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Link
-              to="/app/dev/requests"
-              className="block rounded-2xl bg-cyan-300 px-4 py-3 text-center text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
-            >
-              Resolver solicitudes pendientes
-            </Link>
-            <Link
-              to="/app/disciplines"
-              className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
-            >
-              Gestionar disciplinas
-            </Link>
-            <Link
-              to="/app/branches"
-              className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
-            >
-              Gestionar sucursales
-            </Link>
-          </CardContent>
-        </Card>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -620,14 +594,14 @@ function DevPanel() {
 
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 text-sm text-zinc-400">
             {selectedFeature
-              ? `Mostrando eventos de la feature ${selectedFeature}.`
+              ? `Feature activa: ${selectedFeature}.`
               : origin === "all"
                 ? "Vista general de eventos técnicos."
                 : origin === "backend"
-                  ? "Mostrando solo respuestas y fallos que provienen del servidor o la API."
+                  ? "Solo backend."
                   : origin === "frontend"
                     ? "Mostrando solo errores y señales generadas por UI, hooks o cliente."
-                    : "Mostrando eventos sin origen clasificado."}
+                    : "Sin origen clasificado."}
           </div>
 
           <div className="space-y-3">

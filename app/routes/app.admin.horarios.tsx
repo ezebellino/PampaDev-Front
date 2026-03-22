@@ -257,7 +257,7 @@ export default function AdminHorarios() {
         title="Horarios"
         subtitle={
           activeBranch
-            ? `Planifica la semana operativa de ${activeBranch.companyName} en ${activeBranch.cityName} y valida la agenda real cargada en backend.`
+            ? `Planificaci?n semanal de ${activeBranch.companyName} en ${activeBranch.cityName}.`
             : `Planifica la semana operativa de la sucursal ${branchId}.`
         }
         right={
@@ -272,10 +272,10 @@ export default function AdminHorarios() {
           <div className="space-y-3">
             <div className="text-xs uppercase tracking-[0.24em] text-cyan-200/80">Panel operativo</div>
             <div className="max-w-3xl text-2xl font-semibold leading-tight text-white">
-              Organiza apertura semanal, franjas por disciplina y contrasta todo con la agenda real de la sede.
+              Apertura semanal y franjas por disciplina.
             </div>
             <p className="max-w-3xl text-sm leading-6 text-zinc-300">
-              Este modulo ya intenta usar availability del backend cuando existe. Si todavia no esta publicado para la sucursal, mantenemos fallback local para no cortar la operacion diaria.
+              Usa availability cuando existe. Si no, guarda en local.
             </p>
             <div className="flex flex-wrap gap-2">
               <Badge tone="success">{plannedOpenDays} dias abiertos</Badge>
@@ -488,14 +488,9 @@ export default function AdminHorarios() {
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardHeader>
             <CardTitle>Criterio operativo</CardTitle>
-            <CardDescription>
-              Esta capa ya intenta sincronizar la disponibilidad real del backend y conserva fallback local para notas, cierres y disciplina mientras el endpoint no este listo.
-            </CardDescription>
+            <CardDescription>Guardado y sincronizaci?n.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-zinc-400">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">1. Admin define dias abiertos o cerrados para la sucursal.</div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">2. Admin habilita horarios base y duracion por disciplina.</div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">3. Cuando availability exista, la apertura semanal se empuja al backend automaticamente.</div>
             <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/8 px-4 py-3 text-cyan-100">
               {savedNotice ??
                 (usingBackendAvailability
@@ -513,9 +508,7 @@ export default function AdminHorarios() {
         <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
         <CardHeader className="relative -mt-4">
           <CardTitle>Franjas por disciplina</CardTitle>
-          <CardDescription>
-            Define para cada disciplina si la sede puede operar, desde que hora hasta que hora y con que duracion de turno.
-          </CardDescription>
+          <CardDescription>Configuraci?n por rubro.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {draftConfig ? (
@@ -645,8 +638,8 @@ export default function AdminHorarios() {
         <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
           <div className="h-20 bg-linear-to-r from-amber-500/12 to-transparent" />
           <CardContent className="relative -mt-2 space-y-2 py-5 text-sm text-zinc-400">
-            <p>Cuando el backend publique la agenda de clases para esta sucursal, el resumen inferior va a mostrar las clases reales de la sede activa.</p>
-            <p>La fuente esperada es /api/Classes/byBranch/{'{'}idBranch{'}'}.</p>
+            <p>Sin clases reales por ahora.</p>
+            <p>Fuente esperada: /api/Classes/byBranch/{'{'}idBranch{'}'}.</p>
           </CardContent>
         </Card>
       ) : classes.length === 0 ? (
@@ -662,9 +655,7 @@ export default function AdminHorarios() {
             <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
             <CardHeader className="relative -mt-4">
               <CardTitle>Agenda real cargada en backend</CardTitle>
-              <CardDescription>
-                Este bloque muestra las clases efectivamente creadas en Classes/byBranch para contrastarlas con la planificacion semanal definida por administracion.
-              </CardDescription>
+              <CardDescription>Clases creadas en backend.</CardDescription>
             </CardHeader>
           </Card>
 

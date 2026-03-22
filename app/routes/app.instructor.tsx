@@ -150,8 +150,8 @@ export default function Instructor() {
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardHeader>
-              <CardTitle>Lo importante ahora</CardTitle>
-              <CardDescription>Lo esencial del rol instructor quedo bien a mano: reservas, agenda y contexto de sucursal.</CardDescription>
+              <CardTitle>Resumen</CardTitle>
+              <CardDescription>Lo esencial del d?a.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-3">
               <Link
@@ -160,7 +160,7 @@ export default function Instructor() {
               >
                 <div className="text-lg font-semibold text-zinc-100">Reservas pendientes</div>
                 <div className="mt-2 text-3xl font-semibold text-amber-200">{pending.length}</div>
-                <div className="mt-2 text-sm leading-6 text-zinc-400">Confirma o rechaza rapido lo que todav?a espera respuesta de la sucursal.</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-400">Lo que a?n espera respuesta.</div>
               </Link>
 
               <Link
@@ -169,7 +169,7 @@ export default function Instructor() {
               >
                 <div className="text-lg font-semibold text-zinc-100">Agenda y rubros</div>
                 <div className="mt-2 text-3xl font-semibold text-cyan-200">{classes.length}</div>
-                <div className="mt-2 text-sm leading-6 text-zinc-400">Revisa la agenda disponible y el catalogo de la sucursal activa para seguir operando.</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-400">Clases activas en esta sede.</div>
               </Link>
 
               <Link
@@ -178,37 +178,11 @@ export default function Instructor() {
               >
                 <div className="text-lg font-semibold text-zinc-100">Contexto de trabajo</div>
                 <div className="mt-2 text-sm font-medium text-emerald-200">{branchId ?? "Elegi sucursal"}</div>
-                <div className="mt-2 text-sm leading-6 text-zinc-400">Cambiar de sucursal desde aca evita mezclar reservas, horarios y clases entre sedes.</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-400">Sucursal activa para operar.</div>
               </Link>
             </CardContent>
           </Card>
 
-          <Card className="border-zinc-800 bg-zinc-950/80">
-            <CardHeader>
-              <CardTitle>Atajos del turno</CardTitle>
-              <CardDescription>Accesos pensados para resolver lo mas frecuente sin recorrer todo el panel.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="secondary" className="w-full" onClick={() => refreshRequests()}>
-                Actualizar reservas
-              </Button>
-              <Button variant="secondary" className="w-full" onClick={() => refresh()}>
-                Actualizar agenda
-              </Button>
-              <Link
-                to="/app/rubros"
-                className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
-              >
-                Ver catalogo por sucursal
-              </Link>
-              <Link
-                to="/app/branches"
-                className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
-              >
-                Cambiar sucursal activa
-              </Link>
-            </CardContent>
-          </Card>
         </section>
 
         {hasBranch ? (
@@ -217,7 +191,7 @@ export default function Instructor() {
             <Card className="border-zinc-800 bg-zinc-950/80">
               <CardHeader>
                 <CardTitle>Agenda publicada</CardTitle>
-                <CardDescription>Horarios visibles para el usuario en esta sucursal.</CardDescription>
+                <CardDescription>Horarios visibles para el usuario.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {publishedAgenda.items.length === 0 ? (
@@ -246,7 +220,7 @@ export default function Instructor() {
             <Card className="border-zinc-800 bg-zinc-950/80">
               <CardHeader>
                 <CardTitle>Resumen de agenda</CardTitle>
-                <CardDescription>Lo que hoy esta abierto para reserva.</CardDescription>
+                <CardDescription>Disponibilidad de hoy.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -562,9 +536,7 @@ export default function Instructor() {
                 <Card className="border-zinc-800 bg-zinc-950/80">
                   <CardHeader>
                     <CardTitle>Planificación de administración</CardTitle>
-                    <CardDescription>
-                      Esta referencia ayuda a ordenar pedidos sobre la base semanal definida por el Admin para la sucursal activa.
-                    </CardDescription>
+                    <CardDescription>Base semanal definida por admin.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -641,9 +613,7 @@ export default function Instructor() {
                 <Card className="border-zinc-800 bg-zinc-950/80">
                   <CardHeader>
                     <CardTitle>Acciones rápidas</CardTitle>
-                    <CardDescription>
-                      Entradas directas para seguir operando sin salir del contexto de la sucursal activa.
-                    </CardDescription>
+                    <CardDescription>Lo m?s usado.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <Button variant="secondary" className="w-full" onClick={() => refresh()}>
