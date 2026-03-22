@@ -1,6 +1,6 @@
 ﻿import { Link } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
 import Protected from "../lib/auth/Protected";
 import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
@@ -9,6 +9,12 @@ import { useCompany } from "../lib/companies/CompanyContext";
 import { useNextTurnos } from "../lib/scheduling/useNextTurnos";
 
 const USER_ACTIONS = [
+  {
+    title: "Mis turnos",
+    description: "Seguí solicitudes, confirmaciones y reservas ya enviadas desde la sucursal activa.",
+    to: "/app/bookings",
+    cta: "Ver agenda",
+  },
   {
     title: "Membresías",
     description: "Compará planes disponibles y consultá si esta sucursal ofrece clase particular.",
@@ -104,7 +110,7 @@ export default function User() {
           </div>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-5">
           {USER_ACTIONS.map((action) => (
             <UserActionCard key={action.title} {...action} />
           ))}
@@ -120,7 +126,7 @@ export default function User() {
               <div className="h-8 w-px bg-zinc-700" />
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {USER_ACTIONS.map((action) => (
                 <UserActionCard key={action.title} {...action} />
               ))}
@@ -129,10 +135,20 @@ export default function User() {
 
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardHeader>
-              <CardTitle>Mis solicitudes y próximos turnos</CardTitle>
-              <CardDescription>
-                Acá ves lo que ya pediste a la sucursal activa, incluso si todavía está pendiente de sincronizarse con backend.
-              </CardDescription>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <CardTitle>Mis solicitudes y próximos turnos</CardTitle>
+                  <CardDescription>
+                    Acá ves lo que ya pediste a la sucursal activa, incluso si todavía está pendiente de sincronizarse con backend.
+                  </CardDescription>
+                </div>
+                <Link
+                  to="/app/bookings"
+                  className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 transition hover:bg-zinc-900"
+                >
+                  Ver vista completa
+                </Link>
+              </div>
             </CardHeader>
 
             <div className="border-t border-zinc-800" />
@@ -197,4 +213,3 @@ export default function User() {
     </Protected>
   );
 }
-

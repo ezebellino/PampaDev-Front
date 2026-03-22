@@ -44,6 +44,7 @@ function navByRole(role: string): NavItem[] {
 
   return [
     ...common,
+    { to: "/app/bookings", label: "Mis turnos", icon: "\u25D4", hint: "Solicitudes y agenda" },
     { to: "/app/memberships", label: "Membresías", icon: "\u25C9", hint: "Planes y clases" },
     { to: "/app/branches", label: "Sucursales", icon: "\u2318", hint: "Elegir sede" },
     { to: "/app/profile", label: "Perfil", icon: "\u25CB", hint: "Cuenta y seguridad" },
