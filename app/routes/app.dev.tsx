@@ -300,11 +300,11 @@ function DevPanel() {
   }, [logs]);
 
   const chartData = useMemo(() => {
-    const map = new Map<string, { day: string; info: number; warning: number; error: number }>();
+    const map = new Map<string, { day: string; warning: number; error: number }>();
 
     for (const log of logs) {
       const day = log.timestamp.slice(0, 10);
-      const row = map.get(day) ?? { day, info: 0, warning: 0, error: 0 };
+      const row = map.get(day) ?? { day, warning: 0, error: 0 };
       const safe = safeLevel(log.level);
       row[safe] += 1;
       map.set(day, row);

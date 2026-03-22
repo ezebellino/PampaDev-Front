@@ -11,7 +11,6 @@ import {
 
 type Row = {
   day: string;
-  info: number;
   warning: number;
   error: number;
 };
@@ -39,7 +38,7 @@ export default function LogsChart({ data }: { data: Row[] }) {
   return (
     <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} barCategoryGap={10}>
+        <BarChart data={data} barCategoryGap={28} barGap={8}>
           <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
           <XAxis
             dataKey="day"
@@ -58,10 +57,8 @@ export default function LogsChart({ data }: { data: Row[] }) {
             wrapperStyle={{ color: "rgba(228,228,231,0.85)", fontSize: 12 }}
           />
 
-          {/* Colores que contrastan en dark */}
-          <Bar dataKey="info" fill="rgba(161,161,170,0.85)" radius={[10, 10, 2, 2]} />
-          <Bar dataKey="warning" fill="rgba(251,191,36,0.85)" radius={[10, 10, 2, 2]} />
-          <Bar dataKey="error" fill="rgba(248,113,113,0.85)" radius={[10, 10, 2, 2]} />
+          <Bar dataKey="warning" name="warning" barSize={18} fill="rgba(251,191,36,0.85)" radius={[10, 10, 2, 2]} />
+          <Bar dataKey="error" name="error" barSize={18} fill="rgba(248,113,113,0.85)" radius={[10, 10, 2, 2]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

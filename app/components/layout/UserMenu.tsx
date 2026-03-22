@@ -1,22 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useAuth } from "../../lib/auth/AuthContext";
-import { ROLES } from "../../lib/auth/roles";
-
-function resolvePanelRoute(role: string) {
-  if (role === ROLES.DEVS) return "/app/dev";
-  if (role === ROLES.ADMIN) return "/app/admin";
-  if (role === ROLES.INSTRUCTOR) return "/app/instructor";
-  return "/app";
-}
-
-function resolvePanelLabel(role: string) {
-  if (role === ROLES.DEVS) return "Mi panel dev";
-  if (role === ROLES.ADMIN) return "Mi panel admin";
-  if (role === ROLES.INSTRUCTOR) return "Mi panel instructor";
-  return "Mi dashboard";
-}
-
 export default function UserMenu() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
@@ -43,9 +27,6 @@ export default function UserMenu() {
   }, []);
 
   if (!user) return null;
-
-  const panelRoute = resolvePanelRoute(user.role);
-  const panelLabel = resolvePanelLabel(user.role);
 
   return (
     <div ref={wrapRef} className="relative">
@@ -90,25 +71,17 @@ export default function UserMenu() {
           </div>
 
           <div className="p-2">
-            <Link
-              to={panelRoute}
-              onClick={() => setOpen(false)}
-              className="block rounded-2xl px-3 py-3 text-sm text-zinc-200 transition hover:bg-zinc-900/70 hover:text-zinc-100"
-              role="menuitem"
-            >
-              <div className="font-medium">{panelLabel}</div>
-              <div className="mt-1 text-xs text-zinc-500">Volver al espacio principal según tu rol</div>
-            </Link>
-
-            <Link
-              to="/app/profile"
-              onClick={() => setOpen(false)}
-              className="mt-1 block rounded-2xl px-3 py-3 text-sm text-zinc-200 transition hover:bg-zinc-900/70 hover:text-zinc-100"
+            <button
+              onClick={() => {
+                setOpen(false);
+                nav("/app/profile");
+              }}
+              className="block w-full rounded-2xl px-3 py-3 text-left text-sm text-zinc-200 transition hover:bg-zinc-900/70 hover:text-zinc-100"
               role="menuitem"
             >
               <div className="font-medium">Mi perfil</div>
               <div className="mt-1 text-xs text-zinc-500">Datos personales y seguridad</div>
-            </Link>
+            </button>
 
             <button
               onClick={() => {
