@@ -8,20 +8,16 @@ import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
 import { useBranch } from "../lib/branches/BranchContext";
 import { useCompany } from "../lib/companies/CompanyContext";
+import {
+  getReservationOperationalCopy,
+  getReservationSourceLabel,
+  getReservationSourceTone,
+  getReservationStatusLabel,
+  getReservationStatusTone,
+  getReservationSyncLabel,
+  getReservationSyncTone,
+} from "../lib/scheduling/reservationPresentation";
 import { useMyReservationRequests } from "../lib/scheduling/useInstructorRequests";
-
-function statusTone(status: "pending" | "confirmed" | "rejected" | "cancelled") {
-  if (status === "confirmed") return "success" as const;
-  if (status === "pending") return "warning" as const;
-  return "neutral" as const;
-}
-
-function statusLabel(status: "pending" | "confirmed" | "rejected" | "cancelled") {
-  if (status === "confirmed") return "Confirmada";
-  if (status === "rejected") return "Rechazada";
-  if (status === "cancelled") return "Cancelada";
-  return "Pendiente";
-}
 
 export default function UserBookingsPage() {
   const { user } = useAuth();
@@ -107,7 +103,7 @@ export default function UserBookingsPage() {
               <CardHeader className="relative -mt-6">
                 <CardTitle>Agenda completa</CardTitle>
                 <CardDescription>
-                  Cada tarjeta representa una solicitud o turno tuyo dentro de la sucursal activa.
+                  Cada tarjeta representa una reserva tuya dentro de la sucursal activa.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -130,38 +126,34 @@ export default function UserBookingsPage() {
                             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 px-4 py-3">
                               <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Estado</div>
                               <div className="mt-2">
-                                <Badge tone={statusTone(request.status)}>{statusLabel(request.status)}</Badge>
+                                <Badge tone={getReservationStatusTone(request.status)}>{getReservationStatusLabel(request.status)}</Badge>
                               </div>
                             </div>
                             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 px-4 py-3">
                               <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Sincronización</div>
                               <div className="mt-2">
-                                <Badge tone={request.syncStatus === "synced" ? "success" : "neutral"}>
-                                  {request.syncStatus === "synced" ? "Sincronizada" : "Lista para backend"}
+                                <Badge tone={getReservationSyncTone(request.syncStatus)}>
+                                  {getReservationSyncLabel(request.syncStatus)}
                                 </Badge>
                               </div>
                             </div>
                           </div>
 
                           <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 px-4 py-3 text-sm text-zinc-400">
-                            <div className="font-medium text-zinc-200">Detalle del pedido</div>
-                            <div className="mt-1">{request.slotLabel ?? "Solicitud enviada desde agenda de rubro"}</div>
-                            <div className="mt-2 text-xs text-zinc-500">
-                              {request.bookingSource === "api"
-                                ? "Este pedido ya se apoyó sobre una clase real del backend."
-                                : "Este pedido salió de una franja planificada y quedó listo para conectarse cuando el backend termine esa parte."}
-                            </div>
+                            <div className="font-medium text-zinc-200">Detalle de la reserva</div>
+                            <div className="mt-1">{request.slotLabel ?? "Reserva enviada desde agenda de rubro"}</div>
+                            <div className="mt-2 text-xs text-zinc-500">{getReservationOperationalCopy(request)}</div>
                           </div>
                         </div>
 
                         <div className="flex w-full flex-col gap-2 lg:w-52">
-                          <Badge tone={request.bookingSource === "api" ? "success" : "neutral"}>
-                            {request.bookingSource === "api" ? "Clase real" : "Franja planificada"}
+                          <Badge tone={getReservationSourceTone(request.bookingSource)}>
+                            {getReservationSourceLabel(request.bookingSource)}
                           </Badge>
 
                           {canCancel ? (
                             <Button variant="secondary" onClick={() => cancelRequest(request.id)}>
-                              Cancelar solicitud
+                              Cancelar reserva
                             </Button>
                           ) : null}
 
@@ -198,21 +190,21 @@ export default function UserBookingsPage() {
                 <CardHeader>
                   <CardTitle>Cómo leer esta vista</CardTitle>
                   <CardDescription>
-                    Para que el usuario entienda qué ya está firme y qué todavía depende de operación o backend.
+                    La misma lógica que ve el instructor, traducida para que entiendas rápido qué sigue en curso.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-zinc-400">
                   <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                    `Pendiente` significa que la sucursal o el instructor todavía no confirmó tu solicitud.
+                    `Pendiente` significa que tu reserva todavía espera confirmación operativa.
                   </div>
                   <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                    `Lista para backend` indica que el frontend guardó el pedido y quedó listo para sincronizarse.
+                    `Lista para backend` indica que la reserva ya quedó guardada y lista para sincronizarse.
                   </div>
                   <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                    `Clase real` aparece cuando el turno ya se apoyó sobre una clase concreta del backend.
+                    `Clase real` aparece cuando la reserva ya se apoya sobre una clase concreta del backend.
                   </div>
                   <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                    Si la solicitud sigue pendiente, podés cancelarla desde esta misma vista.
+                    Si la reserva sigue pendiente, podés cancelarla desde esta misma vista.
                   </div>
                 </CardContent>
               </Card>

@@ -17,6 +17,15 @@ import {
   groupBranchClassesByDay,
   normalizeBranchClass,
 } from "../lib/scheduling/classPresentation";
+import {
+  getReservationOperationalCopy,
+  getReservationSourceLabel,
+  getReservationSourceTone,
+  getReservationStatusLabel,
+  getReservationStatusTone,
+  getReservationSyncLabel,
+  getReservationSyncTone,
+} from "../lib/scheduling/reservationPresentation";
 import { useBranchScheduleConfig } from "../lib/scheduling/useBranchScheduleConfig";
 import { useInstructorReservationRequests } from "../lib/scheduling/useInstructorRequests";
 import type { InstructorReservationRequest } from "../lib/scheduling/useInstructorRequests";
@@ -24,19 +33,6 @@ import type { Weekday } from "../lib/scheduling/types";
 
 const WEEKDAY_ORDER: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
 type RequestFilter = "all" | "pending" | "confirmed" | "backlog";
-
-function requestStatusTone(status: InstructorReservationRequest["status"]) {
-  if (status === "confirmed") return "success" as const;
-  if (status === "pending") return "warning" as const;
-  return "neutral" as const;
-}
-
-function requestStatusLabel(status: InstructorReservationRequest["status"]) {
-  if (status === "confirmed") return "Confirmada";
-  if (status === "rejected") return "Rechazada";
-  if (status === "cancelled") return "Cancelada";
-  return "Pendiente";
-}
 
 function requestMatchesFilter(request: InstructorReservationRequest, filter: RequestFilter) {
   if (filter === "pending") return request.status === "pending";
@@ -117,7 +113,7 @@ export default function Instructor() {
                 Gestión operativa de turnos
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 md:text-base">
-                Esta vista combina la planificación semanal definida por administración con las solicitudes de usuarios y las clases reales creadas para la sucursal activa.
+                Esta vista combina la planificación semanal definida por administración con las reservas de usuarios y las clases reales creadas para la sucursal activa.
               </p>
             </div>
           </div>
@@ -146,9 +142,9 @@ export default function Instructor() {
           <section className="rounded-3xl border border-zinc-800 bg-zinc-950/80 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-zinc-100">Solicitudes de usuarios</h2>
+                <h2 className="text-lg font-semibold text-zinc-100">Reservas de usuarios</h2>
                 <p className="text-sm text-zinc-400">
-                  Acá recibís los pedidos que llegan desde rubros y podés confirmar, rechazar o detectar rápido qué sigue pendiente de backend.
+                  Acá recibís las reservas que llegan desde rubros y podés confirmar, rechazar o detectar rápido qué sigue pendiente de backend.
                 </p>
               </div>
               <Button variant="ghost" onClick={refreshRequests} size="sm">
@@ -200,7 +196,7 @@ export default function Instructor() {
 
             {visibleRequests.length === 0 ? (
               <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-900/65 p-4 text-sm text-zinc-400">
-                No hay solicitudes para este filtro en la sucursal activa.
+                No hay reservas para este filtro en la sucursal activa.
               </div>
             ) : (
               <div className="mt-4 space-y-4">
@@ -225,35 +221,31 @@ export default function Instructor() {
                             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
                               <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Estado</div>
                               <div className="mt-2">
-                                <Badge tone={requestStatusTone(request.status)}>{requestStatusLabel(request.status)}</Badge>
+                                <Badge tone={getReservationStatusTone(request.status)}>{getReservationStatusLabel(request.status)}</Badge>
                               </div>
                             </div>
                             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
                               <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Origen</div>
                               <div className="mt-2">
-                                <Badge tone={request.bookingSource === "api" ? "success" : "neutral"}>
-                                  {request.bookingSource === "api" ? "Clase real" : "Franja planificada"}
+                                <Badge tone={getReservationSourceTone(request.bookingSource)}>
+                                  {getReservationSourceLabel(request.bookingSource)}
                                 </Badge>
                               </div>
                             </div>
                             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
                               <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Sincronización</div>
                               <div className="mt-2">
-                                <Badge tone={request.syncStatus === "synced" ? "success" : "warning"}>
-                                  {request.syncStatus === "synced" ? "Sincronizada" : "Pendiente backend"}
+                                <Badge tone={getReservationSyncTone(request.syncStatus)}>
+                                  {getReservationSyncLabel(request.syncStatus)}
                                 </Badge>
                               </div>
                             </div>
                           </div>
 
                           <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-sm text-zinc-400">
-                            <div className="font-medium text-zinc-200">Detalle operativo</div>
-                            <div className="mt-1">{request.slotLabel ?? "Solicitud enviada desde agenda de rubro"}</div>
-                            <div className="mt-2 text-xs text-zinc-500">
-                              {request.syncStatus === "synced"
-                                ? "La clase ya quedó vinculada al backend y solo resta la decisión operativa del instructor."
-                                : "La solicitud está visible en frontend y lista para conectarse cuando el backend cierre esa parte del flujo."}
-                            </div>
+                            <div className="font-medium text-zinc-200">Detalle de la reserva</div>
+                            <div className="mt-1">{request.slotLabel ?? "Reserva enviada desde agenda de rubro"}</div>
+                            <div className="mt-2 text-xs text-zinc-500">{getReservationOperationalCopy(request)}</div>
                           </div>
                         </div>
 
@@ -261,10 +253,10 @@ export default function Instructor() {
                           {canOperate ? (
                             <>
                               <Button size="sm" onClick={() => confirmRequest(request.id)}>
-                                Confirmar solicitud
+                                Confirmar reserva
                               </Button>
                               <Button size="sm" variant="secondary" onClick={() => rejectRequest(request.id)}>
-                                Rechazar solicitud
+                                Rechazar reserva
                               </Button>
                             </>
                           ) : null}
