@@ -10,12 +10,17 @@ function readNumber(value: unknown) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeKey(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "");
+}
+
 function resolveBranchDisciplineId(slot: BranchClassRecord) {
-  return (
-    readNumber(slot.idBranchDiscipline) ??
-    readNumber(slot["branchDisciplineId"]) ??
-    readNumber(slot["idBranchDisciplineId"])
-  );
+  return readNumber(slot.idBranchDiscipline) ?? readNumber(slot["branchDisciplineId"]) ?? readNumber(slot["idBranchDisciplineId"]);
 }
 
 function resolveIsoDate(date: string, time: string) {
@@ -56,6 +61,20 @@ function buildCreateClassPayload(slot: BranchClassRecord, userId: string): Creat
   };
 }
 
+function matchesRubro(slot: BranchClassRecord, rubroId: string) {
+  const expected = normalizeKey(rubroId);
+  if (!expected) return true;
+
+  const candidates = [
+    typeof slot.rubroId === "string" ? slot.rubroId : null,
+    typeof slot["disciplineName"] === "string" ? String(slot["disciplineName"]) : null,
+    typeof slot["rubro"] === "string" ? String(slot["rubro"]) : null,
+    typeof slot["categoryName"] === "string" ? String(slot["categoryName"]) : null,
+  ];
+
+  return candidates.some((candidate) => normalizeKey(candidate) === expected);
+}
+
 export function useBranchClassSlots(branchId: number | null, rubroId: string | null) {
   const queryClient = useQueryClient();
 
@@ -76,7 +95,7 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
   const filteredSlots = useMemo(() => {
     if (!classesQuery.data) return [] as BranchClassRecord[];
     if (rubroId == null) return classesQuery.data;
-    return classesQuery.data.filter((slot) => slot.rubroId === rubroId);
+    return classesQuery.data.filter((slot) => matchesRubro(slot, rubroId));
   }, [classesQuery.data, rubroId]);
 
   const reservationMutation = useMutation({
@@ -101,7 +120,7 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
         rubroId,
         slotId: slot.id,
         userId,
-        backendClassId: readNumber(response?.id) ?? String(response?.id ?? ""),
+        backendClassId: readNumber(response?.idClass ?? response?.id) ?? String(response?.idClass ?? response?.id ?? ""),
         date: slot.date,
         time: slot.time,
         status: "pending",
