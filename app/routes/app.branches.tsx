@@ -102,7 +102,7 @@ export default function BranchesPage() {
       <div className="space-y-6">
         <PageHeader
           title="Sucursales"
-          subtitle="No pudimos cargar las sucursales desde la API en este momento."
+          subtitle="No pudimos cargar las sucursales."
           right={
             isDev ? (
               <Button variant="secondary" onClick={() => setCreateOpen(true)} disabled={!activeCompany || citiesLoading || cities.length === 0}>
@@ -177,7 +177,7 @@ export default function BranchesPage() {
       {!activeCompany ? (
         <Card>
           <CardContent className="space-y-3 py-5 text-sm text-zinc-400">
-            <div>Antes de operar con sucursales, selecciona una empresa activa desde Entidad.</div>
+            <div>Seleccion? una empresa activa desde Entidad.</div>
             <div className="flex flex-wrap gap-2">
               <Link to="/app/companies" className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900">
                 Ir a empresas

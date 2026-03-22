@@ -83,29 +83,21 @@ function DevRequests() {
         subtitle="Acá resolvés los pedidos de rubros que llegan desde administración y decidís qué entra al catálogo base o qué necesita ajuste antes de seguir."
       />
 
-      <Card className="border-cyan-500/20 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_34%),linear-gradient(135deg,rgba(24,24,27,0.96),rgba(9,9,11,0.98))]">
-        <CardContent className="grid gap-5 py-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
-          <div className="space-y-3 text-sm text-zinc-300">
-            <div className="text-xs uppercase tracking-[0.24em] text-cyan-200/80">Bandeja técnica</div>
-            <div className="max-w-3xl text-2xl font-semibold leading-tight text-white">
-              Todo pedido pendiente del equipo admin se resuelve desde esta vista, sin mezclarlo con el workspace operativo de administración.
-            </div>
-            <p className="max-w-3xl leading-6 text-zinc-300/90">
-              La idea es que Devs tenga un inbox propio para aprobar, rechazar o dejar feedback interno, y que el contador de pendientes siempre lleve a una acción real.
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-400">Pendientes</div>
-              <div className="mt-2 text-2xl font-semibold text-white">{pendingCount}</div>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-400">Aprobadas</div>
-              <div className="mt-2 text-2xl font-semibold text-white">{approvedCount}</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card className="border-zinc-800 bg-zinc-950/80">
+          <CardContent className="py-5">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Pendientes</div>
+            <div className="mt-2 text-3xl font-semibold text-zinc-100">{pendingCount}</div>
+          </CardContent>
+        </Card>
+        <Card className="border-zinc-800 bg-zinc-950/80">
+          <CardContent className="py-5">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Aprobadas</div>
+            <div className="mt-2 text-3xl font-semibold text-zinc-100">{approvedCount}</div>
+          </CardContent>
+        </Card>
+      </div>
+
 
       {actionError ? (
         <Card className="border-rose-500/20 bg-rose-500/10">

@@ -45,7 +45,7 @@ function CompaniesPage() {
   }
 
   if (loading) {
-    return <ScreenLoader title="Cargando empresas…" subtitle="Estamos preparando la estructura empresarial activa." />;
+    return <ScreenLoader title="Cargando empresasï¿½" subtitle="Estamos preparando la estructura empresarial activa." />;
   }
 
   if (error) {
@@ -53,7 +53,7 @@ function CompaniesPage() {
       <div className="space-y-6">
         <PageHeader
           title="Empresas"
-          subtitle="No pudimos cargar el catálogo de empresas en este momento."
+          subtitle="No pudimos cargar el catï¿½logo de empresas en este momento."
           right={
             <Button variant="secondary" onClick={() => setCreateOpen(true)}>
               + Nueva empresa
@@ -62,7 +62,7 @@ function CompaniesPage() {
         />
         <Card>
           <CardContent className="space-y-3 py-6 text-sm">
-            <div className="font-medium text-red-300">Ocurrió un problema al cargar las empresas.</div>
+            <div className="font-medium text-red-300">Ocurriï¿½ un problema al cargar las empresas.</div>
             <div className="text-zinc-400">{error.message}</div>
             <div className="flex gap-2">
               <Button variant="ghost" onClick={() => void refresh()}>
@@ -94,7 +94,7 @@ function CompaniesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Empresas"
-        subtitle="DEVS define la estructura empresarial y luego cada sucursal queda vinculada a una empresa concreta."
+        subtitle="Base empresarial de la plataforma."
         right={
           <div className="flex flex-wrap gap-2">
             <Button variant="ghost" onClick={() => void refresh()}>
@@ -140,8 +140,8 @@ function CompaniesPage() {
                   </div>
 
                   <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                    <div className="text-xs uppercase tracking-wider text-zinc-500">Ubicación</div>
-                    <div className="mt-1 text-zinc-200">{location || "Sin ubicación detallada"}</div>
+                    <div className="text-xs uppercase tracking-wider text-zinc-500">Ubicaciï¿½n</div>
+                    <div className="mt-1 text-zinc-200">{location || "Sin ubicaciï¿½n detallada"}</div>
                   </div>
 
                   <div className="flex items-center justify-between text-xs text-zinc-500">
@@ -164,7 +164,7 @@ function CompaniesPage() {
                   className="w-full"
                   onClick={() => setCompanyId(company.idCompany)}
                 >
-                  {active ? "Trabajando en esta empresa" : "Usar esta empresa"}
+                  {active ? "Empresa activa" : "Usar empresa"}
                 </Button>
               </div>
             </article>
