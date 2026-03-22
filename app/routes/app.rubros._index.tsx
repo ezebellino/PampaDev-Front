@@ -10,9 +10,15 @@ import { ROLES } from "../lib/auth/roles";
 import { useBranch } from "../lib/branches/BranchContext";
 import { useBranchDisciplineConfig } from "../lib/disciplines/useBranchDisciplineConfig";
 import { useDisciplines } from "../lib/disciplines/useDisciplines";
+import { mockRubros } from "../lib/rubros/mockRubros";
+import { matchesRubroCandidate } from "../lib/rubros/rubroMatching";
 
 function formatARS(amount: number) {
   return `$ ${amount.toLocaleString("es-AR")}`;
+}
+
+function resolveRubroPathId(name: string) {
+  return mockRubros.find((rubro) => matchesRubroCandidate(rubro.id, rubro.name, name))?.id ?? null;
 }
 
 export default function RubrosPage() {
@@ -179,6 +185,8 @@ export default function RubrosPage() {
             const enabled = config?.enabled ?? isDevs;
             const durationMin = config?.durationMin ?? 60;
             const basePrice = config?.basePrice ?? 0;
+            const rubroPathId = resolveRubroPathId(discipline.name);
+            const canOpenAgenda = Boolean(rubroPathId) && (enabled || isDevs);
 
             return (
               <article
@@ -265,18 +273,18 @@ export default function RubrosPage() {
                     </div>
                   ) : null}
 
-                  <CardFooter className="mt-5 flex flex-col gap-2 border-t border-zinc-800 px-0 pb-0 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                    <Link to={`/app/rubros/${discipline.idDiscipline}`} className="w-full sm:w-auto">
-                      <Button size="sm" variant="primary" className="w-full" disabled={!enabled && !isDevs}>
-                        Ver agenda
+                  <CardFooter className="mt-5 border-t border-zinc-800 px-0 pb-0 pt-4">
+                    {rubroPathId ? (
+                      <Link to={`/app/rubros/${rubroPathId}`} className="block w-full">
+                        <Button size="sm" variant="primary" className="w-full" disabled={!canOpenAgenda}>
+                          {isDevs ? "Ver agenda" : "Reservar"}
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button size="sm" variant="secondary" className="w-full" disabled>
+                        Agenda no disponible
                       </Button>
-                    </Link>
-
-                    {!isDevs ? (
-                      <Button size="sm" variant="secondary" className="w-full sm:w-auto">
-                        Reservar
-                      </Button>
-                    ) : null}
+                    )}
                   </CardFooter>
                 </div>
               </article>
