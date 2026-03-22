@@ -149,8 +149,14 @@ export default function AppDashboard() {
           cta: "Abrir disciplinas",
         },
         {
+          title: "Solicitudes t?cnicas",
+          desc: "Entr? al inbox propio de Devs para aprobar o rechazar pedidos de rubros enviados por administraci?n.",
+          to: "/app/dev/requests",
+          cta: "Revisar solicitudes",
+        },
+        {
           title: "Dev Panel",
-          desc: "Revisá logs, métricas internas y señales útiles para el seguimiento técnico.",
+          desc: "Revis? logs, m?tricas internas y se?ales ?tiles para el seguimiento t?cnico.",
           to: "/app/dev",
           cta: "Abrir Dev Panel",
         },
@@ -342,8 +348,14 @@ export default function AppDashboard() {
 
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Link
-                    to="/app/companies"
+                    to="/app/dev/requests"
                     className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                  >
+                    Resolver solicitudes
+                  </Link>
+                  <Link
+                    to="/app/companies"
+                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
                   >
                     Crear empresas
                   </Link>

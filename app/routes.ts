@@ -33,6 +33,7 @@ export default [
     ]),
 
     route("dev", "routes/app.dev.tsx"),
+    route("dev/requests", "routes/app.dev.requests.tsx"),
     route("user", "routes/app.user.tsx"),
     route("instructor", "routes/app.instructor.tsx"),
   ]),

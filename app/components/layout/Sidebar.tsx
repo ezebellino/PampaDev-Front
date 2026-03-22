@@ -18,7 +18,7 @@ function navByRole(role: string): NavItem[] {
       ...common,
       { to: "/app/branches", label: "Sucursales", icon: "\u2318", hint: "Red operativa" },
       { to: "/app/disciplines", label: "Disciplinas", icon: "\u25CC", hint: "Catálogo global" },
-      { to: "/app/admin/requests", label: "Solicitudes", icon: "\u25CE", hint: "Pedidos de admins" },
+      { to: "/app/dev/requests", label: "Solicitudes", icon: "\u25CE", hint: "Pedidos de admins" },
       { to: "/app/dev", label: "Dev Panel", icon: "\u25C8", hint: "Logs y monitoreo" },
       { to: "/app/profile", label: "Perfil", icon: "\u25CB", hint: "Cuenta y seguridad" },
     ];
