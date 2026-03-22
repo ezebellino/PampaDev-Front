@@ -62,7 +62,7 @@ export default function PublicRubros() {
                   Explora disciplinas que despues pueden convertirse en oferta real por sucursal.
                 </h1>
                 <p className="max-w-2xl text-sm leading-7 text-zinc-300 md:text-lg md:leading-8">
-                  Aqui ves el catalogo base. En la operacion interna, cada sucursal decide como publica esa disciplina: visibilidad, precio, duracion y disponibilidad.
+                  Ac? ves el cat?logo base. Cada sucursal decide c?mo publicar cada disciplina.
                 </p>
               </div>
 

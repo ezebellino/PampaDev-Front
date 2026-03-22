@@ -90,7 +90,7 @@ export default function RubrosPage() {
 
   if (!hydratedSafe) {
     return (
-      <ScreenLoader title="Cargando configuracion..." subtitle="Estamos preparando la vista operativa de esta sucursal." />
+      <ScreenLoader title="Cargando configuraci?n..." subtitle="Estamos preparando la vista operativa de esta sucursal." />
     );
   }
 
@@ -140,7 +140,7 @@ export default function RubrosPage() {
             </div>
             <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
               <div className="text-xs uppercase tracking-wider text-zinc-400">Modo</div>
-              <div className="mt-2 text-sm font-medium text-white">{isDevs ? "Configuracion completa" : "Vista publicada"}</div>
+              <div className="mt-2 text-sm font-medium text-white">{isDevs ? "Configuraci?n completa" : "Vista publicada"}</div>
             </div>
             <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
               <div className="text-xs uppercase tracking-wider text-zinc-400">Enfoque</div>
@@ -230,7 +230,7 @@ export default function RubrosPage() {
 
                   {isDevs && !config ? (
                     <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-100">
-                      Esta sucursal todavia usa valores iniciales para esta disciplina dentro del catalogo operativo.
+                      Esta sucursal todav?a usa valores iniciales para este rubro.
                     </div>
                   ) : null}
 

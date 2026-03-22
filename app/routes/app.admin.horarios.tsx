@@ -522,7 +522,7 @@ export default function AdminHorarios() {
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="text-lg font-semibold text-zinc-100">{discipline.name}</div>
-                        <div className="mt-1 text-sm text-zinc-500">Configuracion operativa para la sucursal activa</div>
+                        <div className="mt-1 text-sm text-zinc-500">Configuraci?n por sucursal</div>
                       </div>
                       <Badge tone={item.enabled ? "success" : "neutral"}>{item.enabled ? "Habilitada" : "Pausada"}</Badge>
                     </div>
