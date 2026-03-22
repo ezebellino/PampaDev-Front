@@ -17,6 +17,16 @@ import {
   normalizeBranchClass,
 } from "../lib/scheduling/classPresentation";
 import { useBranchScheduleConfig } from "../lib/scheduling/useBranchScheduleConfig";
+import {
+  getReservationOperationalCopy,
+  getReservationSourceLabel,
+  getReservationSourceTone,
+  getReservationStatusLabel,
+  getReservationStatusTone,
+  getReservationSyncLabel,
+  getReservationSyncTone,
+} from "../lib/scheduling/reservationPresentation";
+import { useInstructorReservationRequests } from "../lib/scheduling/useInstructorRequests";
 import { SLOT_DURATION_OPTIONS, type BranchScheduleConfig, type Weekday } from "../lib/scheduling/types";
 
 const WEEKDAY_ORDER: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
@@ -50,6 +60,8 @@ export default function AdminHorarios() {
 
   const [draftConfig, setDraftConfig] = useState<BranchScheduleConfig | null>(null);
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
+  const { requests: instructorReservations, pending: pendingReservations, confirmed: confirmedReservations } =
+    useInstructorReservationRequests(branchId);
 
   useEffect(() => {
     setDraftConfig(scheduleConfig);
@@ -92,6 +104,10 @@ export default function AdminHorarios() {
     if (grouped.length === 0) return null;
     return [...grouped].sort((a, b) => b.items.length - a.items.length)[0] ?? null;
   }, [grouped]);
+
+  const pendingBackendReservations = useMemo(() => {
+    return instructorReservations.filter((request) => request.syncStatus !== "synced");
+  }, [instructorReservations]);
 
   const handleDayToggle = (day: Weekday) => {
     setDraftConfig((current) => {
@@ -288,6 +304,103 @@ export default function AdminHorarios() {
         </CardContent>
       </Card>
 
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
+          <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
+          <CardHeader className="relative -mt-4">
+            <CardTitle>Reservas operadas sobre esta planificación</CardTitle>
+            <CardDescription>
+              Acá ves lo que el instructor ya está moviendo sobre las franjas que definiste desde administración.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {instructorReservations.length === 0 ? (
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-5 text-sm text-zinc-400">
+                Todavía no hay reservas visibles en frontend para esta sucursal.
+              </div>
+            ) : (
+              instructorReservations.slice(0, 6).map((request) => (
+                <div key={request.id} className="rounded-[1.5rem] border border-zinc-800 bg-zinc-900/45 p-4">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-base font-semibold text-zinc-100">{request.userName ?? request.userId}</div>
+                        <div className="mt-1 text-sm text-zinc-300">
+                          {request.rubroName ?? request.rubroId} · {request.date ?? "Fecha a confirmar"} · {request.time ?? "Hora a confirmar"}
+                        </div>
+                      </div>
+
+                      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
+                          <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Estado</div>
+                          <div className="mt-2">
+                            <Badge tone={getReservationStatusTone(request.status)}>{getReservationStatusLabel(request.status)}</Badge>
+                          </div>
+                        </div>
+                        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
+                          <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Origen</div>
+                          <div className="mt-2">
+                            <Badge tone={getReservationSourceTone(request.bookingSource)}>{getReservationSourceLabel(request.bookingSource)}</Badge>
+                          </div>
+                        </div>
+                        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
+                          <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Sincronización</div>
+                          <div className="mt-2">
+                            <Badge tone={getReservationSyncTone(request.syncStatus)}>{getReservationSyncLabel(request.syncStatus)}</Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-sm text-zinc-400">
+                        <div className="font-medium text-zinc-200">Detalle de la reserva</div>
+                        <div className="mt-1">{request.slotLabel ?? "Reserva enviada desde agenda de rubro"}</div>
+                        <div className="mt-2 text-xs text-zinc-500">{getReservationOperationalCopy(request)}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <Card className="border-zinc-800 bg-zinc-950/80">
+            <CardHeader>
+              <CardTitle>Resumen de reservas</CardTitle>
+              <CardDescription>
+                Una lectura rápida de lo que ya está ocurriendo sobre la planificación semanal actual.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-zinc-400">
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">Pendientes: {pendingReservations.length}</div>
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">Confirmadas: {confirmedReservations.length}</div>
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">Listas para backend: {pendingBackendReservations.length}</div>
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">Total visible: {instructorReservations.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-zinc-800 bg-zinc-950/80">
+            <CardHeader>
+              <CardTitle>Cómo leer este cruce</CardTitle>
+              <CardDescription>
+                Para ver en una sola pantalla qué definió admin y qué ya está operando el instructor.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-zinc-400">
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                `Reserva confirmada` significa que el instructor ya tomó ese pedido sobre tu franja operativa.
+              </div>
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                `Lista para backend` muestra reservas que frontend ya guarda pero todavía esperan sincronización completa.
+              </div>
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                Esto complementa la agenda real de clases y te ayuda a detectar si la operación va alineada con la planificación.
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardContent className="py-5">
@@ -493,6 +606,7 @@ export default function AdminHorarios() {
         </CardContent>
       </Card>
 
+
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card className="border-zinc-800 bg-zinc-950/80">
           <CardContent className="py-5">
@@ -624,3 +738,5 @@ export default function AdminHorarios() {
     </div>
   );
 }
+
+
