@@ -1,5 +1,6 @@
 ﻿import { Link } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
+import { Badge } from "../components/ui/Badge";
 import Protected from "../lib/auth/Protected";
 import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
@@ -68,7 +69,7 @@ export default function User() {
   const { companyId } = useCompany();
   const { branchId } = useBranch();
 
-  const { turnos, loading: turnosLoading, error: turnosError } = useNextTurnos(branchId);
+  const { turnos, loading: turnosLoading, error: turnosError, pendingCount, confirmedCount } = useNextTurnos(user?.id ?? null, branchId);
 
   return (
     <Protected allowRoles={[ROLES.USER, ROLES.DEVS]}>
@@ -128,14 +129,25 @@ export default function User() {
 
           <Card className="border-zinc-800 bg-zinc-950/80">
             <CardHeader>
-              <CardTitle>Próximos turnos</CardTitle>
+              <CardTitle>Mis solicitudes y próximos turnos</CardTitle>
               <CardDescription>
-                Tus próximos 5 turnos agendados. Podés gestionar o revisar nuevos servicios desde acá.
+                Acá ves lo que ya pediste a la sucursal activa, incluso si todavía está pendiente de sincronizarse con backend.
               </CardDescription>
             </CardHeader>
 
             <div className="border-t border-zinc-800" />
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+                  <div className="text-xs uppercase tracking-wider text-zinc-500">Pendientes</div>
+                  <div className="mt-2 text-2xl font-semibold text-zinc-100">{pendingCount}</div>
+                </div>
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+                  <div className="text-xs uppercase tracking-wider text-zinc-500">Confirmadas</div>
+                  <div className="mt-2 text-2xl font-semibold text-zinc-100">{confirmedCount}</div>
+                </div>
+              </div>
+
               {turnosLoading && <p className="text-sm text-zinc-400">Cargando tus turnos...</p>}
 
               {turnosError && (
@@ -143,7 +155,7 @@ export default function User() {
               )}
 
               {!turnosLoading && !turnosError && turnos.length === 0 && (
-                <p className="text-sm text-zinc-400">No tenés turnos programados por ahora.</p>
+                <p className="text-sm text-zinc-400">Todavía no tenés solicitudes enviadas en esta sucursal.</p>
               )}
 
               {!turnosLoading && !turnosError && turnos.length > 0 && (
@@ -151,19 +163,26 @@ export default function User() {
                   {turnos.map((slot) => (
                     <div
                       key={slot.id}
-                      className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900 p-3"
+                      className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-3 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div>
-                        <div className="text-sm font-medium text-zinc-100">{slot.rubroId}</div>
-                        <div className="text-xs text-zinc-500">{slot.date} • {slot.time}</div>
+                        <div className="text-sm font-medium text-zinc-100">{slot.rubroName ?? slot.rubroId}</div>
+                        <div className="text-xs text-zinc-500">{slot.date ?? "Fecha a confirmar"} • {slot.time ?? "Hora a confirmar"}</div>
                       </div>
-                      <span className="text-xs font-medium text-zinc-400">{slot.available} disponibles</span>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge tone={slot.status === "confirmed" ? "success" : "warning"}>
+                          {slot.status === "confirmed" ? "Confirmada" : slot.status === "rejected" ? "Rechazada" : "Pendiente"}
+                        </Badge>
+                        <Badge tone={slot.syncStatus === "synced" ? "success" : "neutral"}>
+                          {slot.syncStatus === "synced" ? "Sincronizada" : "Lista para backend"}
+                        </Badge>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
 
-              <div className="mt-2 pt-2 border-t border-zinc-800">
+              <div className="mt-2 border-t border-zinc-800 pt-2">
                 <Link
                   to="/app/rubros"
                   className="block rounded-2xl bg-zinc-100 px-4 py-3 text-center text-sm font-medium text-zinc-950 hover:bg-white"
@@ -178,3 +197,4 @@ export default function User() {
     </Protected>
   );
 }
+

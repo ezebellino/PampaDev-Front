@@ -1,9 +1,20 @@
 ﻿import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { createClass, getClassesByBranch, type CreateClassPayload } from "../api/services/classes";
 import type { BranchClassRecord } from "../api/models/branchClass";
+import { createClass, type CreateClassPayload } from "../api/services/classes";
 import { persistInstructorReservationRequest } from "./useInstructorRequests";
+
+export type ReservationActor = {
+  id: string;
+  name?: string;
+};
+
+export type ReservationResult = {
+  mode: "api-class" | "request-only";
+  requestId: string;
+  syncStatus: "synced" | "pending-backend";
+};
 
 function readNumber(value: unknown) {
   const parsed = Number(value);
@@ -40,7 +51,7 @@ function resolveIsoDate(date: string, time: string) {
 function buildCreateClassPayload(slot: BranchClassRecord, userId: string): CreateClassPayload {
   const idUser = readNumber(userId);
   if (idUser == null) {
-    throw new Error("La sesion actual no tiene un idUser numerico para enviar al backend.");
+    throw new Error("La sesión actual no tiene un idUser numérico para enviar al backend.");
   }
 
   const idBranchDiscipline = resolveBranchDisciplineId(slot);
@@ -67,6 +78,7 @@ function matchesRubro(slot: BranchClassRecord, rubroId: string) {
 
   const candidates = [
     typeof slot.rubroId === "string" ? slot.rubroId : null,
+    typeof slot.disciplineName === "string" ? slot.disciplineName : null,
     typeof slot["disciplineName"] === "string" ? String(slot["disciplineName"]) : null,
     typeof slot["rubro"] === "string" ? String(slot["rubro"]) : null,
     typeof slot["categoryName"] === "string" ? String(slot["categoryName"]) : null,
@@ -75,7 +87,11 @@ function matchesRubro(slot: BranchClassRecord, rubroId: string) {
   return candidates.some((candidate) => normalizeKey(candidate) === expected);
 }
 
-export function useBranchClassSlots(branchId: number | null, rubroId: string | null) {
+function createRequestId() {
+  return `req-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+export function useBranchClassSlots(branchId: number | null, rubroId: string | null, fallbackSlots: BranchClassRecord[] = []) {
   const queryClient = useQueryClient();
 
   const shouldFetch = branchId != null;
@@ -84,6 +100,7 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
     queryKey: ["branch-classes", branchId],
     queryFn: async ({ signal }) => {
       if (branchId == null) return [] as BranchClassRecord[];
+      const { getClassesByBranch } = await import("../api/services/classes");
       return getClassesByBranch(branchId, signal);
     },
     enabled: shouldFetch,
@@ -92,11 +109,23 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 30000),
   });
 
-  const filteredSlots = useMemo(() => {
+  const apiSlots = useMemo(() => {
     if (!classesQuery.data) return [] as BranchClassRecord[];
     if (rubroId == null) return classesQuery.data;
-    return classesQuery.data.filter((slot) => matchesRubro(slot, rubroId));
+    return classesQuery.data.filter((slot) => matchesRubro(slot, rubroId)).map((slot) => ({
+      ...slot,
+      bookingSource: "api" as const,
+      syncStatus: "synced" as const,
+    }));
   }, [classesQuery.data, rubroId]);
+
+  const filteredSlots = useMemo(() => {
+    if (apiSlots.length > 0) {
+      return apiSlots;
+    }
+    if (rubroId == null) return fallbackSlots;
+    return fallbackSlots.filter((slot) => matchesRubro(slot, rubroId));
+  }, [apiSlots, fallbackSlots, rubroId]);
 
   const reservationMutation = useMutation({
     mutationFn: (payload: CreateClassPayload) => createClass(payload),
@@ -105,32 +134,71 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
     },
   });
 
-  async function reserveSlot(slot: BranchClassRecord, userId: string) {
+  async function reserveSlot(slot: BranchClassRecord, user: ReservationActor): Promise<ReservationResult> {
     if (!branchId) throw new Error("Sucursal no seleccionada");
     if (!rubroId) throw new Error("Rubro no seleccionado");
     if (slot.available <= 0) throw new Error("No hay cupos disponibles");
 
-    const payload = buildCreateClassPayload(slot, userId);
-    const response = await reservationMutation.mutateAsync(payload);
+    const requestPayload = {
+      id: createRequestId(),
+      branchId,
+      rubroId,
+      rubroName: typeof slot.disciplineName === "string" ? slot.disciplineName : rubroId,
+      slotId: slot.id,
+      slotLabel: `${slot.date} · ${slot.time}`,
+      userId: user.id,
+      userName: user.name,
+      branchDisciplineId: resolveBranchDisciplineId(slot) ?? undefined,
+      date: slot.date,
+      time: slot.time,
+      status: "pending" as const,
+      createdAt: new Date().toISOString(),
+    };
 
-    try {
-      persistInstructorReservationRequest({
-        id: `req-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        branchId,
-        rubroId,
-        slotId: slot.id,
-        userId,
-        backendClassId: readNumber(response?.idClass ?? response?.id) ?? String(response?.idClass ?? response?.id ?? ""),
-        date: slot.date,
-        time: slot.time,
-        status: "pending",
-        createdAt: new Date().toISOString(),
+    const canSyncWithBackend = slot.bookingSource !== "planned" && resolveBranchDisciplineId(slot) != null;
+
+    if (!canSyncWithBackend) {
+      const saved = persistInstructorReservationRequest({
+        ...requestPayload,
+        bookingSource: slot.bookingSource === "planned" ? "planned" : "api",
+        syncStatus: "pending-backend",
       });
-    } catch {
-      // no crash if localStorage no disponible.
+
+      return {
+        mode: "request-only",
+        requestId: saved.id,
+        syncStatus: "pending-backend",
+      };
     }
 
-    return response;
+    try {
+      const payload = buildCreateClassPayload(slot, user.id);
+      const response = await reservationMutation.mutateAsync(payload);
+      const saved = persistInstructorReservationRequest({
+        ...requestPayload,
+        backendClassId: readNumber(response?.idClass ?? response?.id) ?? String(response?.idClass ?? response?.id ?? ""),
+        bookingSource: "api",
+        syncStatus: "synced",
+      });
+
+      return {
+        mode: "api-class",
+        requestId: saved.id,
+        syncStatus: "synced",
+      };
+    } catch {
+      const saved = persistInstructorReservationRequest({
+        ...requestPayload,
+        bookingSource: "api",
+        syncStatus: "pending-backend",
+      });
+
+      return {
+        mode: "request-only",
+        requestId: saved.id,
+        syncStatus: "pending-backend",
+      };
+    }
   }
 
   return {
@@ -141,5 +209,7 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
     reserving: reservationMutation.status === "pending",
     reservationError: reservationMutation.error,
     reservationSuccess: reservationMutation.isSuccess,
+    usingFallbackSlots: apiSlots.length === 0 && fallbackSlots.length > 0,
+    hasBackendSlots: apiSlots.length > 0,
   };
 }

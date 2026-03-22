@@ -120,8 +120,8 @@ export default function Instructor() {
           <section className="rounded-3xl border border-zinc-800 bg-zinc-950/80 p-5">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold text-zinc-100">Solicitudes de reserva</h2>
-                <p className="text-sm text-zinc-400">Administra solicitudes pendientes y confirma o rechaza para tu sucursal.</p>
+                <h2 className="text-lg font-semibold text-zinc-100">Solicitudes de usuarios</h2>
+                <p className="text-sm text-zinc-400">Acá recibís los pedidos que llegan desde rubros y podés confirmarlos o rechazarlos para tu sucursal.</p>
               </div>
               <Button variant="ghost" onClick={refreshRequests} size="sm">
                 Actualizar
@@ -136,16 +136,28 @@ export default function Instructor() {
 
             {pending.length > 0 ? (
               <div className="mt-4 space-y-3">
-                <div className="text-sm font-medium text-emerald-300">Pendientes</div>
+                <div className="text-sm font-medium text-amber-300">Pendientes</div>
                 {pending.map((request) => (
                   <div
                     key={request.id}
                     className="rounded-2xl border border-amber-800 bg-zinc-900/65 p-4"
                   >
-                    <div className="mb-2 text-sm text-zinc-200">
-                      {request.userId} — {request.date ?? "Fecha no especificada"} {request.time ?? "Hora no especificada"}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-zinc-100">{request.userName ?? request.userId}</div>
+                        <div className="mt-1 text-sm text-zinc-300">{request.rubroName ?? request.rubroId} · {request.date ?? "Fecha a confirmar"} · {request.time ?? "Hora a confirmar"}</div>
+                        <div className="mt-1 text-xs text-zinc-500">{request.slotLabel ?? "Solicitud enviada desde agenda de rubro"}</div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge tone={request.bookingSource === "api" ? "success" : "neutral"}>
+                          {request.bookingSource === "api" ? "Desde clase API" : "Desde franja planificada"}
+                        </Badge>
+                        <Badge tone={request.syncStatus === "synced" ? "success" : "warning"}>
+                          {request.syncStatus === "synced" ? "Sincronizada" : "Pendiente backend"}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="mt-3 flex gap-2">
                       <Button size="sm" onClick={() => confirmRequest(request.id)}>
                         Confirmar
                       </Button>
@@ -162,8 +174,19 @@ export default function Instructor() {
               <div className="mt-4 space-y-3">
                 <div className="text-sm font-medium text-cyan-300">Confirmadas</div>
                 {confirmed.map((request) => (
-                  <div key={request.id} className="rounded-2xl border border-emerald-800 bg-zinc-900/65 p-4 text-sm text-zinc-200">
-                    {request.userId} — {request.date ?? "-"} {request.time ?? "-"}
+                  <div key={request.id} className="rounded-2xl border border-emerald-800 bg-zinc-900/65 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-zinc-100">{request.userName ?? request.userId}</div>
+                        <div className="mt-1 text-sm text-zinc-300">{request.rubroName ?? request.rubroId} · {request.date ?? "Fecha a confirmar"} · {request.time ?? "Hora a confirmar"}</div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge tone="success">Confirmada</Badge>
+                        <Badge tone={request.syncStatus === "synced" ? "success" : "neutral"}>
+                          {request.syncStatus === "synced" ? "Sincronizada" : "Lista para backend"}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -275,13 +298,13 @@ export default function Instructor() {
                                 </div>
                               </div>
 
-                              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3 text-sm text-zinc-300">
+                              <div className="mt-4 grid gap-3 text-sm text-zinc-300 sm:grid-cols-2 xl:grid-cols-3">
                                 <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
                                   <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplina</div>
                                   <div className="mt-2 text-zinc-100">{item.discipline ?? "Sin dato"}</div>
                                 </div>
                                 <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                                  <div className="text-xs uppercase tracking-wider text-zinc-500">Duracion</div>
+                                  <div className="text-xs uppercase tracking-wider text-zinc-500">Duración</div>
                                   <div className="mt-2 text-zinc-100">{item.duration != null ? `${item.duration} min` : "No informada"}</div>
                                 </div>
                                 <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
@@ -293,7 +316,7 @@ export default function Instructor() {
                                   <div className="mt-2 text-zinc-100">{item.capacity != null ? item.capacity : "No informada"}</div>
                                 </div>
                                 <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                                  <div className="text-xs uppercase tracking-wider text-zinc-500">Creditos</div>
+                                  <div className="text-xs uppercase tracking-wider text-zinc-500">Créditos</div>
                                   <div className="mt-2 text-zinc-100">
                                     {item.creditUsage != null ? `${item.creditUsage} uso / ${item.creditRefund ?? 0}% reintegro` : "Sin dato"}
                                   </div>
@@ -363,6 +386,12 @@ export default function Instructor() {
                         )}
                       </div>
                     </div>
+
+                    {closedDays.length > 0 ? (
+                      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 p-4 text-sm text-zinc-400">
+                        Días cerrados: {closedDays.map((item) => DAY_NAMES[item.day]).join(", ")}.
+                      </div>
+                    ) : null}
                   </CardContent>
                 </Card>
 
@@ -413,4 +442,3 @@ export default function Instructor() {
     </Protected>
   );
 }
-

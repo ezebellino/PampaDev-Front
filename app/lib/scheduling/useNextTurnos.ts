@@ -1,41 +1,32 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+﻿import { useMemo } from "react";
+import { useMyReservationRequests } from "./useInstructorRequests";
 
-import { getClassesByBranch } from "../api/services/classes";
-import type { BranchClassRecord } from "../api/models/branchClass";
-
-export function useNextTurnos(branchId: number | null) {
-  const query = useQuery({
-    queryKey: ["branch-classes", branchId],
-    queryFn: async ({ signal }) => {
-      if (branchId == null) return [] as BranchClassRecord[];
-      return getClassesByBranch(branchId, signal);
-    },
-    enabled: branchId != null,
-    staleTime: 1000 * 60 * 2,
-    retry: 1,
-  });
+export function useNextTurnos(userId: string | null, branchId: number | null) {
+  const { requests, pending, confirmed, refresh } = useMyReservationRequests(userId, branchId);
 
   const nextTurnos = useMemo(() => {
-    if (!query.data) return [] as BranchClassRecord[];
-
     const now = new Date();
 
-    return query.data
-      .map((slot) => {
-        const slotDate = new Date(`${slot.date}T${slot.time}`);
-        return { slot, slotDate };
+    return requests
+      .filter((request) => {
+        if (!request.date || !request.time) return true;
+        const requestDate = new Date(`${request.date}T${request.time}`);
+        return Number.isNaN(requestDate.getTime()) || requestDate >= now;
       })
-      .filter(({ slotDate }) => slotDate >= now)
-      .sort((a, b) => a.slotDate.getTime() - b.slotDate.getTime())
-      .slice(0, 5)
-      .map(({ slot }) => slot);
-  }, [query.data]);
+      .sort((a, b) => {
+        const aTime = a.date && a.time ? new Date(`${a.date}T${a.time}`).getTime() : Number.MAX_SAFE_INTEGER;
+        const bTime = b.date && b.time ? new Date(`${b.date}T${b.time}`).getTime() : Number.MAX_SAFE_INTEGER;
+        return aTime - bTime;
+      })
+      .slice(0, 5);
+  }, [requests]);
 
   return {
     turnos: nextTurnos,
-    loading: query.isLoading,
-    error: query.error,
-    refetch: query.refetch,
+    loading: false,
+    error: null,
+    pendingCount: pending.length,
+    confirmedCount: confirmed.length,
+    refetch: refresh,
   };
 }
