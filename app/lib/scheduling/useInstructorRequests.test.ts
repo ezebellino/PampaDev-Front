@@ -60,4 +60,35 @@ describe("useInstructorRequests storage", () => {
     expect(mine).toHaveLength(1);
     expect(mine[0]?.status).toBe("confirmed");
   });
+
+  it("allows booking the same slot again after cancellation", () => {
+    persistInstructorReservationRequest({
+      id: "req-1",
+      branchId: 7,
+      rubroId: "pilates",
+      slotId: "slot-3",
+      userId: "99",
+      userName: "Ana",
+      status: "pending",
+      createdAt: "2026-03-21T19:00:00.000Z",
+    });
+
+    updateInstructorReservationStatus("req-1", "cancelled");
+
+    persistInstructorReservationRequest({
+      id: "req-2",
+      branchId: 7,
+      rubroId: "pilates",
+      slotId: "slot-3",
+      userId: "99",
+      userName: "Ana",
+      status: "pending",
+      createdAt: "2026-03-21T20:00:00.000Z",
+    });
+
+    const mine = getUserReservationRequests("99", 7);
+    expect(mine).toHaveLength(2);
+    expect(mine[0]?.status).toBe("pending");
+    expect(mine[1]?.status).toBe("cancelled");
+  });
 });

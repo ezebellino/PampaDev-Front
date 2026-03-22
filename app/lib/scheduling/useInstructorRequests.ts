@@ -1,6 +1,6 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from "react";
 
-export type InstructorReservationStatus = "pending" | "confirmed" | "rejected";
+export type InstructorReservationStatus = "pending" | "confirmed" | "rejected" | "cancelled";
 export type InstructorReservationSyncStatus = "synced" | "pending-backend";
 export type InstructorReservationSource = "api" | "planned";
 
@@ -62,7 +62,7 @@ function sortRequests(requests: InstructorReservationRequest[]) {
 export function persistInstructorReservationRequest(request: InstructorReservationRequest) {
   const current = readRequestsFromStorage();
   const duplicated = current.find(
-    (item) => item.branchId === request.branchId && item.slotId === request.slotId && item.userId === request.userId && item.status !== "rejected"
+    (item) => item.branchId === request.branchId && item.slotId === request.slotId && item.userId === request.userId && item.status !== "rejected" && item.status !== "cancelled"
   );
 
   if (duplicated) {
@@ -165,6 +165,16 @@ export function useMyReservationRequests(userId: string | null | undefined, bran
 
   const pending = useMemo(() => requests.filter((item) => item.status === "pending"), [requests]);
   const confirmed = useMemo(() => requests.filter((item) => item.status === "confirmed"), [requests]);
+  const cancelled = useMemo(() => requests.filter((item) => item.status === "cancelled"), [requests]);
+  const rejected = useMemo(() => requests.filter((item) => item.status === "rejected"), [requests]);
 
-  return { requests, pending, confirmed, refresh };
+  const cancelRequest = useCallback(
+    (requestId: string) => {
+      const next = updateInstructorReservationStatus(requestId, "cancelled");
+      setRequests(sortRequests(next.filter((item) => item.userId === userId && (branchId == null ? true : item.branchId === branchId))));
+    },
+    [userId, branchId]
+  );
+
+  return { requests, pending, confirmed, cancelled, rejected, refresh, cancelRequest };
 }
