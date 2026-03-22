@@ -5,6 +5,7 @@ import type { ApiError } from "../api";
 import {
   createLocalBranch,
   mergeBranches,
+  reconcileLocalBranches,
   type BranchCreateInput,
 } from "../../branches/branchCatalogStorage";
 
@@ -23,6 +24,7 @@ export function useBranches() {
     getBranches()
       .then((res) => {
         if (!alive) return;
+        reconcileLocalBranches(res);
         setData(mergeBranches(res));
         setMode("api");
       })
@@ -62,12 +64,14 @@ export function useBranches() {
         });
 
         if (created) {
+          reconcileLocalBranches([created]);
           setData(mergeBranches(existing, [created]));
           setMode("api");
           return created;
         }
 
         const fresh = await getBranches();
+        reconcileLocalBranches(fresh);
         const merged = mergeBranches(fresh);
         setData(merged);
         setMode("api");

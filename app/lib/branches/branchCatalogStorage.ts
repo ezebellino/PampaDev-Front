@@ -46,6 +46,18 @@ function writeLocalBranches(branches: Branch[]) {
   window.localStorage.setItem(BRANCHES_STORAGE_KEY, JSON.stringify(branches));
 }
 
+export function reconcileLocalBranches(remoteBranches: Branch[]) {
+  if (typeof window === "undefined") return;
+
+  const remoteIds = new Set(remoteBranches.map((branch) => branch.idBranch));
+  const current = readLocalBranches();
+  const next = current.filter((branch) => !remoteIds.has(branch.idBranch));
+
+  if (next.length !== current.length) {
+    writeLocalBranches(next);
+  }
+}
+
 export function createLocalBranch(input: BranchCreateInput, existingBranches: Branch[]) {
   const nextId = existingBranches.reduce((maxId, branch) => Math.max(maxId, branch.idBranch), 0) + 1;
 
@@ -68,11 +80,11 @@ export function createLocalBranch(input: BranchCreateInput, existingBranches: Br
 export function mergeBranches(remoteBranches: Branch[], localBranches = readLocalBranches()) {
   const merged = new Map<number, Branch>();
 
-  for (const branch of remoteBranches) {
+  for (const branch of localBranches) {
     merged.set(branch.idBranch, branch);
   }
 
-  for (const branch of localBranches) {
+  for (const branch of remoteBranches) {
     merged.set(branch.idBranch, branch);
   }
 
