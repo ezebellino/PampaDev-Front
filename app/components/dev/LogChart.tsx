@@ -15,15 +15,15 @@ type Row = {
   error: number;
 };
 
-function DarkTooltip({ active, payload, label }: any) {
+function LightTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950/95 px-3 py-2 text-xs text-zinc-200 shadow">
-      <div className="font-semibold">{label}</div>
+    <div className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs text-slate-700 shadow-lg">
+      <div className="font-semibold text-slate-900">{label}</div>
       {payload.map((p: any) => (
-        <div key={p.dataKey} className="text-zinc-300">
-          {p.dataKey}: <span className="text-zinc-100 font-medium">{p.value}</span>
+        <div key={p.dataKey} className="text-slate-600">
+          {p.dataKey}: <span className="font-medium text-slate-900">{p.value}</span>
         </div>
       ))}
     </div>
@@ -32,33 +32,31 @@ function DarkTooltip({ active, payload, label }: any) {
 
 export default function LogsChart({ data }: { data: Row[] }) {
   if (data.length === 0) {
-    return <div className="text-sm text-zinc-400">No hay datos aún.</div>;
+    return <div className="text-sm text-slate-500">No hay datos a?n.</div>;
   }
 
   return (
     <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} barCategoryGap={28} barGap={8}>
-          <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+          <CartesianGrid stroke="rgba(148,163,184,0.25)" vertical={false} />
           <XAxis
             dataKey="day"
-            tick={{ fill: "rgba(228,228,231,0.9)", fontSize: 12 }}
-            axisLine={{ stroke: "rgba(255,255,255,0.10)" }}
-            tickLine={{ stroke: "rgba(255,255,255,0.10)" }}
+            tick={{ fill: "rgba(51,65,85,0.92)", fontSize: 12 }}
+            axisLine={{ stroke: "rgba(148,163,184,0.45)" }}
+            tickLine={{ stroke: "rgba(148,163,184,0.45)" }}
           />
           <YAxis
             allowDecimals={false}
-            tick={{ fill: "rgba(228,228,231,0.9)", fontSize: 12 }}
-            axisLine={{ stroke: "rgba(255,255,255,0.10)" }}
-            tickLine={{ stroke: "rgba(255,255,255,0.10)" }}
+            tick={{ fill: "rgba(51,65,85,0.92)", fontSize: 12 }}
+            axisLine={{ stroke: "rgba(148,163,184,0.45)" }}
+            tickLine={{ stroke: "rgba(148,163,184,0.45)" }}
           />
-          <Tooltip content={<DarkTooltip />} />
-          <Legend
-            wrapperStyle={{ color: "rgba(228,228,231,0.85)", fontSize: 12 }}
-          />
+          <Tooltip content={<LightTooltip />} />
+          <Legend wrapperStyle={{ color: "rgba(71,85,105,0.95)", fontSize: 12 }} />
 
-          <Bar dataKey="warning" name="warning" barSize={18} fill="rgba(251,191,36,0.85)" radius={[10, 10, 2, 2]} />
-          <Bar dataKey="error" name="error" barSize={18} fill="rgba(248,113,113,0.85)" radius={[10, 10, 2, 2]} />
+          <Bar dataKey="warning" name="warning" barSize={18} fill="rgba(245,158,11,0.85)" radius={[10, 10, 2, 2]} />
+          <Bar dataKey="error" name="error" barSize={18} fill="rgba(239,68,68,0.85)" radius={[10, 10, 2, 2]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

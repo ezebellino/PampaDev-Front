@@ -1,4 +1,4 @@
-﻿
+
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -169,11 +169,11 @@ export default function AdminHorarios() {
     try {
       const saved = await saveScheduleConfig(draftConfig);
       const sourceMessage = usingBackendAvailability
-        ? "sincronizada con la disponibilidad del backend"
+        ? "sincronizada con la disponibilidad real del backend"
         : "guardada en fallback local hasta que el backend publique availability";
-      setSavedNotice(`Planificacion ${sourceMessage} el ${formatUpdatedAt(saved.updatedAt)}.`);
+      setSavedNotice(`Planificación ${sourceMessage} el ${formatUpdatedAt(saved.updatedAt)}.`);
     } catch (err) {
-      setSavedNotice(err instanceof Error ? err.message : "No pudimos guardar la planificacion semanal.");
+      setSavedNotice(err instanceof Error ? err.message : "No pudimos guardar la planificación semanal.");
     }
   };
 
@@ -182,10 +182,10 @@ export default function AdminHorarios() {
       <div className="space-y-6">
         <PageHeader
           title="Horarios"
-          subtitle="Elige una sucursal para planificar los dias abiertos y validar la agenda activa de esa sede."
+          subtitle="Elige una sucursal para planificar los días abiertos y validar la agenda activa de esa sede."
         />
         <Card>
-          <CardContent className="py-6 text-sm text-zinc-400">No hay una sucursal activa seleccionada.</CardContent>
+          <CardContent className="py-6 text-sm text-slate-500">No hay una sucursal activa seleccionada.</CardContent>
         </Card>
       </div>
     );
@@ -195,7 +195,7 @@ export default function AdminHorarios() {
     return (
       <ScreenLoader
         title="Cargando horarios..."
-        subtitle="Estamos preparando la planificacion semanal y consultando la agenda real de esta sucursal."
+        subtitle="Estamos preparando la planificación semanal y consultando la agenda real de esta sucursal."
       />
     );
   }
@@ -222,10 +222,10 @@ export default function AdminHorarios() {
   if (scheduleError) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Horarios" subtitle="No pudimos cargar la planificacion semanal de esta sucursal." />
+        <PageHeader title="Horarios" subtitle="No pudimos cargar la planificación semanal de esta sucursal." />
         <Card>
           <CardContent className="py-6 text-sm text-red-300">
-            {scheduleError instanceof Error ? scheduleError.message : "Error inesperado al leer la planificacion."}
+            {scheduleError instanceof Error ? scheduleError.message : "Error inesperado al leer la planificación."}
           </CardContent>
         </Card>
       </div>
@@ -257,8 +257,8 @@ export default function AdminHorarios() {
         title="Horarios"
         subtitle={
           activeBranch
-            ? `Planificaci?n semanal de ${activeBranch.companyName} en ${activeBranch.cityName}.`
-            : `Planifica la semana operativa de la sucursal ${branchId}.`
+            ? `Planificación semanal de ${activeBranch.companyName} en ${activeBranch.cityName}.`
+            : `Planificá la semana operativa de la sucursal ${branchId}.`
         }
         right={
           <Button variant="secondary" onClick={() => refresh()}>
@@ -267,37 +267,37 @@ export default function AdminHorarios() {
         }
       />
 
-      <Card className="border-cyan-500/20 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),transparent_38%),linear-gradient(135deg,rgba(24,24,27,0.96),rgba(9,9,11,0.98))]">
+      <Card className="border-cyan-500/20 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.22),transparent_42%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(247,250,255,0.99))]">
         <CardContent className="grid gap-5 py-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.6fr)]">
           <div className="space-y-3">
-            <div className="text-xs uppercase tracking-[0.24em] text-cyan-200/80">Panel operativo</div>
-            <div className="max-w-3xl text-2xl font-semibold leading-tight text-white">
-              Apertura semanal y franjas por disciplina.
+            <div className="text-xs uppercase tracking-[0.24em] text-sky-700">Semana operativa</div>
+            <div className="max-w-3xl text-2xl font-semibold leading-tight text-slate-900">
+              Apertura semanal y horarios por disciplina.
             </div>
-            <p className="max-w-3xl text-sm leading-6 text-zinc-300">
-              Usa availability cuando existe. Si no, guarda en local.
+            <p className="max-w-3xl text-sm leading-6 text-slate-600">
+              Usá la disponibilidad real cuando exista. Si no, conservamos un respaldo local.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Badge tone="success">{plannedOpenDays} dias abiertos</Badge>
+              <Badge tone="success">{plannedOpenDays} días abiertos</Badge>
               <Badge tone="neutral">{enabledDisciplines} disciplinas habilitadas</Badge>
               <Badge tone={usingBackendAvailability ? "success" : "warning"}>
-                {usingBackendAvailability ? "Availability conectada" : "Fallback local activo"}
+                {usingBackendAvailability ? "Disponibilidad conectada" : "Respaldo local activo"}
               </Badge>
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-400">Ultima planificacion</div>
-              <div className="mt-2 text-sm font-medium text-white">{formatUpdatedAt(scheduleConfig?.updatedAt)}</div>
+            <div className="rounded-3xl border border-stone-200 bg-white/88 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-slate-500">Última planificación</div>
+              <div className="mt-2 text-sm font-medium text-slate-900">{formatUpdatedAt(scheduleConfig?.updatedAt)}</div>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-400">Fuente semanal</div>
-              <div className="mt-2 text-sm font-medium text-white">{scheduleSource === "api+local" ? "API + local" : "Fallback local"}</div>
+            <div className="rounded-3xl border border-stone-200 bg-white/88 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-slate-500">Origen semanal</div>
+              <div className="mt-2 text-sm font-medium text-slate-900">{scheduleSource === "api+local" ? "API y respaldo local" : "Respaldo local"}</div>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-400">Dia mas cargado</div>
-              <div className="mt-2 text-sm font-medium text-white">
-                {busiestDay ? `${busiestDay.day} · ${busiestDay.items.length} clase${busiestDay.items.length === 1 ? "" : "s"}` : "Sin clases devueltas"}
+            <div className="rounded-3xl border border-stone-200 bg-white/88 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-slate-500">Día más cargado</div>
+              <div className="mt-2 text-sm font-medium text-slate-900">
+                {busiestDay ? `${busiestDay.day} · ${busiestDay.items.length} clase${busiestDay.items.length === 1 ? "" : "s"}` : "Sin clases registradas"}
               </div>
             </div>
           </div>
@@ -305,7 +305,7 @@ export default function AdminHorarios() {
       </Card>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
+        <Card className="overflow-hidden border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
           <CardHeader className="relative -mt-4">
             <CardTitle>Reservas operadas sobre esta planificación</CardTitle>
@@ -315,46 +315,46 @@ export default function AdminHorarios() {
           </CardHeader>
           <CardContent className="space-y-4">
             {instructorReservations.length === 0 ? (
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-5 text-sm text-zinc-400">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-5 text-sm text-slate-500">
                 Todavía no hay reservas visibles en frontend para esta sucursal.
               </div>
             ) : (
               instructorReservations.slice(0, 6).map((request) => (
-                <div key={request.id} className="rounded-[1.5rem] border border-zinc-800 bg-zinc-900/45 p-4">
+                <div key={request.id} className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-3">
                       <div>
-                        <div className="text-base font-semibold text-zinc-100">{request.userName ?? request.userId}</div>
-                        <div className="mt-1 text-sm text-zinc-300">
-                          {request.rubroName ?? request.rubroId} · {request.date ?? "Fecha a confirmar"} · {request.time ?? "Hora a confirmar"}
+                        <div className="text-base font-semibold text-slate-900">{request.userName ?? request.userId}</div>
+                        <div className="mt-1 text-sm text-slate-600">
+                          {request.rubroName ?? request.rubroId} - {request.date ?? "Fecha a confirmar"} - {request.time ?? "Hora a confirmar"}
                         </div>
                       </div>
 
                       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
-                          <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Estado</div>
+                        <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                          <div className="text-[11px] uppercase tracking-[0.24em] text-stone-500">Estado</div>
                           <div className="mt-2">
                             <Badge tone={getReservationStatusTone(request.status)}>{getReservationStatusLabel(request.status)}</Badge>
                           </div>
                         </div>
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
-                          <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Origen</div>
+                        <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                          <div className="text-[11px] uppercase tracking-[0.24em] text-stone-500">Origen</div>
                           <div className="mt-2">
                             <Badge tone={getReservationSourceTone(request.bookingSource)}>{getReservationSourceLabel(request.bookingSource)}</Badge>
                           </div>
                         </div>
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
-                          <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Sincronización</div>
+                        <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                          <div className="text-[11px] uppercase tracking-[0.24em] text-stone-500">Sincronización</div>
                           <div className="mt-2">
                             <Badge tone={getReservationSyncTone(request.syncStatus)}>{getReservationSyncLabel(request.syncStatus)}</Badge>
                           </div>
                         </div>
                       </div>
 
-                      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-sm text-zinc-400">
-                        <div className="font-medium text-zinc-200">Detalle de la reserva</div>
+                      <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-slate-500">
+                        <div className="font-medium text-slate-800">Detalle de la reserva</div>
                         <div className="mt-1">{request.slotLabel ?? "Reserva enviada desde agenda de rubro"}</div>
-                        <div className="mt-2 text-xs text-zinc-500">{getReservationOperationalCopy(request)}</div>
+                        <div className="mt-2 text-xs text-stone-500">{getReservationOperationalCopy(request)}</div>
                       </div>
                     </div>
                   </div>
@@ -365,36 +365,36 @@ export default function AdminHorarios() {
         </Card>
 
         <div className="space-y-4">
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
             <CardHeader>
               <CardTitle>Resumen de reservas</CardTitle>
               <CardDescription>
                 Una lectura rápida de lo que ya está ocurriendo sobre la planificación semanal actual.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-zinc-400">
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">Pendientes: {pendingReservations.length}</div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">Confirmadas: {confirmedReservations.length}</div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">Listas para backend: {pendingBackendReservations.length}</div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">Total visible: {instructorReservations.length}</div>
+            <CardContent className="space-y-3 text-sm text-slate-500">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">Pendientes: {pendingReservations.length}</div>
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">Confirmadas: {confirmedReservations.length}</div>
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">Pendientes de sincronizar: {pendingBackendReservations.length}</div>
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">Total visible: {instructorReservations.length}</div>
             </CardContent>
           </Card>
 
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
             <CardHeader>
               <CardTitle>Cómo leer este cruce</CardTitle>
               <CardDescription>
                 Para ver en una sola pantalla qué definió admin y qué ya está operando el instructor.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-zinc-400">
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+            <CardContent className="space-y-3 text-sm text-slate-500">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
                 `Reserva confirmada` significa que el instructor ya tomó ese pedido sobre tu franja operativa.
               </div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
                 `Lista para backend` muestra reservas que frontend ya guarda pero todavía esperan sincronización completa.
               </div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
                 Esto complementa la agenda real de clases y te ayuda a detectar si la operación va alineada con la planificación.
               </div>
             </CardContent>
@@ -402,50 +402,50 @@ export default function AdminHorarios() {
         </div>
       </section>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Sucursal activa</div>
-            <div className="mt-3 text-lg font-semibold text-zinc-100">{activeBranch?.cityName ?? `#${branchId}`}</div>
-            <div className="mt-1 text-sm text-zinc-400">{activeBranch?.companyName ?? "Contexto actual"}</div>
+            <div className="text-xs uppercase tracking-wider text-stone-500">Sucursal activa</div>
+            <div className="mt-3 text-lg font-semibold text-slate-900">{activeBranch?.cityName ?? `#${branchId}`}</div>
+            <div className="mt-1 text-sm text-slate-500">{activeBranch?.companyName ?? "Contexto actual"}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Dias abiertos</div>
-            <div className="mt-3 text-3xl font-semibold text-zinc-100">{plannedOpenDays}</div>
-            <div className="mt-1 text-sm text-zinc-400">Configurados por administracion</div>
+            <div className="text-xs uppercase tracking-wider text-stone-500">Días abiertos</div>
+            <div className="mt-3 text-3xl font-semibold text-slate-900">{plannedOpenDays}</div>
+            <div className="mt-1 text-sm text-slate-500">Configurados por administración</div>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas habilitadas</div>
-            <div className="mt-3 text-3xl font-semibold text-zinc-100">{enabledDisciplines}</div>
-            <div className="mt-1 text-sm text-zinc-400">Franjas listas para operar</div>
+            <div className="text-xs uppercase tracking-wider text-stone-500">Disciplinas habilitadas</div>
+            <div className="mt-3 text-3xl font-semibold text-slate-900">{enabledDisciplines}</div>
+            <div className="mt-1 text-sm text-slate-500">Franjas listas para usar</div>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Fuente de planificacion</div>
-            <div className="mt-3 text-lg font-semibold text-zinc-100">{usingBackendAvailability ? "API + local" : "Fallback local"}</div>
-            <div className="mt-1 text-sm text-zinc-400">
+            <div className="text-xs uppercase tracking-wider text-stone-500">Fuente de planificación</div>
+            <div className="mt-3 text-lg font-semibold text-slate-900">{usingBackendAvailability ? "API y respaldo local" : "Respaldo local"}</div>
+            <div className="mt-1 text-sm text-slate-500">
               {usingBackendAvailability
-                ? `Sincronizada con availability. Ultima actualizacion: ${formatUpdatedAt(scheduleConfig?.updatedAt)}`
-                : "El backend todavia no expone availability para esta sede; conservamos la planificacion local."}
+                ? `Sincronizada con availability. Última actualización: ${formatUpdatedAt(scheduleConfig?.updatedAt)}`
+                : "El backend todavía no expone disponibilidad para esta sede; conservamos la planificación local."}
             </div>
           </CardContent>
         </Card>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
-        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
+        <Card className="overflow-hidden border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
           <CardHeader className="relative -mt-4">
             <CardTitle>Calendario semanal de apertura</CardTitle>
             <CardDescription>
-              Define que dias la sucursal abre, que cierres excepcionales tiene y deja trazabilidad para el equipo operativo.
+              Definí qué días abre la sucursal, qué cierres excepcionales tiene y dej? una referencia clara para el equipo.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -454,27 +454,27 @@ export default function AdminHorarios() {
                 {WEEKDAY_ORDER.map((day) => {
                   const config = draftConfig.days[day];
                   return (
-                    <div key={day} className="rounded-[1.75rem] border border-zinc-800 bg-zinc-900/45 p-4">
+                    <div key={day} className="rounded-[1.75rem] border border-stone-200 bg-stone-50 p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="text-base font-semibold text-zinc-100">{DAY_NAMES[day]}</div>
-                          <div className="mt-1 text-sm text-zinc-500">{config.closed ? "Dia cerrado" : "Dia habilitado"}</div>
+                          <div className="text-base font-semibold text-slate-900">{DAY_NAMES[day]}</div>
+                          <div className="mt-1 text-sm text-stone-500">{config.closed ? "Día cerrado" : "Día habilitado"}</div>
                         </div>
                         <Badge tone={config.closed ? "warning" : "success"}>{config.closed ? "Cerrado" : "Abierto"}</Badge>
                       </div>
 
                       <Button variant="secondary" className="mt-4 w-full" onClick={() => handleDayToggle(day)}>
-                        {config.closed ? "Habilitar dia" : "Marcar cierre"}
+                        {config.closed ? "Habilitar día" : "Marcar cierre"}
                       </Button>
 
-                      <label className="mt-4 block text-xs uppercase tracking-wider text-zinc-500">
+                      <label className="mt-4 block text-xs uppercase tracking-wider text-stone-500">
                         Motivo
                         <input
                           value={config.reason}
                           onChange={(event) => handleDayReason(day, event.target.value)}
                           disabled={!config.closed}
-                          placeholder={config.closed ? "Ej. Feriado, mantenimiento" : "Disponible mientras el dia este abierto"}
-                          className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 disabled:cursor-not-allowed disabled:text-zinc-500"
+                          placeholder={config.closed ? "Ej. Feriado, mantenimiento" : "Disponible mientras el día esté abierto"}
+                          className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-stone-400 disabled:cursor-not-allowed disabled:text-stone-500"
                         />
                       </label>
                     </div>
@@ -485,30 +485,30 @@ export default function AdminHorarios() {
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardHeader>
-            <CardTitle>Criterio operativo</CardTitle>
-            <CardDescription>Guardado y sincronizaci?n.</CardDescription>
+            <CardTitle>Estado del guardado</CardTitle>
+            <CardDescription>Guardado y sincronización.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-zinc-400">
-            <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/8 px-4 py-3 text-cyan-100">
+          <CardContent className="space-y-3 text-sm text-slate-500">
+            <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/8 px-4 py-3 text-cyan-700">
               {savedNotice ??
                 (usingBackendAvailability
-                  ? "La disponibilidad semanal ya esta conectada con el backend para esta sede."
-                  : "Todavia no hay availability publicado para esta sede. Guardamos localmente sin perder el flujo operativo.")}
+                  ? "La disponibilidad semanal ya está conectada con el backend para esta sede."
+                  : "Todav?a no hay availability publicado para esta sede. Guardamos localmente sin cortar el flujo de trabajo.")}
             </div>
             <Button className="w-full" onClick={() => void handleSave()} disabled={!draftConfig || scheduleSaving}>
-              Guardar planificacion semanal
+              Guardar planificación semanal
             </Button>
           </CardContent>
         </Card>
       </section>
 
-      <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
+      <Card className="overflow-hidden border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
         <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
         <CardHeader className="relative -mt-4">
-          <CardTitle>Franjas por disciplina</CardTitle>
-          <CardDescription>Configuraci?n por rubro.</CardDescription>
+          <CardTitle>Horarios por disciplina</CardTitle>
+          <CardDescription>Configuración por rubro.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {draftConfig ? (
@@ -518,19 +518,19 @@ export default function AdminHorarios() {
                 if (!item) return null;
 
                 return (
-                  <div key={discipline.idDiscipline} className="rounded-[1.75rem] border border-zinc-800 bg-zinc-900/45 p-4">
+                  <div key={discipline.idDiscipline} className="rounded-[1.75rem] border border-stone-200 bg-stone-50 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <div className="text-lg font-semibold text-zinc-100">{discipline.name}</div>
-                        <div className="mt-1 text-sm text-zinc-500">Configuraci?n por sucursal</div>
+                        <div className="text-lg font-semibold text-slate-900">{discipline.name}</div>
+                        <div className="mt-1 text-sm text-stone-500">Configuración por sucursal</div>
                       </div>
                       <Badge tone={item.enabled ? "success" : "neutral"}>{item.enabled ? "Habilitada" : "Pausada"}</Badge>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
+                    <div className="mt-4 flex items-center justify-between rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
                       <div>
-                        <div className="text-sm font-medium text-zinc-100">Permitir turnos en esta disciplina</div>
-                        <div className="mt-1 text-xs text-zinc-500">Si esta desactivada, el instructor no deberia ofrecer nuevos horarios.</div>
+                        <div className="text-sm font-medium text-slate-900">Permitir turnos en esta disciplina</div>
+                        <div className="mt-1 text-xs text-stone-500">Si está desactivada, el equipo no deber?a ofrecer nuevos horarios.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -541,35 +541,35 @@ export default function AdminHorarios() {
                     </div>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                      <label className="text-xs uppercase tracking-wider text-zinc-500">
+                      <label className="text-xs uppercase tracking-wider text-stone-500">
                         Desde
                         <input
                           type="time"
                           value={item.openTime}
                           onChange={(event) => handleDisciplineChange(discipline.idDiscipline, "openTime", event.target.value)}
                           disabled={!item.enabled}
-                          className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none disabled:cursor-not-allowed disabled:text-zinc-500"
+                          className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none disabled:cursor-not-allowed disabled:text-stone-500"
                         />
                       </label>
 
-                      <label className="text-xs uppercase tracking-wider text-zinc-500">
+                      <label className="text-xs uppercase tracking-wider text-stone-500">
                         Hasta
                         <input
                           type="time"
                           value={item.closeTime}
                           onChange={(event) => handleDisciplineChange(discipline.idDiscipline, "closeTime", event.target.value)}
                           disabled={!item.enabled}
-                          className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none disabled:cursor-not-allowed disabled:text-zinc-500"
+                          className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none disabled:cursor-not-allowed disabled:text-stone-500"
                         />
                       </label>
 
-                      <label className="text-xs uppercase tracking-wider text-zinc-500">
-                        Duracion
+                      <label className="text-xs uppercase tracking-wider text-stone-500">
+                        Duración
                         <select
                           value={item.slotDuration}
                           onChange={(event) => handleDisciplineChange(discipline.idDiscipline, "slotDuration", Number(event.target.value))}
                           disabled={!item.enabled}
-                          className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none disabled:cursor-not-allowed disabled:text-zinc-500"
+                          className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none disabled:cursor-not-allowed disabled:text-stone-500"
                         >
                           {SLOT_DURATION_OPTIONS.map((duration) => (
                             <option key={duration} value={duration}>
@@ -580,7 +580,7 @@ export default function AdminHorarios() {
                       </label>
                     </div>
 
-                    <label className="mt-4 block text-xs uppercase tracking-wider text-zinc-500">
+                    <label className="mt-4 block text-xs uppercase tracking-wider text-stone-500">
                       Notas para el instructor
                       <textarea
                         value={item.notes}
@@ -588,7 +588,7 @@ export default function AdminHorarios() {
                         disabled={!item.enabled}
                         rows={3}
                         placeholder="Ej. Priorizar alumnos con mensualidad o dejar 10 minutos entre grupos."
-                        className="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 disabled:cursor-not-allowed disabled:text-zinc-500"
+                        className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-stone-400 disabled:cursor-not-allowed disabled:text-stone-500"
                       />
                     </label>
                   </div>
@@ -601,57 +601,57 @@ export default function AdminHorarios() {
 
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Clases</div>
-            <div className="mt-3 text-3xl font-semibold text-zinc-100">{classes.length}</div>
-            <div className="mt-1 text-sm text-zinc-400">Registros detectados en backend</div>
+            <div className="text-xs uppercase tracking-wider text-stone-500">Clases</div>
+            <div className="mt-3 text-3xl font-semibold text-slate-900">{classes.length}</div>
+            <div className="mt-1 text-sm text-slate-500">Registros detectados en backend</div>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas con agenda</div>
-            <div className="mt-3 text-3xl font-semibold text-zinc-100">{uniqueDisciplines}</div>
-            <div className="mt-1 text-sm text-zinc-400">Devueltas por Classes/byBranch</div>
+            <div className="text-xs uppercase tracking-wider text-stone-500">Disciplinas con agenda</div>
+            <div className="mt-3 text-3xl font-semibold text-slate-900">{uniqueDisciplines}</div>
+            <div className="mt-1 text-sm text-slate-500">Devueltas por Classes/byBranch</div>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Activas</div>
-            <div className="mt-3 text-3xl font-semibold text-zinc-100">{activeCount}</div>
-            <div className="mt-1 text-sm text-zinc-400">Clases en estado operativo</div>
+            <div className="text-xs uppercase tracking-wider text-stone-500">Activas</div>
+            <div className="mt-3 text-3xl font-semibold text-slate-900">{activeCount}</div>
+            <div className="mt-1 text-sm text-slate-500">Clases en estado operativo</div>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Fuente actual</div>
-            <div className="mt-3 text-lg font-semibold text-zinc-100">{usingBackendAvailability ? "Availability lista" : "Fallback local"}</div>
-            <div className="mt-1 text-sm text-zinc-400">Las clases siguen viniendo desde Classes/byBranch.</div>
+            <div className="text-xs uppercase tracking-wider text-stone-500">Origen actual</div>
+            <div className="mt-3 text-lg font-semibold text-slate-900">{usingBackendAvailability ? "Disponibilidad lista" : "Respaldo local"}</div>
+            <div className="mt-1 text-sm text-slate-500">Las clases siguen viniendo desde Classes/byBranch.</div>
           </CardContent>
         </Card>
       </section>
 
       {unavailable ? (
-        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
+        <Card className="overflow-hidden border-stone-200 bg-white">
           <div className="h-20 bg-linear-to-r from-amber-500/12 to-transparent" />
-          <CardContent className="relative -mt-2 space-y-2 py-5 text-sm text-zinc-400">
+          <CardContent className="relative -mt-2 space-y-2 py-5 text-sm text-slate-500">
             <p>Sin clases reales por ahora.</p>
             <p>Fuente esperada: /api/Classes/byBranch/{'{'}idBranch{'}'}.</p>
           </CardContent>
         </Card>
       ) : classes.length === 0 ? (
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardHeader>
             <CardTitle>No hay horarios cargados</CardTitle>
-            <CardDescription>Esta sucursal todavia no devolvio clases desde el endpoint configurado.</CardDescription>
+            <CardDescription>Esta sucursal todavía no devolvió clases desde el endpoint configurado.</CardDescription>
           </CardHeader>
         </Card>
       ) : (
         <div className="space-y-5">
-          <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
+          <Card className="overflow-hidden border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
             <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
             <CardHeader className="relative -mt-4">
               <CardTitle>Agenda real cargada en backend</CardTitle>
@@ -662,62 +662,62 @@ export default function AdminHorarios() {
           {grouped.map((group) => (
             <section key={group.day} className="space-y-3">
               <div className="flex items-center gap-3">
-                <h2 className="text-lg font-semibold tracking-tight text-zinc-100">{group.day}</h2>
-                <span className="rounded-full border border-zinc-800 px-3 py-1 text-xs text-zinc-400">
+                <h2 className="text-lg font-semibold tracking-tight text-slate-900">{group.day}</h2>
+                <span className="rounded-full border border-stone-200 bg-white px-3 py-1 text-xs text-slate-500">
                   {group.items.length} clase{group.items.length === 1 ? "" : "s"}
                 </span>
               </div>
 
               <div className="grid gap-4 xl:grid-cols-2">
                 {group.items.map((item) => (
-                  <Card key={item.id} className="overflow-hidden border-zinc-800 bg-zinc-950/80">
+                  <Card key={item.id} className="overflow-hidden border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
                     <div className="h-16 bg-linear-to-r from-cyan-500/12 to-transparent" />
                     <CardHeader className="relative -mt-4 space-y-3">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <CardTitle className="text-lg text-zinc-100">{item.title}</CardTitle>
-                          <CardDescription className="mt-1 text-sm text-zinc-400">{buildClassTimeRange(item)}</CardDescription>
+                          <CardTitle className="text-lg text-slate-900">{item.title}</CardTitle>
+                          <CardDescription className="mt-1 text-sm text-slate-500">{buildClassTimeRange(item)}</CardDescription>
                         </div>
                         {item.status ? <Badge tone={classStatusTone(item.status)}>{item.status}</Badge> : null}
                       </div>
                     </CardHeader>
 
-                    <CardContent className="space-y-3 text-sm text-zinc-300">
+                    <CardContent className="space-y-3 text-sm text-slate-600">
                       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Rubro</div>
-                          <div className="mt-2 text-sm text-zinc-100">{item.discipline ?? "Sin dato"}</div>
+                        <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                          <div className="text-xs uppercase tracking-wider text-stone-500">Rubro</div>
+                          <div className="mt-2 text-sm text-slate-900">{item.discipline ?? "Sin dato"}</div>
                         </div>
 
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Duracion</div>
-                          <div className="mt-2 text-sm text-zinc-100">{item.duration != null ? `${item.duration} min` : "No informada"}</div>
+                        <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                          <div className="text-xs uppercase tracking-wider text-stone-500">Duración</div>
+                          <div className="mt-2 text-sm text-slate-900">{item.duration != null ? `${item.duration} min` : "No informada"}</div>
                         </div>
 
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Instructor</div>
-                          <div className="mt-2 text-sm text-zinc-100">{item.instructor ?? "Sin asignar"}</div>
+                        <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                          <div className="text-xs uppercase tracking-wider text-stone-500">Instructor</div>
+                          <div className="mt-2 text-sm text-slate-900">{item.instructor ?? "Sin asignar"}</div>
                         </div>
 
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Capacidad</div>
-                          <div className="mt-2 text-sm text-zinc-100">{item.capacity != null ? item.capacity : "No informada"}</div>
+                        <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                          <div className="text-xs uppercase tracking-wider text-stone-500">Capacidad</div>
+                          <div className="mt-2 text-sm text-slate-900">{item.capacity != null ? item.capacity : "No informada"}</div>
                         </div>
 
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Disponibles</div>
-                          <div className="mt-2 text-sm text-zinc-100">{item.available != null ? item.available : "Sin dato"}</div>
+                        <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                          <div className="text-xs uppercase tracking-wider text-stone-500">Disponibles</div>
+                          <div className="mt-2 text-sm text-slate-900">{item.available != null ? item.available : "Sin dato"}</div>
                         </div>
 
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
-                          <div className="text-xs uppercase tracking-wider text-zinc-500">Creditos</div>
-                          <div className="mt-2 text-sm text-zinc-100">
+                        <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                          <div className="text-xs uppercase tracking-wider text-stone-500">Créditos</div>
+                          <div className="mt-2 text-sm text-slate-900">
                             {item.creditUsage != null ? `${item.creditUsage} uso / ${item.creditRefund ?? 0}% reintegro` : "Sin dato"}
                           </div>
                         </div>
                       </div>
 
-                      {item.branchLabel ? <div className="text-xs text-zinc-500">Sucursal informada por API: {item.branchLabel}</div> : null}
+                      {item.branchLabel ? <div className="text-xs text-stone-500">Sucursal informada por API: {item.branchLabel}</div> : null}
                     </CardContent>
                   </Card>
                 ))}

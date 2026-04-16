@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -80,9 +80,9 @@ function originLabel(origin?: AnyLog["origin"]) {
 }
 
 function originAccent(origin?: AnyLog["origin"]) {
-  if (origin === "backend") return "border-rose-500/20 bg-rose-500/5";
-  if (origin === "frontend") return "border-cyan-500/20 bg-cyan-500/5";
-  return "border-zinc-800 bg-zinc-950/85";
+  if (origin === "backend") return "border-rose-200 bg-rose-50/70";
+  if (origin === "frontend") return "border-sky-200 bg-sky-50/70";
+  return "border-stone-200 bg-white";
 }
 
 function buildMetaSummary(meta: any) {
@@ -130,12 +130,12 @@ function MetricCard({
   accent: string;
 }) {
   return (
-    <article className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/75 p-5">
+    <article className="relative overflow-hidden rounded-3xl border border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)] p-5">
       <div className={`absolute inset-x-0 top-0 h-20 bg-linear-to-r ${accent}`} />
       <div className="relative">
-        <div className="text-xs uppercase tracking-widest text-zinc-500">{label}</div>
-        <div className="mt-3 text-3xl font-semibold text-zinc-100">{value}</div>
-        <div className="mt-2 text-sm text-zinc-400">{helper}</div>
+        <div className="text-xs uppercase tracking-widest text-stone-500">{label}</div>
+        <div className="mt-3 text-3xl font-semibold text-slate-900">{value}</div>
+        <div className="mt-2 text-sm text-slate-600">{helper}</div>
       </div>
     </article>
   );
@@ -157,8 +157,8 @@ function FilterChip({
       className={[
         "rounded-full border px-3 py-1.5 text-xs font-medium transition",
         active
-          ? "border-cyan-400/40 bg-cyan-400/10 text-cyan-100"
-          : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200",
+          ? "border-sky-200 bg-sky-50 text-sky-700"
+          : "border-stone-200 bg-white text-slate-600 hover:border-zinc-700 hover:text-slate-700",
       ].join(" ")}
     >
       {label}
@@ -188,18 +188,18 @@ function LogRow({ log }: { log: AnyLog }) {
           </Badge>
 
           {feature ? <Badge tone="neutral">{feature}</Badge> : null}
-          <div className="text-xs text-zinc-500">{formatTime(log.timestamp)}</div>
-          {route ? <div className="text-xs text-zinc-600">{route}</div> : null}
+          <div className="text-xs text-stone-500">{formatTime(log.timestamp)}</div>
+          {route ? <div className="text-xs text-stone-500">{route}</div> : null}
         </div>
 
-        <div className="wrap-break-words font-medium text-zinc-100">{log.message}</div>
+        <div className="wrap-break-words font-medium text-slate-900">{log.message}</div>
 
-        {metaSummary ? <div className="wrap-break-words text-xs text-zinc-400">{metaSummary}</div> : null}
+        {metaSummary ? <div className="wrap-break-words text-xs text-slate-600">{metaSummary}</div> : null}
 
         {Array.isArray(log.tags) && log.tags.length > 0 ? (
           <div className="flex flex-wrap gap-1">
             {log.tags.map((tag) => (
-              <span key={tag} className="rounded-full border border-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+              <span key={tag} className="rounded-full border border-stone-200 bg-white px-2 py-0.5 text-xs text-slate-600">
                 #{tag}
               </span>
             ))}
@@ -208,10 +208,10 @@ function LogRow({ log }: { log: AnyLog }) {
 
         {log.meta ? (
           <details>
-            <summary className="cursor-pointer text-xs text-zinc-400 hover:text-zinc-200">
+            <summary className="cursor-pointer text-xs text-slate-600 hover:text-slate-700">
               Ver detalles técnicos
             </summary>
-            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap text-xs text-zinc-400">
+            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap text-xs text-slate-600">
               {JSON.stringify(log.meta, null, 2)}
             </pre>
           </details>
@@ -387,21 +387,21 @@ function DevPanel() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-linear-to-br from-zinc-950 via-zinc-950 to-zinc-900 p-6 md:p-8">
-        <div className="absolute inset-0 bg-zinc-900/20" />
+      <section className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-white/96 p-6 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)] md:p-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(125,211,252,0.22),transparent_40%)]" />
         <div className="relative space-y-4">
-          <div className="text-xs uppercase tracking-widest text-zinc-500">Dev Panel</div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
-            Estado t?cnico del frontend
+          <div className="text-xs uppercase tracking-widest text-stone-500">Dev Panel</div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">
+            Estado técnico del frontend
           </h1>
-          <p className="max-w-2xl text-sm text-zinc-400 md:text-base md:leading-7">
+          <p className="max-w-2xl text-sm text-slate-600 md:text-base md:leading-7">
             Ahora el panel recuerda tus filtros para que puedas retomar el análisis técnico sin rearmar el contexto.
           </p>
         </div>
       </section>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <Card className="border-zinc-800 bg-zinc-950/75">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardHeader>
             <CardTitle>Resumen</CardTitle>
             <CardDescription>Lo clave del rol.</CardDescription>
@@ -409,29 +409,29 @@ function DevPanel() {
           <CardContent className="grid gap-4 md:grid-cols-3">
             <Link
               to="/app/dev/requests"
-              className="rounded-3xl border border-cyan-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-zinc-900/85"
+              className="rounded-3xl border border-sky-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-50/20"
             >
-              <div className="text-lg font-semibold text-zinc-100">Solicitudes tecnicas</div>
-              <div className="mt-2 text-3xl font-semibold text-cyan-200">{pendingRequests}</div>
-              <div className="mt-2 text-sm leading-6 text-zinc-400">Pendientes por resolver.</div>
+              <div className="text-lg font-semibold text-slate-900">Solicitudes técnicas</div>
+              <div className="mt-2 text-3xl font-semibold text-sky-700">{pendingRequests}</div>
+              <div className="mt-2 text-sm leading-6 text-slate-600">Pendientes por resolver.</div>
             </Link>
 
             <Link
               to="/app/companies"
-              className="rounded-3xl border border-emerald-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-emerald-400/30 hover:bg-zinc-900/85"
+              className="rounded-3xl border border-emerald-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-50/20"
             >
-              <div className="text-lg font-semibold text-zinc-100">Estructura base</div>
-              <div className="mt-2 text-sm font-medium text-emerald-200">Empresas y sucursales</div>
-              <div className="mt-2 text-sm leading-6 text-zinc-400">Base de la plataforma.</div>
+              <div className="text-lg font-semibold text-slate-900">Estructura base</div>
+              <div className="mt-2 text-sm font-medium text-emerald-700">Empresas y sucursales</div>
+              <div className="mt-2 text-sm leading-6 text-slate-600">Base de la plataforma.</div>
             </Link>
 
             <Link
               to="/app/dev"
-              className="rounded-3xl border border-amber-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-amber-400/30 hover:bg-zinc-900/85"
+              className="rounded-3xl border border-amber-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-50/20"
             >
-              <div className="text-lg font-semibold text-zinc-100">Monitoreo</div>
-              <div className="mt-2 text-sm font-medium text-amber-200">Logs, errores y features</div>
-              <div className="mt-2 text-sm leading-6 text-zinc-400">Se?ales del sistema.</div>
+              <div className="text-lg font-semibold text-slate-900">Monitoreo</div>
+              <div className="mt-2 text-sm font-medium text-amber-700">Logs, errores y features</div>
+              <div className="mt-2 text-sm leading-6 text-slate-600">Señales del sistema.</div>
             </Link>
           </CardContent>
         </Card>
@@ -445,7 +445,7 @@ function DevPanel() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card className="border-zinc-800 bg-zinc-950/75">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardHeader>
             <CardTitle>Actividad de logs</CardTitle>
             <CardDescription>Últimos 10 días con foco en warnings y errores.</CardDescription>
@@ -457,36 +457,36 @@ function DevPanel() {
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/75">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardHeader>
             <CardTitle>Mapa de origen</CardTitle>
             <CardDescription>Qué parte del sistema está emitiendo más señales.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <div className="flex items-center justify-between rounded-2xl border border-cyan-500/20 bg-cyan-500/5 px-3 py-3">
+            <div className="flex items-center justify-between rounded-2xl border border-sky-200 bg-sky-50/70 px-3 py-3">
               <span className="text-cyan-100">Frontend</span>
               <Badge tone="neutral">{originCounts.frontend}</Badge>
             </div>
-            <div className="flex items-center justify-between rounded-2xl border border-rose-500/20 bg-rose-500/5 px-3 py-3">
+            <div className="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50/70 px-3 py-3">
               <span className="text-rose-100">Backend</span>
               <Badge tone="neutral">{originCounts.backend}</Badge>
             </div>
-            <div className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-3">
-              <span className="text-zinc-400">Unknown</span>
+            <div className="flex items-center justify-between rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3">
+              <span className="text-slate-600">Unknown</span>
               <Badge tone="neutral">{originCounts.unknown}</Badge>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-zinc-800 bg-zinc-950/75">
+      <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
         <CardHeader>
           <CardTitle>Agrupación por feature</CardTitle>
           <CardDescription>Los módulos con más señales para priorizar foco técnico.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {featureGroups.length === 0 ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-5 text-sm text-zinc-400">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-5 text-sm text-slate-600">
               Aún no hay eventos suficientes para agrupar por feature.
             </div>
           ) : (
@@ -501,13 +501,13 @@ function DevPanel() {
                     "block w-full rounded-2xl border px-4 py-4 text-left transition",
                     isActive
                       ? "border-cyan-400/35 bg-cyan-400/10"
-                      : "border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900/70",
+                      : "border-stone-200 bg-stone-50 hover:border-stone-200 hover:bg-white",
                   ].join(" ")}
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <div className="text-sm font-semibold text-zinc-100">{group.feature}</div>
-                      <div className="mt-1 text-xs text-zinc-500">
+                      <div className="text-sm font-semibold text-slate-900">{group.feature}</div>
+                      <div className="mt-1 text-xs text-stone-500">
                         {group.total} eventos registrados
                         {isActive ? " · filtro activo" : " · click para filtrar"}
                       </div>
@@ -526,7 +526,7 @@ function DevPanel() {
         </CardContent>
       </Card>
 
-      <Card className="border-zinc-800 bg-zinc-950/75">
+      <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
         <CardHeader>
           <CardTitle>Visor de eventos</CardTitle>
           <CardDescription>Filtrá, buscá y limpiá el historial almacenado.</CardDescription>
@@ -540,13 +540,13 @@ function DevPanel() {
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Buscar por mensaje, feature, ruta o meta…"
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600 sm:w-96"
+                  className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-600 sm:w-96"
                 />
 
                 <select
                   value={level}
                   onChange={(event) => setLevel(event.target.value as LevelFilter)}
-                  className="rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
+                  className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-600"
                 >
                   <option value="all">Todos los niveles</option>
                   <option value="warning">Warnings</option>
@@ -566,7 +566,7 @@ function DevPanel() {
               </div>
 
               {selectedFeature ? (
-                <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-sm text-cyan-100">
+                <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50/70 px-3 py-2 text-sm text-cyan-100">
                   <span>Feature activa: {selectedFeature}</span>
                   <button
                     type="button"
@@ -581,7 +581,7 @@ function DevPanel() {
 
             <Button
               variant="ghost"
-              className="text-red-300 hover:text-red-200"
+              className="text-rose-600 hover:text-rose-700"
               onClick={() => {
                 clearLogs();
                 setTick((current) => current + 1);
@@ -592,7 +592,7 @@ function DevPanel() {
             </Button>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 text-sm text-zinc-400">
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-600">
             {selectedFeature
               ? `Feature activa: ${selectedFeature}.`
               : origin === "all"
@@ -606,7 +606,7 @@ function DevPanel() {
 
           <div className="space-y-3">
             {filtered.length === 0 ? (
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-5 text-sm text-zinc-400">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-5 text-sm text-slate-600">
                 No hay eventos para mostrar con los filtros actuales.
               </div>
             ) : (
@@ -615,7 +615,7 @@ function DevPanel() {
           </div>
 
           {filtered.length > 80 ? (
-            <div className="text-xs text-zinc-500">Mostrando 80 de {filtered.length} resultados.</div>
+            <div className="text-xs text-stone-500">Mostrando 80 de {filtered.length} resultados.</div>
           ) : null}
         </CardContent>
       </Card>

@@ -22,12 +22,12 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     if (!normalizedEmail) {
-      setError("Ingres? un email para continuar.");
+      setError("Ingresá un email para continuar.");
       return;
     }
 
     if (!isValidEmail(normalizedEmail)) {
-      setError("Ingres? un email v?lido.");
+      setError("Ingresá un email válido.");
       return;
     }
 
@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
       <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-5xl items-center gap-10 px-4 py-10 md:px-6 lg:grid-cols-[0.9fr_1.1fr]">
         <section className="space-y-6">
           <div className="inline-flex rounded-full border border-zinc-800 bg-zinc-900/75 px-3 py-1 text-xs font-medium text-zinc-300">
-            Recuperaci?n
+            Recuperación
           </div>
 
           <div className="space-y-3">
@@ -57,18 +57,18 @@ export default function ForgotPasswordPage() {
               Recuper? tu acceso.
             </h1>
             <p className="max-w-md text-base leading-7 text-zinc-400">
-              Ingres? tu email para continuar.
+              Ingresá tu email para continuar.
             </p>
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm text-zinc-300">
-            Ingres? tu email y te guiamos en el siguiente paso.
+            Ingresá tu email y te guiamos en el siguiente paso.
           </div>
         </section>
 
         <Card className="border-zinc-800 bg-zinc-950/88 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
           <CardHeader className="space-y-2 pb-2">
-            <CardTitle className="text-2xl text-zinc-100">Olvid? mi contrase?a</CardTitle>
+            <CardTitle className="text-2xl text-zinc-100">Olvidé mi contraseña</CardTitle>
             <CardDescription>Confirm? tu email.</CardDescription>
           </CardHeader>
 
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 <div className="rounded-[1.25rem] border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm leading-6 text-zinc-400">
-                  Queda conectar el env?o real de instrucciones por email.
+                  Queda conectar el envío real de instrucciones por email.
                 </div>
 
                 <div className="grid gap-2">
@@ -120,7 +120,7 @@ export default function ForgotPasswordPage() {
                 ) : null}
 
                 <Button className="w-full" disabled={loading}>
-                  {loading ? "Preparando recuperaci?n..." : "Continuar"}
+                  {loading ? "Preparando recuperación..." : "Continuar"}
                 </Button>
 
                 <div className="grid gap-2 pt-2">

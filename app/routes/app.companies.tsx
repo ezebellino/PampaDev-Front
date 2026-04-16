@@ -45,7 +45,7 @@ function CompaniesPage() {
   }
 
   if (loading) {
-    return <ScreenLoader title="Cargando empresas�" subtitle="Estamos preparando la estructura empresarial activa." />;
+    return <ScreenLoader title="Cargando empresas..." subtitle="Estamos preparando la estructura empresarial activa." />;
   }
 
   if (error) {
@@ -53,17 +53,17 @@ function CompaniesPage() {
       <div className="space-y-6">
         <PageHeader
           title="Empresas"
-          subtitle="No pudimos cargar el cat�logo de empresas en este momento."
+          subtitle="No pudimos cargar el catálogo de empresas en este momento."
           right={
             <Button variant="secondary" onClick={() => setCreateOpen(true)}>
               + Nueva empresa
             </Button>
           }
         />
-        <Card>
-          <CardContent className="space-y-3 py-6 text-sm">
-            <div className="font-medium text-red-300">Ocurri� un problema al cargar las empresas.</div>
-            <div className="text-zinc-400">{error.message}</div>
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="space-y-3 py-6 text-sm text-rose-700">
+            <div className="font-medium">Ocurrió un problema al cargar las empresas.</div>
+            <div>{error.message}</div>
             <div className="flex gap-2">
               <Button variant="ghost" onClick={() => void refresh()}>
                 Reintentar
@@ -94,7 +94,7 @@ function CompaniesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Empresas"
-        subtitle="Base empresarial de la plataforma."
+        subtitle="Gestioná la estructura empresarial activa de forma clara y simple."
         right={
           <div className="flex flex-wrap gap-2">
             <Button variant="ghost" onClick={() => void refresh()}>
@@ -115,42 +115,42 @@ function CompaniesPage() {
           return (
             <article
               key={company.idCompany}
-              className={`relative overflow-hidden rounded-[1.75rem] border bg-zinc-950/75 transition duration-200 ${
+              className={`relative overflow-hidden rounded-[1.75rem] border bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)] transition duration-200 ${
                 active
-                  ? "border-cyan-400/40 shadow-[0_20px_50px_rgba(34,211,238,0.10)]"
-                  : "border-zinc-800 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/75"
+                  ? "border-sky-300/70 shadow-[0_20px_50px_-38px_rgba(14,116,144,0.24)]"
+                  : "border-stone-200 hover:-translate-y-1 hover:border-sky-200 hover:bg-[#f8fbff]"
               }`}
             >
-              <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(135deg,rgba(34,197,94,0.12),transparent_55%)]" />
+              <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.24),transparent_48%),linear-gradient(135deg,rgba(254,249,195,0.22),transparent_62%)]" />
               <div className="relative p-5 space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <div className="text-lg font-semibold text-zinc-100">{company.fantasyName}</div>
-                    <div className="text-sm text-zinc-400">{company.tradeName}</div>
+                    <div className="text-lg font-semibold text-slate-900">{company.fantasyName}</div>
+                    <div className="text-sm text-slate-600">{company.tradeName}</div>
                   </div>
-                  <Badge className="shrink-0 border-zinc-700 bg-zinc-900/80 text-zinc-300">
+                  <Badge className="shrink-0 border-stone-200 bg-stone-100 text-slate-700">
                     #{company.idCompany}
                   </Badge>
                 </div>
 
-                <div className="space-y-3 text-sm text-zinc-400">
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                    <div className="text-xs uppercase tracking-wider text-zinc-500">Documento</div>
-                    <div className="mt-1 text-zinc-200">{company.cuitCuilDNI}</div>
+                <div className="space-y-3 text-sm text-slate-600">
+                  <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                    <div className="text-xs uppercase tracking-wider text-stone-500">Documento</div>
+                    <div className="mt-1 text-slate-800">{company.cuitCuilDNI}</div>
                   </div>
 
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                    <div className="text-xs uppercase tracking-wider text-zinc-500">Ubicaci�n</div>
-                    <div className="mt-1 text-zinc-200">{location || "Sin ubicaci�n detallada"}</div>
+                  <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                    <div className="text-xs uppercase tracking-wider text-stone-500">Ubicación</div>
+                    <div className="mt-1 text-slate-800">{location || "Sin ubicación detallada"}</div>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-zinc-500">
+                  <div className="flex items-center justify-between text-xs text-stone-500">
                     <span>Creada {new Date(company.createdAt).toLocaleDateString("es-AR")}</span>
                     <span
                       className={`rounded-full px-3 py-1 ${
                         active
-                          ? "border border-cyan-500/20 bg-cyan-500/10 text-cyan-200"
-                          : "border border-zinc-800 bg-zinc-900/70 text-zinc-400"
+                          ? "border border-emerald-300 bg-emerald-50 text-emerald-700"
+                          : "border border-stone-200 bg-stone-100 text-stone-600"
                       }`}
                     >
                       {active ? "Empresa activa" : "Disponible"}

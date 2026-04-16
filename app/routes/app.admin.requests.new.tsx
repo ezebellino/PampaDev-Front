@@ -29,10 +29,10 @@ function Field({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        <label className="text-sm font-medium text-zinc-200">{label}</label>
-        {required ? <span className="rounded-full border border-zinc-800 px-2 py-0.5 text-[11px] text-zinc-500">Obligatorio</span> : null}
+        <label className="text-sm font-medium text-slate-800">{label}</label>
+        {required ? <span className="rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[11px] text-stone-500">Obligatorio</span> : null}
       </div>
-      {hint ? <p className="text-xs leading-5 text-zinc-500">{hint}</p> : null}
+      {hint ? <p className="text-xs leading-5 text-slate-500">{hint}</p> : null}
       {children}
     </div>
   );
@@ -92,16 +92,16 @@ function AdminNewDisciplineRequest() {
     <div className="space-y-6">
       <PageHeader
         title="Nueva solicitud"
-        subtitle="Prepara el pedido con el contexto suficiente para que Devs pueda evaluarlo rapido y sumarlo al catalogo base sin ida y vuelta innecesaria."
+        subtitle="Prepara el pedido con la información necesaria para que el equipo pueda evaluarlo y sumarlo al catálogo sin demoras innecesarias."
       />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]">
-        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
-          <div className="h-24 bg-linear-to-r from-cyan-500/12 via-emerald-500/8 to-transparent" />
+        <Card className="overflow-hidden border-stone-200 bg-white/95 shadow-sm">
+          <div className="h-24 bg-linear-to-r from-sky-100 via-teal-100/70 to-transparent" />
           <CardHeader className="relative -mt-4">
-            <CardTitle className="text-xl text-zinc-100">Solicitar nueva disciplina o ajuste</CardTitle>
+            <CardTitle className="text-xl text-slate-900">Solicitar nueva disciplina o ajuste</CardTitle>
             <CardDescription>
-              Completa la informacion clave para que el equipo Devs pueda revisar la propuesta y decidir si entra al catalogo base.
+              Completa la información clave para que el equipo pueda revisar la propuesta y decidir si corresponde incorporarla.
             </CardDescription>
           </CardHeader>
 
@@ -109,55 +109,55 @@ function AdminNewDisciplineRequest() {
             <form onSubmit={submit} className="space-y-5">
               <Field
                 label="Nombre"
-                hint="Usa un nombre claro y reutilizable en el catalogo general."
+                hint="Usa un nombre claro y fácil de reconocer para todo el equipo."
                 required
               >
                 <input
                   value={p.name}
                   onChange={(event) => set("name", event.target.value)}
-                  className="w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-cyan-500/40"
+                  className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-teal-300 focus:bg-white"
                   placeholder="Ej: Pilates, Padel, Taekwondo..."
                 />
               </Field>
 
               <Field
-                label="Descripcion"
-                hint="Explica que servicio se necesita y como deberia entenderlo el usuario final."
+                label="Descripción"
+                hint="Explica qué servicio se necesita y cómo deber?a entenderlo el usuario final."
               >
                 <textarea
                   value={p.description}
                   onChange={(event) => set("description", event.target.value)}
-                  className="min-h-28 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-cyan-500/40"
+                  className="min-h-28 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-teal-300 focus:bg-white"
                   placeholder="Ej: clases grupales con cupos limitados, reservas por horario, modalidad mensual o por clase..."
                 />
               </Field>
 
               <Field
-                label="Ejemplos de servicios"
-                hint="Puedes listar formatos, variantes o productos que deberian existir dentro de la propuesta."
+                label="Ejemplos de servicio"
+                hint="Puedes listar formatos, variantes o productos que deberían existir dentro de la propuesta."
               >
                 <input
                   value={p.exampleServices}
                   onChange={(event) => set("exampleServices", event.target.value)}
-                  className="w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-cyan-500/40"
+                  className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-teal-300 focus:bg-white"
                   placeholder="Ej: clase grupal, clase individual, mensualidad, reserva por turno..."
                 />
               </Field>
 
               <Field
-                label="Notas para Devs"
-                hint="Aclaraciones tecnicas u operativas: prioridad, restricciones, material visual o reglas especiales."
+                label="Notas internas"
+                hint="Aclaraciones operativas: prioridad, restricciones, material visual o reglas especiales."
               >
                 <textarea
                   value={p.notes}
                   onChange={(event) => set("notes", event.target.value)}
-                  className="min-h-24 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-cyan-500/40"
-                  placeholder="Ej: se usara en dos sucursales, requiere imagen representativa, necesita clases grupales e individuales..."
+                  className="min-h-24 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-teal-300 focus:bg-white"
+                  placeholder="Ej: se usará en dos sucursales, requiere imagen representativa y necesita clases grupales e individuales..."
                 />
               </Field>
 
               {error ? (
-                <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                   {error}
                 </div>
               ) : null}
@@ -173,36 +173,36 @@ function AdminNewDisciplineRequest() {
         </Card>
 
         <div className="space-y-4">
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-stone-200 bg-white/95 shadow-sm">
             <CardHeader>
-              <CardTitle>Que conviene incluir</CardTitle>
+              <CardTitle>Qu? conviene incluir</CardTitle>
               <CardDescription>
-                Una buena solicitud reduce friccion y acelera la incorporacion al catalogo.
+                Una buena solicitud reduce fricción y acelera la incorporación al catálogo.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-zinc-400">
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+            <CardContent className="space-y-3 text-sm text-slate-600">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
                 Nombre claro y consistente con el lenguaje del negocio.
               </div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
                 Ejemplos concretos de servicios, variantes o formatos de cobro.
               </div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                Cualquier contexto operativo que impacte en UX o logica.
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                Cualquier contexto operativo que impacte en la experiencia o en la organización del servicio.
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-stone-200 bg-white/95 shadow-sm">
             <CardHeader>
-              <CardTitle>Como sigue despues</CardTitle>
+              <CardTitle>Cómo sigue después</CardTitle>
               <CardDescription>
-                La solicitud queda visible para Devs y luego vuelve al flujo operativo cuando se aprueba.
+                La solicitud queda visible para revisión y vuelve al flujo operativo cuando se aprueba.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-zinc-400">
+            <CardContent className="space-y-3 text-sm text-slate-600">
               <p>
-                Desde tu cuenta de Admin vas a poder seguir el estado, revisar feedback interno y confirmar si la propuesta fue aprobada, rechazada o necesita ajustes.
+                Desde tu cuenta vas a poder seguir el estado y confirmar si la propuesta fue aprobada, rechazada o necesita ajustes.
               </p>
               <Button variant="ghost" className="w-full" onClick={() => nav("/app/admin/requests")}>
                 Ver mis solicitudes

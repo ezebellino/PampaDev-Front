@@ -113,10 +113,10 @@ export default function BranchesPage() {
         />
         <Card>
           <CardContent className="space-y-3 py-6">
-            <div className="text-sm font-medium text-red-300">No pudimos cargar las sucursales.</div>
-            <div className="text-sm text-zinc-400">{error.message}</div>
+            <div className="text-sm font-medium text-rose-700">No pudimos cargar las sucursales.</div>
+            <div className="text-sm text-slate-600">{error.message}</div>
             {!activeCompany ? (
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-400">
+              <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3 text-sm text-slate-600">
                 Elegí una empresa activa para habilitar el alta de sucursales.
               </div>
             ) : null}
@@ -176,10 +176,10 @@ export default function BranchesPage() {
 
       {!activeCompany ? (
         <Card>
-          <CardContent className="space-y-3 py-5 text-sm text-zinc-400">
-            <div>Seleccion? una empresa activa desde Entidad.</div>
+          <CardContent className="space-y-3 py-5 text-sm text-slate-600">
+            <div>Seleccion? una empresa activa para ver sus sucursales.</div>
             <div className="flex flex-wrap gap-2">
-              <Link to="/app/companies" className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900">
+              <Link to="/app/companies" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-[#eff4ff]">
                 Ir a empresas
               </Link>
             </div>
@@ -189,10 +189,10 @@ export default function BranchesPage() {
 
       {activeCompany && visibleBranches.length === 0 ? (
         <Card>
-          <CardContent className="space-y-4 py-6 text-sm text-zinc-400">
+          <CardContent className="space-y-4 py-6 text-sm text-slate-600">
             <div>No hay sucursales cargadas para esta empresa todavía.</div>
             {isDev ? (
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+              <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
                 Podés crear la primera sucursal para {activeCompany.fantasyName} desde este mismo panel.
               </div>
             ) : null}
@@ -208,30 +208,30 @@ export default function BranchesPage() {
             return (
               <article
                 key={branch.idBranch}
-                className={`relative overflow-hidden rounded-[1.75rem] border bg-zinc-950/70 transition duration-200 ${
+                className={`relative overflow-hidden rounded-[1.75rem] border bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)] transition duration-200 ${
                   active
-                    ? "border-cyan-400/40 shadow-[0_20px_50px_rgba(34,211,238,0.10)]"
-                    : "border-zinc-800 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/70"
+                    ? "border-sky-200 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]"
+                    : "border-slate-200 hover:-translate-y-1 hover:border-sky-200 hover:bg-white"
                 }`}
               >
-                <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(135deg,rgba(56,189,248,0.14),transparent_55%)]" />
+                <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(135deg,rgba(224,242,254,0.9),transparent_55%)]" />
                 <div className="relative p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
-                      <div className="text-lg font-semibold text-zinc-100">{branch.companyName}</div>
-                      <div className="text-sm text-zinc-400">{branch.cityName}</div>
+                      <div className="text-lg font-semibold text-slate-900">{branch.companyName}</div>
+                      <div className="text-sm text-slate-600">{branch.cityName}</div>
                     </div>
-                    <Badge className="shrink-0 border-zinc-700 bg-zinc-900/80 text-zinc-300">
+                    <Badge className="shrink-0 border-slate-200 bg-stone-50 text-slate-700">
                       #{branch.idBranch}
                     </Badge>
                   </div>
 
                   <div className="mt-5 space-y-3">
-                    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-300">
+                    <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3 text-sm text-slate-700">
                       {branch.address}
                     </div>
 
-                    <p className="text-sm leading-6 text-zinc-400">
+                    <p className="text-sm leading-6 text-slate-600">
                       {branch.description || "Esta sucursal ya está lista para usarse dentro del flujo operativo."}
                     </p>
 
@@ -240,8 +240,8 @@ export default function BranchesPage() {
                       <span
                         className={`rounded-full px-3 py-1 ${
                           active
-                            ? "border border-cyan-500/20 bg-cyan-500/10 text-cyan-200"
-                            : "border border-zinc-800 bg-zinc-900/70 text-zinc-400"
+                            ? "border border-sky-200 bg-[#eff4ff] text-sky-700"
+                            : "border border-slate-200 bg-stone-50 text-slate-700"
                         }`}
                       >
                         {active ? "Sucursal activa" : "Disponible"}

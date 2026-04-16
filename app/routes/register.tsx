@@ -77,7 +77,7 @@ export default function RegisterPage() {
         }));
       } catch (e: any) {
         if (!alive) return;
-        setError(e?.message || "No pudimos cargar la informaci?n de ubicaci?n.");
+        setError(e?.message || "No pudimos cargar la información de ubicación.");
       } finally {
         if (alive) {
           setLoadingLocations(false);
@@ -144,22 +144,22 @@ export default function RegisterPage() {
     };
 
     if (!payload.firstName || !payload.lastname || !payload.email || !payload.password) {
-      setError("Complet? todos los campos obligatorios.");
+      setError("Completá todos los campos obligatorios.");
       return;
     }
 
     if (!isValidEmail(payload.email)) {
-      setError("Ingres? un email v?lido.");
+      setError("Ingresá un email válido.");
       return;
     }
 
     if (payload.password.length < 6) {
-      setError("La contrase?a debe tener al menos 6 caracteres.");
+      setError("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
     if (payload.password !== payload.repeatPassword) {
-      setError("La contrase?a y su repetici?n no coinciden.");
+      setError("La contraseña y su repetición no coinciden.");
       return;
     }
 
@@ -203,19 +203,19 @@ export default function RegisterPage() {
               Cre? tu cuenta.
             </h1>
             <p className="max-w-md text-base leading-7 text-zinc-400">
-              El registro p?blico crea cuentas de usuario.
+              El registro público crea cuentas de usuario.
             </p>
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm text-zinc-300">
-            Complet? tus datos y eleg? tu ubicaci?n.
+            Completá tus datos y eleg? tu ubicación.
           </div>
         </section>
 
         <Card className="border-zinc-800 bg-zinc-950/88 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
           <CardHeader className="space-y-2 pb-2">
             <CardTitle className="text-2xl text-zinc-100">Crear cuenta</CardTitle>
-            <CardDescription>Complet? tus datos.</CardDescription>
+            <CardDescription>Completá tus datos.</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
@@ -286,7 +286,7 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm text-zinc-300">Repetir contrase?a</label>
+                    <label className="text-sm text-zinc-300">Repetir contraseña</label>
                     <input
                       type="password"
                       value={form.repeatPassword}
@@ -298,7 +298,7 @@ export default function RegisterPage() {
 
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="space-y-2">
-                    <label className="text-sm text-zinc-300">Pa?s</label>
+                    <label className="text-sm text-zinc-300">País</label>
                     <select
                       value={form.countryName}
                       onChange={(event) => handleCountryChange(event.target.value)}

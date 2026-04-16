@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import DisciplineForm, { type DisciplineFormData } from "../components/disciplines/DisciplineForm";
 import DisciplineList from "../components/disciplines/DisciplineList";
 import { Button } from "../components/ui/Button";
@@ -27,17 +27,17 @@ function DisciplinesPage() {
   const [editBusy, setEditBusy] = useState(false);
 
   if (loading) {
-    return <ScreenLoader title="Cargando disciplinas..." subtitle="Estamos preparando el catalogo base de la plataforma." />;
+    return <ScreenLoader title="Cargando disciplinas..." subtitle="Estamos preparando el catálogo base de la plataforma." />;
   }
 
   if (error) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Disciplinas" subtitle="No pudimos cargar el catalogo global en este momento." />
-        <Card>
-          <CardContent className="space-y-3 py-6 text-sm">
-            <div className="font-medium text-red-300">Ocurrio un problema al cargar las disciplinas.</div>
-            <div className="text-zinc-400">{error}</div>
+        <PageHeader title="Disciplinas" subtitle="No pudimos cargar el catálogo global en este momento." />
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="space-y-3 py-6 text-sm text-rose-700">
+            <div className="font-medium">Ocurrió un problema al cargar las disciplinas.</div>
+            <div>{error}</div>
             <div>
               <Button variant="secondary" onClick={() => void refresh()}>
                 Reintentar
@@ -90,7 +90,7 @@ function DisciplinesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Disciplinas"
-        subtitle="Gestiona el catalogo base que despues cada sucursal publica como rubro operativo segun su realidad."
+        subtitle="Gestioná el catálogo base que después cada sucursal publica como rubro operativo según su realidad."
         right={
           <Button variant="secondary" onClick={() => setCreateOpen(true)}>
             + Nueva disciplina
@@ -98,38 +98,37 @@ function DisciplinesPage() {
         }
       />
 
-      <Card className="border-cyan-500/20 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_36%),linear-gradient(135deg,rgba(24,24,27,0.96),rgba(9,9,11,0.98))]">
-        <CardContent className="grid gap-5 py-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.6fr)]">
-          <div className="space-y-3 text-sm text-zinc-300">
-            <div className="text-xs uppercase tracking-[0.24em] text-cyan-200/80">Catalogo base</div>
-            <div className="max-w-3xl text-2xl font-semibold leading-tight text-white">
-              Aqui nace el lenguaje comun que despues usan rubros, membresias, horarios y solicitudes.
+      <Card className="overflow-hidden border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
+        <div className="h-24 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.24),transparent_42%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(247,250,255,0.99))]" />
+        <CardContent className="relative -mt-2 grid gap-5 py-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.6fr)]">
+          <div className="space-y-3 text-sm text-slate-600">
+            <div className="text-xs uppercase tracking-[0.24em] text-sky-700">Catálogo base</div>
+            <div className="max-w-3xl text-2xl font-semibold leading-tight text-slate-900">
+              Acá nace el lenguaje común que después usan rubros, membresías, horarios y solicitudes.
             </div>
-            <p className="max-w-3xl leading-6 text-zinc-300/90">
-              Mantener este catalogo limpio y consistente evita confusiones en toda la operacion. La disciplina es el concepto base; la sucursal luego decide como se presenta y vende.
+            <p className="max-w-3xl leading-6 text-slate-600">
+              Mantener este catálogo limpio y consistente evita confusiones en toda la operación. La disciplina es el concepto base y la sucursal luego decide cómo se presenta y vende.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-400">Disciplinas</div>
-              <div className="mt-2 text-2xl font-semibold text-white">{disciplines.length}</div>
+            <div className="rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Disciplinas</div>
+              <div className="mt-2 text-2xl font-semibold text-slate-900">{disciplines.length}</div>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-black/15 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-400">Proximo paso</div>
-              <div className="mt-2 text-sm font-medium text-white">Publicarlas por sucursal en Rubros</div>
+            <div className="rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Próximo paso</div>
+              <div className="mt-2 text-sm font-medium text-slate-900">Publicarlas por sucursal en Rubros</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
-        <div className="h-20 bg-[linear-gradient(135deg,rgba(56,189,248,0.12),transparent_55%)]" />
-        <CardContent className="relative -mt-2 space-y-2 py-5 text-sm text-zinc-400">
+      <Card className="overflow-hidden border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
+        <div className="h-20 bg-[linear-gradient(135deg,rgba(125,211,252,0.18),transparent_55%)]" />
+        <CardContent className="relative -mt-2 space-y-2 py-5 text-sm text-slate-600">
+          <p>Pensalo así: disciplina = catálogo base. Rubro = esa disciplina ya configurada para una sucursal.</p>
           <p>
-            Piensalo asi: disciplina = catalogo base. Rubro = esa disciplina ya configurada para una sucursal.
-          </p>
-          <p>
-            Si un Admin necesita algo nuevo, primero pasa por Solicitudes. Cuando se aprueba, se suma aqui y despues se publica en la sede correspondiente.
+            Si un admin necesita algo nuevo, primero pasa por Solicitudes. Cuando se aprueba, se suma acá y después se publica en la sede correspondiente.
           </p>
         </CardContent>
       </Card>

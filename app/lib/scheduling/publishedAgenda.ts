@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BranchClassRecord } from "../api/models/branchClass";
 import type { Discipline } from "../api/services/disciplines";
 import { mockRubros } from "../rubros/mockRubros";
@@ -9,6 +9,7 @@ import type { BranchScheduleConfig } from "./types";
 export type PublishedAgendaStatus = "published" | "closed";
 
 export type PublishedAgendaItem = BranchClassRecord & {
+  available: number;
   bookingSource: "published";
   agendaStatus: PublishedAgendaStatus;
   scheduleUpdatedAt?: string;
@@ -63,6 +64,19 @@ function sortItems(items: PublishedAgendaItem[]) {
   });
 }
 
+function toSlotTimestamp(date: string | null | undefined, time: string | null | undefined) {
+  if (!date || !time) return null;
+  const value = new Date(`${date}T${time}`);
+  const stamp = value.getTime();
+  return Number.isFinite(stamp) ? stamp : null;
+}
+
+function isUpcomingSlot(date: string | null | undefined, time: string | null | undefined) {
+  const stamp = toSlotTimestamp(date, time);
+  if (stamp == null) return true;
+  return stamp >= Date.now();
+}
+
 function clampAvailable(value: unknown, capacity: number) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return capacity;
@@ -92,6 +106,7 @@ function generateBaseAgenda(
   for (const slot of slots) {
     dedup.set(slot.id, {
       ...slot,
+      available: clampAvailable(slot.available, slot.capacity),
       bookingSource: "published",
       agendaStatus: "published",
       scheduleUpdatedAt: scheduleConfig.updatedAt,
@@ -223,7 +238,7 @@ function readAgendaRubroName(item: PublishedAgendaItem) {
 
 export function findPublishedAgendaByRubro(branchId: number | null, rubroId: string | null, rubroName?: string | null) {
   if (branchId == null) return [] as PublishedAgendaItem[];
-  const items = getPublishedAgenda(branchId).filter((item) => item.agendaStatus === "published" && item.available > 0);
+  const items = getPublishedAgenda(branchId).filter((item) => item.agendaStatus === "published" && item.available > 0 && isUpcomingSlot(item.date, item.time));
   if (!rubroId) return items;
   return items.filter((item) => {
     const itemName = readAgendaRubroName(item);
@@ -260,8 +275,9 @@ export function usePublishedBranchAgenda(
   const allItems = useMemo(() => getPublishedAgenda(branchId), [branchId, version]);
 
   const items = useMemo(() => {
-    if (rubroId == null) return allItems;
-    return allItems.filter((item) => {
+    const upcomingItems = allItems.filter((item) => isUpcomingSlot(item.date, item.time));
+    if (rubroId == null) return upcomingItems;
+    return upcomingItems.filter((item) => {
       const itemName = readAgendaRubroName(item);
       return matchesRubroCandidate(rubroId, rubroName ?? itemName, itemName);
     });
@@ -306,3 +322,8 @@ export function getPublishedAgendaSlotStatusTone(item: PublishedAgendaItem) {
   if (item.available <= 0) return "warning" as const;
   return "success" as const;
 }
+
+
+
+
+

@@ -1,4 +1,4 @@
-# Welcome to React Router!
+﻿# Welcome to React Router!
 
 A modern, production-ready template for building full-stack React applications using React Router.
 
@@ -6,13 +6,13 @@ A modern, production-ready template for building full-stack React applications u
 
 ## Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- ðŸš€ Server-side rendering
+- âš¡ï¸ Hot Module Replacement (HMR)
+- ðŸ“¦ Asset bundling and optimization
+- ðŸ”„ Data loading and mutations
+- ðŸ”’ TypeScript by default
+- ðŸŽ‰ TailwindCSS for styling
+- ðŸ“– [React Router docs](https://reactrouter.com/)
 
 ## Getting Started
 
@@ -32,7 +32,7 @@ Start the development server with HMR:
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Your application will be available at `https://turnos.pampadev.ar`.
 
 ## Building for Production
 
@@ -71,11 +71,11 @@ If you're familiar with deploying Node applications, the built-in app server is 
 Make sure to deploy the output of `npm run build`
 
 ```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+â”œâ”€â”€ package.json
+â”œâ”€â”€ package-lock.json (or pnpm-lock.yaml, or bun.lockb)
+â”œâ”€â”€ build/
+â”‚   â”œâ”€â”€ client/    # Static assets
+â”‚   â””â”€â”€ server/    # Server-side code
 ```
 
 ## Styling
@@ -84,4 +84,5 @@ This template comes with [Tailwind CSS](https://tailwindcss.com/) already config
 
 ---
 
-Built with ❤️ using React Router.
+Built with â¤ï¸ using React Router.
+

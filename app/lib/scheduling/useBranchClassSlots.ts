@@ -1,10 +1,10 @@
-﻿import { useMemo } from "react";
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { BranchClassRecord } from "../api/models/branchClass";
-import { createClass, type CreateClassPayload } from "../api/services/classes";
+import { createBooking, type CreateBookingPayload } from "../api/services/bookings";
 import { matchesRubroCandidate } from "../rubros/rubroMatching";
-import { releasePublishedAgendaSlot, reservePublishedAgendaSlot } from "./publishedAgenda";
+import { reservePublishedAgendaSlot } from "./publishedAgenda";
 import { persistInstructorReservationRequest } from "./useInstructorRequests";
 
 export type ReservationActor = {
@@ -13,7 +13,7 @@ export type ReservationActor = {
 };
 
 export type ReservationResult = {
-  mode: "api-class" | "request-only";
+  mode: "api-booking" | "request-only";
   requestId: string;
   syncStatus: "synced" | "pending-backend";
 };
@@ -23,45 +23,24 @@ function readNumber(value: unknown) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function resolveBranchDisciplineId(slot: BranchClassRecord) {
-  return readNumber(slot.idBranchDiscipline) ?? readNumber(slot["branchDisciplineId"]) ?? readNumber(slot["idBranchDisciplineId"]);
+function resolveClassId(slot: BranchClassRecord) {
+  return readNumber(slot.idClass) ?? readNumber(slot.id) ?? readNumber(slot["classId"]);
 }
 
-function resolveIsoDate(date: string, time: string) {
-  const candidate = new Date(`${date}T${time}`);
-  if (!Number.isNaN(candidate.getTime())) {
-    return candidate.toISOString();
-  }
-
-  const fallback = new Date(date);
-  if (!Number.isNaN(fallback.getTime())) {
-    return fallback.toISOString();
-  }
-
-  throw new Error("No pudimos construir la fecha del turno con el slot seleccionado.");
-}
-
-function buildCreateClassPayload(slot: BranchClassRecord, userId: string): CreateClassPayload {
+function buildCreateBookingPayload(slot: BranchClassRecord, userId: string): CreateBookingPayload {
   const idUser = readNumber(userId);
   if (idUser == null) {
-    throw new Error("La sesión actual no tiene un idUser numérico para enviar al backend.");
+    throw new Error("La sesion actual no tiene un idUser numerico para enviar al backend.");
   }
 
-  const idBranchDiscipline = resolveBranchDisciplineId(slot);
-  if (idBranchDiscipline == null) {
-    throw new Error("El slot seleccionado no informa idBranchDiscipline. Necesitamos ese dato desde backend para crear la clase.");
+  const idClass = resolveClassId(slot);
+  if (idClass == null) {
+    throw new Error("El slot seleccionado no informa idClass. Necesitamos ese dato desde backend para reservar.");
   }
 
   return {
-    date: resolveIsoDate(slot.date, slot.time),
-    time: slot.time,
-    idBranchDiscipline,
+    idClass,
     idUser,
-    capacity: readNumber(slot.capacity) ?? 1,
-    duration: readNumber(slot.duration) ?? 60,
-    creditUsage: readNumber(slot.creditUsage) ?? 0,
-    creditRefund: readNumber(slot.creditRefund) ?? 0,
-    status: readNumber(slot.status) ?? 0,
   };
 }
 
@@ -77,6 +56,19 @@ function matchesRubro(slot: BranchClassRecord, rubroId: string) {
   ];
 
   return candidates.some((candidate) => matchesRubroCandidate(rubroId, rubroName, candidate));
+}
+
+function toSlotTimestamp(date: string | null | undefined, time: string | null | undefined) {
+  if (!date || !time) return null;
+  const value = new Date(`${date}T${time}`);
+  const stamp = value.getTime();
+  return Number.isFinite(stamp) ? stamp : null;
+}
+
+function isUpcomingSlot(slot: Pick<BranchClassRecord, "date" | "time">) {
+  const stamp = toSlotTimestamp(slot.date, slot.time);
+  if (stamp == null) return true;
+  return stamp >= Date.now();
 }
 
 function createRequestId() {
@@ -103,8 +95,9 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
 
   const apiSlots = useMemo(() => {
     if (!classesQuery.data) return [] as BranchClassRecord[];
-    if (rubroId == null) return classesQuery.data;
-    return classesQuery.data.filter((slot) => matchesRubro(slot, rubroId)).map((slot) => ({
+    const upcoming = classesQuery.data.filter((slot) => isUpcomingSlot(slot));
+    if (rubroId == null) return upcoming;
+    return upcoming.filter((slot) => matchesRubro(slot, rubroId)).map((slot) => ({
       ...slot,
       bookingSource: "api" as const,
       syncStatus: "synced" as const,
@@ -120,7 +113,7 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
   }, [apiSlots, fallbackSlots, rubroId]);
 
   const reservationMutation = useMutation({
-    mutationFn: (payload: CreateClassPayload) => createClass(payload),
+    mutationFn: (payload: CreateBookingPayload) => createBooking(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["branch-classes", branchId] });
     },
@@ -129,7 +122,8 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
   async function reserveSlot(slot: BranchClassRecord, user: ReservationActor): Promise<ReservationResult> {
     if (!branchId) throw new Error("Sucursal no seleccionada");
     if (!rubroId) throw new Error("Rubro no seleccionado");
-    if (slot.available <= 0) throw new Error("No hay cupos disponibles");
+    if (slot.available != null && slot.available <= 0) throw new Error("No hay cupos disponibles");
+    if (!isUpcomingSlot(slot)) throw new Error("Este horario ya pas? y no puede reservarse.");
     if (slot.bookingSource === "published" && String(slot.status ?? "").toLowerCase().includes("cerr")) {
       throw new Error("Este horario ya no esta publicado para nuevas reservas.");
     }
@@ -143,14 +137,14 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
       slotLabel: `${slot.date} · ${slot.time}`,
       userId: user.id,
       userName: user.name,
-      branchDisciplineId: resolveBranchDisciplineId(slot) ?? undefined,
+      branchDisciplineId: undefined,
       date: slot.date,
       time: slot.time,
       status: "pending" as const,
       createdAt: new Date().toISOString(),
     };
 
-    const canSyncWithBackend = slot.bookingSource !== "planned" && resolveBranchDisciplineId(slot) != null;
+    const canSyncWithBackend = slot.bookingSource !== "planned" && resolveClassId(slot) != null;
 
     if (!canSyncWithBackend) {
       if (slot.bookingSource === "published") {
@@ -171,18 +165,12 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
     }
 
     try {
-      const payload = buildCreateClassPayload(slot, user.id);
+      const payload = buildCreateBookingPayload(slot, user.id);
       const response = await reservationMutation.mutateAsync(payload);
-      const saved = persistInstructorReservationRequest({
-        ...requestPayload,
-        backendClassId: readNumber(response?.idClass ?? response?.id) ?? String(response?.idClass ?? response?.id ?? ""),
-        bookingSource: "api",
-        syncStatus: "synced",
-      });
 
       return {
-        mode: "api-class",
-        requestId: saved.id,
+        mode: "api-booking",
+        requestId: String(readNumber(response?.idBooking) ?? requestPayload.id),
         syncStatus: "synced",
       };
     } catch {
@@ -216,3 +204,4 @@ export function useBranchClassSlots(branchId: number | null, rubroId: string | n
     hasBackendSlots: apiSlots.length > 0,
   };
 }
+

@@ -1,4 +1,4 @@
-﻿import type { InstructorReservationRequest } from "./useInstructorRequests";
+import type { InstructorReservationRequest } from "./useInstructorRequests";
 
 type BadgeTone = "neutral" | "success" | "warning";
 
@@ -6,7 +6,7 @@ export function getReservationStatusLabel(status: InstructorReservationRequest["
   if (status === "confirmed") return "Confirmada";
   if (status === "rejected") return "Rechazada";
   if (status === "cancelled") return "Cancelada";
-  return "Pendiente";
+  return "Reservada";
 }
 
 export function getReservationStatusTone(status: InstructorReservationRequest["status"]): BadgeTone {
@@ -16,15 +16,15 @@ export function getReservationStatusTone(status: InstructorReservationRequest["s
 }
 
 export function getReservationSyncLabel(syncStatus: InstructorReservationRequest["syncStatus"]) {
-  return syncStatus === "synced" ? "Sincronizada" : "Lista para backend";
+  return syncStatus === "synced" ? "Registrada en backend" : "Fallback local";
 }
 
 export function getReservationSyncTone(syncStatus: InstructorReservationRequest["syncStatus"]): BadgeTone {
-  return syncStatus === "synced" ? "success" : "neutral";
+  return syncStatus === "synced" ? "success" : "warning";
 }
 
 export function getReservationSourceLabel(source: InstructorReservationRequest["bookingSource"]) {
-  return source === "api" ? "Clase real" : "Franja planificada";
+  return source === "api" ? "Booking real" : "Franja planificada";
 }
 
 export function getReservationSourceTone(source: InstructorReservationRequest["bookingSource"]): BadgeTone {
@@ -33,6 +33,6 @@ export function getReservationSourceTone(source: InstructorReservationRequest["b
 
 export function getReservationOperationalCopy(request: InstructorReservationRequest) {
   return request.syncStatus === "synced"
-    ? "La reserva ya quedó vinculada al backend y sigue su operación normal en sucursal."
-    : "La reserva quedó guardada en frontend y está lista para conectarse cuando el backend complete esa parte del flujo.";
+    ? "La reserva ya existe en backend y puede confirmarse, rechazarse o cancelarse desde los endpoints reales de bookings."
+    : "La reserva sigue en fallback local porque ese horario todavia no expone un idClass utilizable para crear el booking real.";
 }

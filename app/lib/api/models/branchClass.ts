@@ -1,10 +1,14 @@
-﻿export type BranchClassRecord = {
+export type BranchClassRecord = {
   id: string;
+  idClass?: number | string;
   rubroId: string;
   date: string;
   time: string;
   capacity: number;
-  available: number;
+  available?: number;
+  price?: number;
+  refund?: number;
+  instructor?: string;
   instructorId?: string;
   branchId?: number;
   idBranchDiscipline?: number;

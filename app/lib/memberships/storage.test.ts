@@ -1,4 +1,4 @@
-﻿import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MembershipPlanInput } from "./types";
 import {
   createMembershipPlan,
@@ -8,9 +8,11 @@ import {
   saveMembershipPrivateClass,
   subscribeToBranchMembershipCatalog,
   updateMembershipPlan,
+  upsertMembershipPlan,
 } from "./storage";
 
 const branchId = 12;
+const otherBranchId = 99;
 const basePlan: MembershipPlanInput = {
   name: "Plan Base",
   description: "Tres clases por semana",
@@ -51,8 +53,19 @@ describe("memberships storage domain", () => {
     expect(updatedCatalog.plans[0]?.unlimited).toBe(true);
   });
 
-  it("merges api memberships while preserving local metadata and hide state", () => {
+  it("merges linked api memberships while preserving local metadata and hide state", () => {
     createMembershipPlan(branchId, basePlan);
+
+    upsertMembershipPlan(branchId, {
+      ...createMembershipPlan(branchId, {
+        ...basePlan,
+        name: "Plan Sync local meta",
+      }).plans[0],
+      idMembershipPlan: 77,
+      description: "Meta local",
+      benefits: "Incluye seguimiento",
+      syncSource: "api",
+    });
 
     const merged = mergeApiMembershipCatalog(branchId, [
       {
@@ -65,12 +78,59 @@ describe("memberships storage domain", () => {
       },
     ]);
 
-    expect(merged.plans.some((plan) => plan.idMembershipPlan === 77)).toBe(true);
-    expect(merged.plans.find((plan) => plan.idMembershipPlan === 77)?.syncSource).toBe("api");
+    const syncedPlan = merged.plans.find((plan) => plan.idMembershipPlan === 77);
+
+    expect(syncedPlan?.syncSource).toBe("api");
+    expect(syncedPlan?.description).toBe("Meta local");
+    expect(merged.linkedApiPlanIds).toContain(77);
 
     const hidden = hideMembershipPlan(branchId, 77);
     expect(hidden.plans.some((plan) => plan.idMembershipPlan === 77)).toBe(false);
     expect(hidden.hiddenPlanIds).toContain(77);
+  });
+
+  it("does not import global api memberships into unrelated branches", () => {
+    upsertMembershipPlan(branchId, {
+      idMembershipPlan: 77,
+      name: "Plan Branch 12",
+      description: "Solo sucursal 12",
+      price: 30000,
+      disciplinesCount: 2,
+      billingCycle: "monthly",
+      months: 1,
+      classLimit: 8,
+      unlimited: false,
+      creditAmount: null,
+      rolloverEnabled: false,
+      isVisible: true,
+      isActive: true,
+      benefits: "Seguimiento",
+      disciplineIds: [1, 2],
+      createdAt: "2026-03-21T10:00:00.000Z",
+      updatedAt: "2026-03-21T11:00:00.000Z",
+      syncSource: "api",
+    });
+
+    mergeApiMembershipCatalog(branchId, [
+      {
+        idMembership: 77,
+        name: "Plan API branch 12",
+        price: 32000,
+        disciplinesCount: 2,
+      },
+    ]);
+
+    const unrelatedBranch = mergeApiMembershipCatalog(otherBranchId, [
+      {
+        idMembership: 77,
+        name: "Plan API branch 12",
+        price: 32000,
+        disciplinesCount: 2,
+      },
+    ]);
+
+    expect(unrelatedBranch.plans).toHaveLength(0);
+    expect(unrelatedBranch.linkedApiPlanIds).toEqual([]);
   });
 
   it("persists private class config and emits sync notifications", () => {

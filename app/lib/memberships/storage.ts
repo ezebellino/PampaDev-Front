@@ -1,4 +1,4 @@
-﻿import type { BranchMembershipCatalog, MembershipPlan, MembershipPlanInput, PrivateClassOffer } from "./types";
+import type { BranchMembershipCatalog, MembershipPlan, MembershipPlanInput, PrivateClassOffer } from "./types";
 import { BILLING_CYCLE_OPTIONS, PRIVATE_CLASS_DURATION_OPTIONS } from "./types";
 import type { MembershipApiRecord } from "../api/services/memberships";
 
@@ -55,6 +55,11 @@ function sanitizeHiddenPlanIds(value: unknown) {
   return value.filter((item): item is number => typeof item === "number" && Number.isFinite(item));
 }
 
+function sanitizeLinkedApiPlanIds(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is number => typeof item === "number" && Number.isFinite(item));
+}
+
 function normalizeBillingCycle(value: unknown) {
   const cycle = BILLING_CYCLE_OPTIONS.find((item) => item.value === value) ?? BILLING_CYCLE_OPTIONS[0];
   return cycle;
@@ -71,6 +76,16 @@ function sortPlans(plans: MembershipPlan[]) {
     const bTime = Date.parse(b.updatedAt ?? b.createdAt ?? "") || 0;
     return bTime - aTime;
   });
+}
+
+function listLinkedApiPlanIds(plans: MembershipPlan[]) {
+  return plans
+    .filter((plan) => plan.syncSource === "api")
+    .map((plan) => plan.idMembershipPlan);
+}
+
+function mergeLinkedApiPlanIds(explicitIds: number[] | undefined, plans: MembershipPlan[]) {
+  return [...new Set([...(explicitIds ?? []), ...listLinkedApiPlanIds(plans)])];
 }
 
 function normalizePlan(plan: unknown): MembershipPlan | null {
@@ -151,6 +166,7 @@ export function createDefaultMembershipCatalog(branchId: number | string): Branc
     plans: [],
     privateClass: defaultPrivateClass(),
     hiddenPlanIds: [],
+    linkedApiPlanIds: [],
   };
 }
 
@@ -162,12 +178,15 @@ export function loadBranchMembershipCatalog(branchId: number | string): BranchMe
     if (!raw) return fallback;
 
     const parsed = JSON.parse(raw) as Partial<BranchMembershipCatalog>;
+    const plans = sortPlans(Array.isArray(parsed.plans) ? (parsed.plans.map(normalizePlan).filter(Boolean) as MembershipPlan[]) : []);
+
     return {
       branchId,
       updatedAt: sanitizeOptionalText(parsed.updatedAt),
-      plans: sortPlans(Array.isArray(parsed.plans) ? (parsed.plans.map(normalizePlan).filter(Boolean) as MembershipPlan[]) : []),
+      plans,
       privateClass: normalizePrivateClass(parsed.privateClass),
       hiddenPlanIds: sanitizeHiddenPlanIds(parsed.hiddenPlanIds),
+      linkedApiPlanIds: mergeLinkedApiPlanIds(sanitizeLinkedApiPlanIds(parsed.linkedApiPlanIds), plans),
     };
   } catch {
     return fallback;
@@ -205,11 +224,13 @@ export function subscribeToBranchMembershipCatalog(branchId: number | string, on
 }
 
 export function saveBranchMembershipCatalog(branchId: number | string, catalog: BranchMembershipCatalog) {
+  const nextPlans = sortPlans(catalog.plans);
   const next: BranchMembershipCatalog = {
     ...catalog,
     branchId,
-    plans: sortPlans(catalog.plans),
+    plans: nextPlans,
     hiddenPlanIds: sanitizeHiddenPlanIds(catalog.hiddenPlanIds),
+    linkedApiPlanIds: mergeLinkedApiPlanIds(sanitizeLinkedApiPlanIds(catalog.linkedApiPlanIds), nextPlans),
     updatedAt: new Date().toISOString(),
   };
 
@@ -265,6 +286,10 @@ export function upsertMembershipPlan(branchId: number | string, plan: Membership
   return saveBranchMembershipCatalog(branchId, {
     ...current,
     hiddenPlanIds: current.hiddenPlanIds?.filter((item) => item !== plan.idMembershipPlan) ?? [],
+    linkedApiPlanIds:
+      plan.syncSource === "api"
+        ? [...new Set([...(current.linkedApiPlanIds ?? []), plan.idMembershipPlan])]
+        : current.linkedApiPlanIds ?? [],
     plans: [plan, ...current.plans.filter((item) => item.idMembershipPlan !== plan.idMembershipPlan)],
   });
 }
@@ -304,6 +329,7 @@ export function removeMembershipPlan(branchId: number | string, idMembershipPlan
     ...current,
     plans: current.plans.filter((plan) => plan.idMembershipPlan !== idMembershipPlan),
     hiddenPlanIds: current.hiddenPlanIds?.filter((item) => item !== idMembershipPlan) ?? [],
+    linkedApiPlanIds: current.linkedApiPlanIds?.filter((item) => item !== idMembershipPlan) ?? [],
   });
 }
 
@@ -322,19 +348,19 @@ export function hideMembershipPlan(branchId: number | string, idMembershipPlan: 
 export function mergeApiMembershipCatalog(branchId: number | string, apiPlans: MembershipApiRecord[]) {
   const current = loadBranchMembershipCatalog(branchId);
   const hidden = new Set(current.hiddenPlanIds ?? []);
-  const apiIds = new Set(apiPlans.map((item) => item.idMembership));
+  const linkedApiPlanIds = new Set(current.linkedApiPlanIds ?? listLinkedApiPlanIds(current.plans));
+  const currentApiPlans = current.plans.filter((plan) => plan.syncSource === "api");
+  const currentLocalPlans = current.plans.filter((plan) => plan.syncSource !== "api");
 
   const syncedPlans = apiPlans
+    .filter((item) => linkedApiPlanIds.has(item.idMembership))
     .filter((item) => !hidden.has(item.idMembership))
-    .map((item) => buildApiBackedPlan(item, current.plans.find((plan) => plan.idMembershipPlan === item.idMembership)));
-
-  const localOnlyPlans = current.plans.filter(
-    (plan) => plan.syncSource !== "api" && !apiIds.has(plan.idMembershipPlan) && !hidden.has(plan.idMembershipPlan)
-  );
+    .map((item) => buildApiBackedPlan(item, currentApiPlans.find((plan) => plan.idMembershipPlan === item.idMembership)));
 
   return saveBranchMembershipCatalog(branchId, {
     ...current,
-    plans: [...localOnlyPlans, ...syncedPlans],
+    plans: [...currentLocalPlans.filter((plan) => !hidden.has(plan.idMembershipPlan)), ...syncedPlans],
+    linkedApiPlanIds: [...linkedApiPlanIds],
   });
 }
 

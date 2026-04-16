@@ -1,5 +1,6 @@
-﻿import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { MembershipApiRecord, MembershipCreatePayload } from "../api/services/memberships";
 import { createMembership, getMemberships, updateMembership } from "../api/services/memberships";
 import type { MembershipPlanInput, PrivateClassOffer } from "./types";
 import {
@@ -17,6 +18,23 @@ import {
 
 function membershipCatalogQueryKey(branchId: number | null) {
   return ["branch-membership-catalog", branchId] as const;
+}
+
+function findCreatedMembershipRecord(apiPlans: MembershipApiRecord[], payload: MembershipCreatePayload) {
+  const exactMatches = apiPlans.filter(
+    (plan) =>
+      plan.name.trim().toLowerCase() === payload.name.trim().toLowerCase() &&
+      Math.round(plan.price) === Math.round(payload.price) &&
+      plan.disciplinesCount === payload.disciplinesCount
+  );
+
+  if (exactMatches.length === 0) return null;
+
+  return exactMatches.sort((a, b) => {
+    const aTime = Date.parse(a.updatedAt ?? a.createdAt ?? "") || 0;
+    const bTime = Date.parse(b.updatedAt ?? b.createdAt ?? "") || 0;
+    return bTime - aTime;
+  })[0] ?? null;
 }
 
 export function useBranchMembershipCatalog(branchId: number | null) {
@@ -58,12 +76,14 @@ export function useBranchMembershipCatalog(branchId: number | null) {
     mutationFn: async (input: MembershipPlanInput) => {
       if (branchId == null) throw new Error("Selecciona una sucursal para crear planes.");
 
+      const payload: MembershipCreatePayload = {
+        name: input.name.trim(),
+        price: Math.round(input.price),
+        disciplinesCount: input.disciplineIds.length,
+      };
+
       try {
-        const created = await createMembership({
-          name: input.name.trim(),
-          price: Math.round(input.price),
-          disciplinesCount: input.disciplineIds.length,
-        });
+        const created = await createMembership(payload);
 
         if (created) {
           setSyncMode("api+local");
@@ -71,6 +91,20 @@ export function useBranchMembershipCatalog(branchId: number | null) {
             createdAt: created.createdAt,
             updatedAt: created.updatedAt,
             disciplinesCount: created.disciplinesCount,
+            syncSource: "api",
+          });
+          return upsertMembershipPlan(branchId, syncedPlan);
+        }
+
+        const apiPlans = await getMemberships();
+        const matched = findCreatedMembershipRecord(apiPlans, payload);
+
+        if (matched) {
+          setSyncMode("api+local");
+          const syncedPlan = buildMembershipPlan(input, matched.idMembership, {
+            createdAt: matched.createdAt,
+            updatedAt: matched.updatedAt,
+            disciplinesCount: matched.disciplinesCount,
             syncSource: "api",
           });
           return upsertMembershipPlan(branchId, syncedPlan);

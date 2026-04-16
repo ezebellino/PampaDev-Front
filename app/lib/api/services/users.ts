@@ -52,5 +52,6 @@ export function updateUser(id: number, payload: UpdateUserPayload) {
 }
 
 export function changePassword(id: number, payload: ChangePasswordPayload) {
-  return apiPut<void>(`/api/Users/password/${id}`, payload);
+  return apiPut<void>(`/api/Users/changePassword/${id}`, payload);
 }
+

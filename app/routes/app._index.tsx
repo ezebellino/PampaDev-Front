@@ -18,16 +18,16 @@ type DashboardAction = {
 
 function ActionCard({ title, desc, to, cta, disabled }: DashboardAction) {
   const base =
-    "relative overflow-hidden rounded-3xl border bg-zinc-950/80 p-5 shadow-[0_20px_60px_rgba(2,6,23,0.28)] transition duration-200";
+    "relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/96 p-5 shadow-[0_24px_60px_-40px_rgba(69,70,77,0.18)] transition duration-200";
 
   if (disabled) {
     return (
-      <div className={`${base} border-zinc-800/90 opacity-65`}>
-        <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-white/5 to-transparent" />
+      <div className={`${base} opacity-70`}>
+        <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-stone-100 via-white to-transparent" />
         <div className="relative">
-          <div className="text-base font-semibold tracking-tight text-zinc-100">{title}</div>
-          <div className="mt-2 text-sm leading-6 text-zinc-400">{desc}</div>
-          <div className="mt-5 inline-flex rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-500">{cta}</div>
+          <div className="text-base font-semibold tracking-tight text-slate-900">{title}</div>
+          <div className="mt-2 text-sm leading-6 text-slate-600">{desc}</div>
+          <div className="mt-5 inline-flex rounded-xl border border-slate-200 bg-stone-50 px-4 py-2 text-sm text-slate-500">{cta}</div>
         </div>
       </div>
     );
@@ -36,13 +36,13 @@ function ActionCard({ title, desc, to, cta, disabled }: DashboardAction) {
   return (
     <Link
       to={to}
-      className={`${base} border-cyan-500/12 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-zinc-900/85`}
+      className={`${base} hover:-translate-y-1 hover:border-sky-200 hover:bg-[#fdfefe]`}
     >
-      <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-cyan-400/16 via-sky-400/10 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-sky-100 via-lime-50 to-transparent" />
       <div className="relative">
-        <div className="text-base font-semibold tracking-tight text-zinc-100">{title}</div>
-        <div className="mt-2 text-sm leading-6 text-zinc-400">{desc}</div>
-        <div className="mt-5 inline-flex rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200">
+        <div className="text-base font-semibold tracking-tight text-slate-900">{title}</div>
+        <div className="mt-2 text-sm leading-6 text-slate-600">{desc}</div>
+        <div className="mt-5 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800">
           {cta}
         </div>
       </div>
@@ -52,9 +52,9 @@ function ActionCard({ title, desc, to, cta, disabled }: DashboardAction) {
 
 function ContextBadge({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-zinc-800/90 bg-zinc-950/78 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-      <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
-      <div className="mt-1 text-sm font-medium text-zinc-200">{value}</div>
+    <div className="rounded-2xl border border-slate-200 bg-white/92 px-4 py-3 shadow-sm">
+      <div className="text-xs uppercase tracking-wider text-stone-500">{label}</div>
+      <div className="mt-1 text-sm font-medium text-slate-800">{value}</div>
     </div>
   );
 }
@@ -66,11 +66,11 @@ function DevMiniBars({ values }: { values: { label: string; value: number }[] })
     <div className="space-y-3">
       {values.map((item) => (
         <div key={item.label} className="space-y-1">
-          <div className="flex items-center justify-between text-xs text-zinc-500">
+          <div className="flex items-center justify-between text-xs text-stone-500">
             <span>{item.label}</span>
-            <span className="text-zinc-300">{item.value}</span>
+            <span className="text-slate-600">{item.value}</span>
           </div>
-          <div className="h-2 rounded-full bg-zinc-900">
+          <div className="h-2 rounded-full bg-stone-200">
             <div
               className="h-2 rounded-full bg-linear-to-r from-cyan-300 via-sky-300 to-blue-300"
               style={{ width: `${Math.max((item.value / max) * 100, item.value > 0 ? 12 : 0)}%` }}
@@ -132,31 +132,31 @@ export default function AppDashboard() {
       return [
         {
           title: "Empresas",
-          desc: "Creá la estructura empresarial base con ciudad, provincia y país para ordenar toda la plataforma.",
+          desc: "Creá la estructura empresarial base para ordenar toda la plataforma.",
           to: "/app/companies",
           cta: "Gestionar empresas",
         },
         {
           title: "Sucursales",
-          desc: "Vinculá nuevas sedes a una empresa activa y dejá la red operativa lista para administración.",
+          desc: "Vinculá nuevas sedes a una empresa activa y dejá la red lista para administrar.",
           to: "/app/branches",
           cta: "Gestionar sucursales",
         },
         {
           title: "Disciplinas",
-          desc: "Mantené el catálogo global que luego se adapta por sucursal como oferta operativa.",
+          desc: "Mantené el catálogo general que luego se adapta por sucursal.",
           to: "/app/disciplines",
           cta: "Abrir disciplinas",
         },
         {
-          title: "Solicitudes t?cnicas",
-          desc: "Entr? al inbox propio de Devs para aprobar o rechazar pedidos de rubros enviados por administraci?n.",
+          title: "Solicitudes técnicas",
+          desc: "Entrá al inbox propio de Devs para aprobar o rechazar pedidos de rubros enviados por administración.",
           to: "/app/dev/requests",
           cta: "Revisar solicitudes",
         },
         {
           title: "Dev Panel",
-          desc: "Revis? logs, m?tricas internas y se?ales ?tiles para el seguimiento t?cnico.",
+          desc: "Revisá logs, métricas internas y señales útiles para el seguimiento técnico.",
           to: "/app/dev",
           cta: "Abrir Dev Panel",
         },
@@ -167,13 +167,13 @@ export default function AppDashboard() {
       return [
         {
           title: "Panel Admin",
-          desc: "Entrá al workspace administrativo principal y seguí desde ahí.",
+          desc: "Entrá al panel administrativo principal y seguí desde ahí.",
           to: "/app/admin",
           cta: "Abrir admin",
         },
         {
           title: "Horarios base",
-          desc: "Definí la disponibilidad semanal para ordenar turnos y operación.",
+          desc: "Definí la disponibilidad semanal para ordenar turnos y atención.",
           to: "/app/admin/horarios",
           cta: needsBranch && !branchSelected ? "Elegí sucursal primero" : "Configurar horarios",
           disabled: needsBranch && !branchSelected,
@@ -187,7 +187,7 @@ export default function AppDashboard() {
         },
         {
           title: "Solicitudes",
-          desc: "Gestioná la empresa y las sucursales ya creadas, y canalizá pedidos estructurales hacia Devs.",
+          desc: "Gestioná solicitudes y pedidos importantes de la empresa.",
           to: "/app/admin/requests",
           cta: "Ver requests",
         },
@@ -198,13 +198,13 @@ export default function AppDashboard() {
       return [
         {
           title: "Panel Instructor",
-          desc: "Entrá a la agenda operativa y administrá la actividad de tu sucursal.",
+          desc: "Entrá a tu agenda y administrá la actividad de tu sucursal.",
           to: "/app/instructor",
           cta: "Abrir panel",
         },
         {
           title: "Rubros",
-          desc: "Consultá servicios disponibles y validá el contexto operativo de la sede.",
+          desc: "Consultá servicios disponibles de la sede activa.",
           to: "/app/rubros",
           cta: "Ver rubros",
         },
@@ -216,7 +216,7 @@ export default function AppDashboard() {
         },
         {
           title: "Mi perfil",
-          desc: "Revisá tus datos y dejá tu cuenta lista para operar.",
+          desc: "Revisá tus datos y dejá tu cuenta lista.",
           to: "/app/profile",
           cta: "Editar perfil",
         },
@@ -226,7 +226,7 @@ export default function AppDashboard() {
     return [
       {
         title: "Membresías",
-        desc: "Compará planes disponibles y consultá si esta sucursal ofrece clase particular.",
+        desc: "Compará planes disponibles y revisá si esta sucursal ofrece clase individual.",
         to: "/app/memberships",
         cta: "Ver planes",
       },
@@ -253,18 +253,18 @@ export default function AppDashboard() {
 
   return (
     <div className="space-y-7 lg:space-y-8">
-      <section className="relative overflow-hidden rounded-[2rem] border border-cyan-500/12 bg-linear-to-br from-slate-950 via-zinc-950 to-slate-900 p-6 shadow-[0_24px_80px_rgba(2,6,23,0.28)] md:p-8 lg:p-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.12),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.14),transparent)]" />
+      <section className="relative overflow-hidden rounded-[2rem] border border-slate-200/70 bg-[linear-gradient(135deg,rgba(239,244,255,0.94),rgba(255,255,255,0.98)_42%,rgba(236,253,245,0.9)_100%)] p-6 shadow-[0_28px_80px_-48px_rgba(69,70,77,0.2)] md:p-8 lg:p-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.14),transparent_26%),radial-gradient(circle_at_bottom_left,rgba(163,230,53,0.12),transparent_28%)]" />
 
         <div className="relative space-y-4">
-          <div className="text-xs uppercase tracking-[0.24em] text-cyan-200/55">Panel principal</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-sky-700/70">Panel principal</div>
 
-          <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl xl:text-[2rem]">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl xl:text-[2rem]">
             Bienvenido{user?.name ? `, ${user.name}` : ""}.
           </h1>
 
-          <p className="max-w-3xl text-sm text-zinc-300 md:text-base md:leading-7">
-            Este punto de entrada prioriza accesos reales según tu rol para que no tengas botones vacíos ni desvíos innecesarios.
+          <p className="max-w-3xl text-sm text-slate-600 md:text-base md:leading-7">
+            Este punto de entrada te muestra primero lo que más vas a usar según tu rol.
           </p>
         </div>
 
@@ -277,8 +277,8 @@ export default function AppDashboard() {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-zinc-100">Accesos rápidos</h2>
-          <p className="text-sm text-zinc-500">Solo acciones que hoy tienen destino útil dentro de la aplicación.</p>
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900">Accesos rápidos</h2>
+          <p className="text-sm text-stone-500">Solo acciones útiles para seguir dentro de la aplicación.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -289,22 +289,22 @@ export default function AppDashboard() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <Card className="overflow-hidden border-zinc-800/90 bg-zinc-950/78 shadow-[0_18px_48px_rgba(2,6,23,0.22)]">
+        <Card className="overflow-hidden border-slate-200 bg-white/96 shadow-[0_24px_60px_-42px_rgba(69,70,77,0.18)]">
           <div className="h-24 bg-linear-to-r from-cyan-400/16 via-sky-400/8 to-transparent" />
           <CardContent className="relative -mt-2 space-y-3 py-5">
-            <div className="text-sm font-semibold text-zinc-100">Estado del entorno</div>
-            <div className="space-y-2 text-sm text-zinc-400">
+            <div className="text-sm font-semibold text-slate-900">Resumen actual</div>
+            <div className="space-y-2 text-sm text-slate-600">
               <div className="flex items-center justify-between">
                 <span>Empresa seleccionada</span>
-                <span className="text-zinc-200">{companyId ?? "No"}</span>
+                <span className="text-slate-800">{companyId ?? "No"}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Sucursal seleccionada</span>
-                <span className="text-zinc-200">{branchId ?? "No"}</span>
+                <span className="text-slate-800">{branchId ?? "No"}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Panel prioritario</span>
-                <span className="text-zinc-200">
+                <span className="text-slate-800">
                   {isDev ? "Dev" : isAdmin ? "Admin" : isInstructor ? "Instructor" : "Usuario"}
                 </span>
               </div>
@@ -312,12 +312,12 @@ export default function AppDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border-zinc-800/90 bg-zinc-950/78 shadow-[0_18px_48px_rgba(2,6,23,0.22)]">
-          <div className={`h-24 bg-linear-to-r ${isDev ? "from-cyan-400/16 via-sky-400/8 to-transparent" : isAdmin ? "from-amber-400/16 via-orange-300/8 to-transparent" : "from-emerald-400/16 via-cyan-300/8 to-transparent"}`} />
+        <Card className="overflow-hidden border-slate-200 bg-white/96 shadow-[0_24px_60px_-42px_rgba(69,70,77,0.18)]">
+          <div className={`h-24 bg-linear-to-r ${isDev ? "from-cyan-400/16 via-sky-400/8 to-transparent" : isAdmin ? "from-amber-100 via-orange-50 to-transparent" : "from-emerald-100 via-sky-50 to-transparent"}`} />
           <CardContent className="relative -mt-2 space-y-4 py-5">
-            <div className="text-sm font-semibold text-zinc-100">
+            <div className="text-sm font-semibold text-slate-900">
               {isDev
-                ? "Resumen técnico"
+                ? "Resumen de actividad"
                 : isAdmin
                   ? "Siguiente paso admin"
                   : isInstructor
@@ -328,13 +328,13 @@ export default function AppDashboard() {
             {isDev ? (
               <>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                    <div className="text-xs uppercase tracking-wider text-zinc-500">Logs registrados</div>
-                    <div className="mt-2 text-2xl font-semibold text-zinc-100">{devMetrics.totalLogs}</div>
+                  <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+                    <div className="text-xs uppercase tracking-wider text-stone-500">Logs registrados</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{devMetrics.totalLogs}</div>
                   </div>
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
-                    <div className="text-xs uppercase tracking-wider text-zinc-500">Requests pendientes</div>
-                    <div className="mt-2 text-2xl font-semibold text-zinc-100">{devMetrics.pendingRequests}</div>
+                  <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+                    <div className="text-xs uppercase tracking-wider text-stone-500">Requests pendientes</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{devMetrics.pendingRequests}</div>
                   </div>
                 </div>
 
@@ -349,19 +349,19 @@ export default function AppDashboard() {
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Link
                     to="/app/dev/requests"
-                    className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                    className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
                   >
                     Resolver solicitudes
                   </Link>
                   <Link
                     to="/app/companies"
-                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-[#eff4ff]"
                   >
                     Crear empresas
                   </Link>
                   <Link
                     to="/app/branches"
-                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-[#eff4ff]"
                   >
                     Crear sucursales
                   </Link>
@@ -369,20 +369,20 @@ export default function AppDashboard() {
               </>
             ) : isAdmin ? (
               <>
-                <div className="text-sm leading-6 text-zinc-400">
-                  Tu recorrido principal hoy queda concentrado en administrar la empresa y las sucursales ya creadas: horarios, membresías, rubros y requests reales.
+                <div className="text-sm leading-6 text-slate-600">
+                  Tu recorrido principal hoy pasa por sucursales, horarios, planes y solicitudes.
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Link
                     to="/app/admin"
-                    className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                    className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
                   >
                     Ir al panel admin
                   </Link>
                   <Link
                     to="/app/branches"
-                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-[#eff4ff]"
                   >
                     Revisar sucursales
                   </Link>
@@ -390,20 +390,20 @@ export default function AppDashboard() {
               </>
             ) : isInstructor ? (
               <>
-                <div className="text-sm leading-6 text-zinc-400">
+                <div className="text-sm leading-6 text-slate-600">
                   La mejor entrada para vos es el panel instructor con agenda, solicitudes y referencia operativa por sucursal.
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Link
                     to="/app/instructor"
-                    className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                    className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
                   >
                     Abrir panel instructor
                   </Link>
                   <Link
                     to="/app/branches"
-                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-[#eff4ff]"
                   >
                     Cambiar sucursal
                   </Link>
@@ -411,21 +411,21 @@ export default function AppDashboard() {
               </>
             ) : (
               <>
-                <div className="text-sm leading-6 text-zinc-400">
-                  Revisá los planes disponibles para tu sucursal y después completá tu perfil para dejar tu cuenta lista.
+                <div className="text-sm leading-6 text-slate-600">
+                  Revisá los planes disponibles para tu sucursal y después completá tu perfil.
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Link
                     to="/app/memberships"
-                    className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                    className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
                   >
                     Ver membresías
                   </Link>
 
                   <Link
                     to="/app/profile"
-                    className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-[#eff4ff]"
                   >
                     Completar perfil
                   </Link>
@@ -438,5 +438,7 @@ export default function AppDashboard() {
     </div>
   );
 }
+
+
 
 

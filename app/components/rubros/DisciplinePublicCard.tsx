@@ -1,4 +1,5 @@
-﻿import { Link } from "react-router";
+import { useState } from "react";
+import { Link } from "react-router";
 import { useAuth } from "~/lib/auth/AuthContext";
 import { Card } from "../ui/Card";
 
@@ -14,55 +15,63 @@ type Props = {
 
 export default function DisciplinePublicCard({ discipline, imageUrl }: Props) {
   const { isAuthed } = useAuth();
+  const [imageFailed, setImageFailed] = useState(false);
 
   const primaryAction = isAuthed
     ? {
         to: "/app/rubros",
-        label: "Ir al panel para reservar",
+        label: "Ver oferta disponible",
       }
     : {
         to: "/login",
-        label: "Ingresar para reservar",
+        label: "Ingresar para empezar",
       };
 
   return (
-    <Card className="group overflow-hidden rounded-[1.75rem] border-zinc-800 bg-zinc-950/75 transition duration-300 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/70">
+    <Card className="group overflow-hidden rounded-[1.9rem] border border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)] transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:bg-white">
       <div className="relative h-48 overflow-hidden sm:h-52">
-        <img
-          src={imageUrl}
-          alt={discipline.name}
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
-
-        <div className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-xs text-zinc-200 backdrop-blur">
-          Disciplina #{discipline.idDiscipline}
-        </div>
+        {imageFailed ? (
+          <div className="flex h-full w-full items-end bg-[linear-gradient(135deg,rgba(224,242,254,0.95),rgba(255,255,255,1)_58%,rgba(236,253,245,0.8))] p-5">
+            <div className="rounded-full border border-white/90 bg-white/92 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+              {discipline.name}
+            </div>
+          </div>
+        ) : (
+          <>
+            <img
+              src={imageUrl}
+              alt={discipline.name}
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              loading="lazy"
+              onError={() => setImageFailed(true)}
+            />
+            <div className="absolute inset-0 bg-linear-to-t from-white/12 via-transparent to-transparent" />
+          </>
+        )}
       </div>
 
       <div className="p-5">
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold tracking-tight text-zinc-100">{discipline.name}</h3>
+          <h3 className="text-lg font-semibold tracking-tight text-slate-900">{discipline.name}</h3>
 
-          <p className="text-sm leading-relaxed text-zinc-400">
-            Una disciplina base que después puede publicarse como rubro operativo en una o varias sucursales.
+          <p className="text-sm leading-relaxed text-slate-600">
+            Conocé esta actividad y descubrí si es la indicada para tu próxima reserva.
           </p>
         </div>
 
         <div className="mt-5 flex flex-col gap-2 sm:flex-row">
           <Link
             to={primaryAction.to}
-            className="inline-flex items-center justify-center rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-white"
+            className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
           >
             {primaryAction.label}
           </Link>
 
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 transition hover:bg-zinc-900"
+            className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-[#eff4ff]"
           >
-            Volver al inicio
+            Inicio
           </Link>
         </div>
       </div>

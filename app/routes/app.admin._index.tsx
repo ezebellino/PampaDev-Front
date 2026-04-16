@@ -1,6 +1,5 @@
-﻿import { Link } from "react-router";
+import { Link } from "react-router";
 import { useAuth } from "../lib/auth/AuthContext";
-import { ROLES } from "../lib/auth/roles";
 import { Card, CardContent } from "../components/ui/Card";
 import { useBranch } from "../lib/branches/BranchContext";
 import { useCompany } from "../lib/companies/CompanyContext";
@@ -11,7 +10,7 @@ function AdminTile({
   desc,
   to,
   disabled,
-  accent = "from-cyan-400/14 via-sky-400/10 to-transparent",
+  accent = "from-sky-100 via-lime-50 to-transparent",
 }: {
   title: string;
   desc: string;
@@ -20,7 +19,7 @@ function AdminTile({
   accent?: string;
 }) {
   const base =
-    "relative overflow-hidden rounded-3xl border bg-zinc-950/80 p-5 shadow-[0_20px_60px_rgba(2,6,23,0.28)] transition duration-200";
+    "relative overflow-hidden rounded-3xl border border-stone-200 bg-white/96 p-5 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)] transition duration-200";
 
   return (
     <Link
@@ -28,16 +27,18 @@ function AdminTile({
       onClick={(event) => disabled && event.preventDefault()}
       className={[
         base,
-        disabled
-          ? "cursor-not-allowed border-zinc-800 opacity-60"
-          : "border-cyan-500/12 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-zinc-900/85",
+        disabled ? "cursor-not-allowed opacity-60" : "hover:-translate-y-0.5 hover:border-sky-200 hover:bg-white",
       ].join(" ")}
     >
-      <div className={`absolute inset-x-0 top-0 h-24 bg-linear-to-r ${accent}`} />
-      <div className="relative">
-        <div className="text-base font-semibold tracking-tight text-zinc-100">{title}</div>
-        <div className="mt-2 text-sm leading-6 text-zinc-400">{desc}</div>
-        <div className="mt-5 inline-flex rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200">Abrir</div>
+      <div className={`absolute inset-x-0 top-0 h-20 bg-linear-to-r ${accent}`} />
+      <div className="relative space-y-4">
+        <div>
+          <div className="text-lg font-semibold tracking-tight text-slate-900">{title}</div>
+          <div className="mt-2 text-sm leading-6 text-slate-600">{desc}</div>
+        </div>
+        <div className="inline-flex rounded-2xl border border-stone-200 bg-stone-50 px-4 py-2 text-sm font-medium text-slate-700">
+          Abrir
+        </div>
       </div>
     </Link>
   );
@@ -45,9 +46,9 @@ function AdminTile({
 
 function ContextCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-zinc-800/90 bg-zinc-950/78 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-      <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
-      <div className="mt-1 text-sm font-medium text-zinc-200">{value}</div>
+    <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3 shadow-sm">
+      <div className="text-xs uppercase tracking-wider text-stone-500">{label}</div>
+      <div className="mt-2 text-sm font-medium text-slate-900">{value}</div>
     </div>
   );
 }
@@ -64,101 +65,103 @@ export default function AdminIndex() {
 
   return (
     <div className="space-y-7 lg:space-y-8">
-      <section className="relative overflow-hidden rounded-[2rem] border border-cyan-500/12 bg-linear-to-br from-slate-950 via-zinc-950 to-slate-900 p-6 shadow-[0_24px_80px_rgba(2,6,23,0.28)] md:p-8 lg:p-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.12),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.14),transparent)]" />
-        <div className="relative space-y-4">
-          <div className="text-xs uppercase tracking-[0.24em] text-cyan-200/55">Módulo administrador</div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl xl:text-[2rem]">Panel Admin</h1>
-          <p className="max-w-3xl text-sm text-zinc-300 md:text-base md:leading-7">
-            Priorizamos primero lo operativo: sucursal activa, solicitudes pendientes y accesos directos a horarios, membresías y pedidos de catálogo.
-          </p>
-        </div>
+      <section className="overflow-hidden rounded-[2rem] border border-stone-200 bg-white/96 shadow-[0_24px_70px_-44px_rgba(69,70,77,0.18)]">
+        <div className="h-28 bg-[radial-gradient(circle_at_top_right,rgba(125,211,252,0.24),transparent_26%),linear-gradient(90deg,rgba(239,246,255,0.98),rgba(247,250,255,0.98))]" />
+        <div className="space-y-5 px-6 pb-6 pt-4 md:px-8 md:pb-8">
+          <div className="space-y-3">
+            <div className="text-xs uppercase tracking-[0.24em] text-sky-700">Módulo administrador</div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">Panel admin</h1>
+            <p className="max-w-3xl text-sm leading-6 text-slate-600 md:text-base">
+              Priorizamos primero lo operativo: sucursal activa, solicitudes pendientes y accesos directos a horarios,
+              membresías y pedidos de catálogo.
+            </p>
+          </div>
 
-        <div className="relative mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <ContextCard label="Empresa activa" value={companyId ?? "Sin seleccionar"} />
-          <ContextCard label="Sucursal activa" value={branchId ?? "Sin seleccionar"} />
-          <ContextCard label="Solicitudes pendientes" value={pendingRequests} />
-          <ContextCard label="Solicitudes resueltas" value={reviewedRequests} />
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <ContextCard label="Empresa activa" value={companyId ?? "Sin seleccionar"} />
+            <ContextCard label="Sucursal activa" value={branchId ?? "Sin seleccionar"} />
+            <ContextCard label="Solicitudes pendientes" value={pendingRequests} />
+            <ContextCard label="Solicitudes resueltas" value={reviewedRequests} />
+          </div>
         </div>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <Card className="border-zinc-800 bg-zinc-950/78">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardContent className="space-y-4 py-6">
             <div>
-              <div className="text-sm font-semibold text-zinc-100">Lo importante para administrar hoy</div>
-              <div className="mt-1 text-sm leading-6 text-zinc-400">
-                Todo lo crítico del rol quedó a un click: disponibilidad semanal, oferta comercial y solicitudes a Devs.
+              <div className="text-sm font-semibold text-slate-900">Lo importante para administrar hoy</div>
+              <div className="mt-1 text-sm leading-6 text-slate-600">
+                Todo lo crítico del rol quedó a un clic: disponibilidad semanal, oferta comercial y solicitudes.
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
               <AdminTile
-                title="Horarios base"
+                title="Horarios"
                 desc={
                   needBranch
-                    ? "Elegí una sucursal activa para configurar disponibilidad semanal."
+                    ? "Elegí una sucursal activa para configurar la disponibilidad semanal."
                     : "Definí la disponibilidad semanal de la sucursal y ordená la operación."
                 }
                 to="/app/admin/horarios"
                 disabled={needBranch}
-                accent="from-cyan-400/16 via-sky-400/10 to-transparent"
               />
               <AdminTile
                 title="Membresías"
                 desc={
                   needBranch
-                    ? "Seleccioná una sucursal para definir planes, beneficios y clase particular."
-                    : "Armá la oferta comercial de la sede con planes recurrentes y clase particular."
+                    ? "Seleccioná una sucursal para definir planes, beneficios y clase individual."
+                    : "Armá la oferta comercial de la sede con planes recurrentes y clase individual."
                 }
                 to="/app/admin/memberships"
                 disabled={needBranch}
-                accent="from-emerald-400/16 via-cyan-300/10 to-transparent"
+                accent="from-emerald-100 via-cyan-50 to-transparent"
               />
               <AdminTile
-                title="Solicitudes de rubros"
+                title="Solicitudes"
                 desc={
                   pendingRequests > 0
-                    ? `Tenés ${pendingRequests} solicitud${pendingRequests === 1 ? "" : "es"} pendiente${pendingRequests === 1 ? "" : "s"} para revisar o seguir con Devs.`
-                    : "Creá solicitudes para nuevos rubros y seguí su estado con Devs."
+                    ? `Tenés ${pendingRequests} solicitud${pendingRequests === 1 ? "" : "es"} pendiente${pendingRequests === 1 ? "" : "s"} para revisar.`
+                    : "Creá solicitudes para nuevos rubros y seguí su estado desde una sola bandeja."
                 }
                 to="/app/admin/requests"
-                accent="from-amber-400/16 via-orange-300/10 to-transparent"
+                accent="from-amber-100 via-orange-50 to-transparent"
               />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border-zinc-800/90 bg-zinc-950/78 shadow-[0_18px_48px_rgba(2,6,23,0.22)]">
-          <div className="h-24 bg-linear-to-r from-amber-400/16 via-orange-300/8 to-transparent" />
+        <Card className="overflow-hidden border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
+          <div className="h-24 bg-linear-to-r from-amber-100 via-lime-50 to-transparent" />
           <CardContent className="relative -mt-2 space-y-3 py-5">
-            <div className="text-sm font-semibold text-zinc-100">Siguiente paso recomendado</div>
-            <div className="text-sm leading-6 text-zinc-400">
+            <div className="text-sm font-semibold text-slate-900">Siguiente paso recomendado</div>
+            <div className="text-sm leading-6 text-slate-600">
               {needBranch
-                ? "Antes de tocar horarios o membresías, elegí una sucursal activa para trabajar con el contexto correcto."
+                ? "Antes de tocar horarios o membresías, eleg? una sucursal activa para trabajar con el contexto correcto."
                 : pendingRequests > 0
-                  ? "Hoy lo más urgente es revisar la bandeja de solicitudes, así evitás que queden pedidos frenados para Devs."
-                  : "Con la sucursal activa ya lista, podés seguir por horarios base o por la oferta comercial según lo que necesite la sede."}
+                  ? "Hoy conviene revisar la bandeja de solicitudes para que no queden pedidos frenados."
+                  : "Con la sucursal activa ya lista, seguí por horarios o por la oferta comercial según lo que necesite la sede."}
             </div>
 
             <div className="flex flex-wrap gap-2 pt-2">
               <Link
                 to={needBranch ? "/app/branches" : pendingRequests > 0 ? "/app/admin/requests" : "/app/admin/horarios"}
-                className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                className="rounded-2xl bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-500"
               >
                 {needBranch ? "Elegir sucursal" : pendingRequests > 0 ? "Revisar solicitudes" : "Configurar horarios"}
               </Link>
 
               <Link
                 to="/app/admin/memberships"
-                className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-2 text-sm text-slate-700 transition hover:bg-white"
               >
                 Gestionar membresías
               </Link>
 
               <Link
                 to="/app/rubros"
-                className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900"
+                className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-2 text-sm text-slate-700 transition hover:bg-white"
               >
                 Ver rubros activos
               </Link>

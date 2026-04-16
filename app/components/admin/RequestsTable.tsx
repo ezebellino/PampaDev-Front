@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { Badge } from "~/components/ui/Badge";
 import { Button } from "~/components/ui/Button";
@@ -38,52 +38,32 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
   }, [requests]);
 
   const metricCards = [
-    {
-      label: "Solicitudes",
-      value: counts.total,
-      helper: "Total registradas",
-      accent: "from-cyan-400/18 via-cyan-400/6 to-transparent",
-    },
-    {
-      label: "Pendientes",
-      value: counts.pending,
-      helper: "Esperando revision",
-      accent: "from-amber-300/18 via-amber-300/6 to-transparent",
-    },
-    {
-      label: "Aprobadas",
-      value: counts.approved,
-      helper: "Listas para el catalogo base",
-      accent: "from-emerald-400/18 via-emerald-400/6 to-transparent",
-    },
-    {
-      label: "Rechazadas",
-      value: counts.rejected,
-      helper: "Necesitan ajuste",
-      accent: "from-rose-400/18 via-rose-400/6 to-transparent",
-    },
+    { label: "Solicitudes", value: counts.total, helper: "Total registradas", accent: "from-sky-100 via-sky-50 to-transparent" },
+    { label: "Pendientes", value: counts.pending, helper: "Esperando revisión", accent: "from-amber-100 via-amber-50 to-transparent" },
+    { label: "Aprobadas", value: counts.approved, helper: "Listas para el catálogo base", accent: "from-emerald-100 via-emerald-50 to-transparent" },
+    { label: "Rechazadas", value: counts.rejected, helper: "Necesitan ajuste", accent: "from-rose-100 via-rose-50 to-transparent" },
   ] as const;
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metricCards.map((card) => (
-          <article key={card.label} className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/75 p-5">
+          <article key={card.label} className="relative overflow-hidden rounded-3xl border border-stone-200 bg-white/95 p-5 shadow-[0_18px_40px_-34px_rgba(69,70,77,0.18)]">
             <div className={`absolute inset-x-0 top-0 h-20 bg-linear-to-r ${card.accent}`} />
             <div className="relative">
-              <div className="text-xs uppercase tracking-widest text-zinc-500">{card.label}</div>
-              <div className="mt-3 text-3xl font-semibold text-zinc-100">{card.value}</div>
-              <div className="mt-2 text-sm text-zinc-400">{card.helper}</div>
+              <div className="text-xs uppercase tracking-widest text-stone-500">{card.label}</div>
+              <div className="mt-3 text-3xl font-semibold text-slate-900">{card.value}</div>
+              <div className="mt-2 text-sm text-slate-500">{card.helper}</div>
             </div>
           </article>
         ))}
       </div>
 
-      <Card className="overflow-hidden border-zinc-800 bg-zinc-950/75">
+      <Card className="overflow-hidden border-stone-200 bg-white/95 shadow-[0_18px_40px_-34px_rgba(69,70,77,0.18)]">
         <CardHeader>
           <CardTitle>Listado de solicitudes</CardTitle>
           <CardDescription>
-            Busca, abre el detalle y sigue el estado de cada propuesta enviada para ampliar o ajustar el catalogo.
+            Buscá, abrí el detalle y seguí el estado de cada propuesta enviada para ampliar o ajustar el catálogo.
           </CardDescription>
         </CardHeader>
 
@@ -93,7 +73,7 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Buscar por nombre, estado, notas o solicitante..."
-              className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600 sm:w-96"
+              className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-sky-300 focus:bg-white sm:w-96"
             />
 
             {canCreate ? (
@@ -104,7 +84,7 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
           </div>
 
           {filtered.length === 0 ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-5 text-sm text-zinc-400">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-5 text-sm text-slate-500">
               No encontramos solicitudes con ese criterio.
             </div>
           ) : (
@@ -112,46 +92,36 @@ export default function RequestsTable({ requests, onSelect, canCreate = false }:
               {filtered.map((request) => (
                 <article
                   key={request.id}
-                  className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/85 p-4 transition hover:border-zinc-700 hover:bg-zinc-900/75"
+                  className="relative overflow-hidden rounded-3xl border border-stone-200 bg-white/96 p-4 shadow-sm transition hover:border-sky-200 hover:bg-white"
                 >
-                  <div className="absolute inset-x-0 top-0 h-16 bg-linear-to-r from-white/5 to-transparent" />
+                  <div className="absolute inset-x-0 top-0 h-16 bg-linear-to-r from-sky-50 to-transparent" />
                   <div className="relative flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <div className="break-words text-base font-semibold text-zinc-100">{request.title}</div>
+                        <div className="break-words text-base font-semibold text-slate-900">{request.title}</div>
                         <Badge tone={statusTone(request.status)} className="shrink-0">
                           {statusLabel(request.status)}
                         </Badge>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500">
                         <span>{formatRequestDate(request.createdAt)}</span>
                         <span>{request.requestedBy}</span>
                         <span>{request.requestedByRole}</span>
                       </div>
 
-                      {request.description ? (
-                        <div className="break-words text-sm leading-6 text-zinc-300">{request.description}</div>
-                      ) : null}
-
-                      {request.exampleServices ? (
-                        <div className="break-words text-xs text-zinc-400">Servicios sugeridos: {request.exampleServices}</div>
-                      ) : null}
-
-                      {request.notes ? (
-                        <div className="break-words text-xs text-zinc-500">Notas: {request.notes}</div>
-                      ) : null}
+                      {request.description ? <div className="break-words text-sm leading-6 text-slate-700">{request.description}</div> : null}
+                      {request.exampleServices ? <div className="break-words text-xs text-slate-500">Servicios sugeridos: {request.exampleServices}</div> : null}
+                      {request.notes ? <div className="break-words text-xs text-stone-500">Notas: {request.notes}</div> : null}
 
                       {request.devNotes ? (
-                        <div className="break-words rounded-xl border border-zinc-800 bg-zinc-900/55 px-3 py-2 text-xs text-zinc-300">
-                          Feedback interno: {request.devNotes}
+                        <div className="break-words rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-slate-700">
+                          Observación interna: {request.devNotes}
                         </div>
                       ) : null}
 
                       {request.reviewedBy && request.reviewedAt ? (
-                        <div className="text-xs text-zinc-600">
-                          Revisado por {request.reviewedBy} · {formatRequestDate(request.reviewedAt)}
-                        </div>
+                        <div className="text-xs text-stone-500">Revisado por {request.reviewedBy} ? {formatRequestDate(request.reviewedAt)}</div>
                       ) : null}
                     </div>
 

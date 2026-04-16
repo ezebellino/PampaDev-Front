@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "~/components/ui/Button";
 
 export type DisciplineFormData = {
@@ -33,14 +33,14 @@ export default function DisciplineForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-[1.25rem] border border-zinc-800 bg-zinc-900/45 px-4 py-4">
+      <div className="rounded-[1.25rem] border border-stone-200 bg-stone-50 px-4 py-4">
         <div className="space-y-2">
-          <label className="text-sm text-zinc-300">Nombre de la disciplina</label>
+          <label className="text-sm text-slate-700">Nombre de la disciplina</label>
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600"
-            placeholder="Ej: Pádel, Boxeo, Natación…"
+            className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-300"
+            placeholder="Ej: P?del, Boxeo, Nataci?n..."
           />
         </div>
       </div>
@@ -52,7 +52,7 @@ export default function DisciplineForm({
           </Button>
         ) : null}
         <Button type="submit" disabled={loading || !name.trim()}>
-          {loading ? "Guardando…" : submitLabel}
+          {loading ? "Guardando..." : submitLabel}
         </Button>
       </div>
     </form>

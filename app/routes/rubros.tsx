@@ -21,19 +21,12 @@ const DISCIPLINE_IMAGES: Record<string, string> = {
 };
 
 function normalizeDisciplineKey(name: string) {
-  return name
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+  return name.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
 
 function pickImage(name: string) {
   const key = normalizeDisciplineKey(name);
-  return (
-    DISCIPLINE_IMAGES[key] ??
-    "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=60"
-  );
+  return DISCIPLINE_IMAGES[key] ?? "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=60";
 }
 
 export default function PublicRubros() {
@@ -45,31 +38,23 @@ export default function PublicRubros() {
   }, [data]);
 
   return (
-    <main className="relative flex min-h-screen flex-col overflow-hidden bg-zinc-950 text-zinc-100">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.04),transparent_30%),linear-gradient(180deg,rgba(24,24,27,0.18),rgba(9,9,11,0.92))]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[linear-gradient(to_bottom,rgba(56,189,248,0.08),transparent)]" />
-
+    <main className="relative flex min-h-screen flex-col overflow-hidden bg-[#f8f9ff] text-slate-900">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.14),transparent_24%),radial-gradient(circle_at_top_right,rgba(163,230,53,0.10),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,244,236,0.92)_55%,rgba(239,246,245,0.96))]" />
       <div className="relative flex-1">
         <div className="mx-auto max-w-6xl px-4 py-10 md:px-6 md:py-14">
-          <section className="relative overflow-hidden rounded-[2rem] border border-zinc-800/80 bg-zinc-950/70 px-6 py-7 shadow-[0_30px_80px_rgba(0,0,0,0.35)] backdrop-blur md:px-10 md:py-10">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.14),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(245,158,11,0.14),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.02),transparent_55%)]" />
+          <section className="relative overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/92 px-6 py-7 shadow-[0_30px_80px_-48px_rgba(69,70,77,0.22)] backdrop-blur md:px-10 md:py-10">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(163,230,53,0.10),transparent_24%),linear-gradient(135deg,rgba(239,244,255,0.85),transparent_55%)]" />
             <div className="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div className="max-w-3xl space-y-4">
-                <p className="inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-zinc-900/80 px-3 py-1 text-xs font-medium text-zinc-200">
-                  Catalogo MultiRubro
-                </p>
-                <h1 className="text-3xl font-semibold tracking-tight text-white md:text-5xl md:leading-tight">
-                  Explora disciplinas que despues pueden convertirse en oferta real por sucursal.
+                <p className="inline-flex rounded-full border border-sky-200 bg-[#eff4ff] px-3 py-1 text-xs font-medium text-sky-700">Actividades disponibles</p>
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 md:text-5xl md:leading-tight">
+                  Explorá actividades para después elegir la oferta real de tu sucursal.
                 </h1>
-                <p className="max-w-2xl text-sm leading-7 text-zinc-300 md:text-lg md:leading-8">
-                  Ac? ves el cat?logo base. Cada sucursal decide c?mo publicar cada disciplina.
+                <p className="max-w-2xl text-sm leading-7 text-slate-600 md:text-lg md:leading-8">
+                  Acá ves las disciplinas disponibles. Después, según la sucursal activa, vas a poder consultar horarios, planes y reservas.
                 </p>
               </div>
-
-              <Link
-                to="/"
-                className="inline-flex items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-900/80 px-5 py-3 text-sm font-medium text-zinc-100 transition hover:-translate-y-0.5 hover:border-zinc-500 hover:bg-zinc-900"
-              >
+              <Link to="/" className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-[#eff4ff]">
                 Volver al inicio
               </Link>
             </div>
@@ -82,8 +67,8 @@ export default function PublicRubros() {
               ))}
             </section>
           ) : items.length === 0 ? (
-            <div className="mt-8 rounded-[1.5rem] border border-zinc-800 bg-zinc-950/75 px-5 py-6 text-sm text-zinc-400">
-              Todavia no hay disciplinas publicadas.
+            <div className="mt-8 rounded-[1.5rem] border border-slate-200 bg-white/92 px-5 py-6 text-sm text-slate-600">
+              Todavía no hay disciplinas publicadas.
             </div>
           ) : (
             <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -94,7 +79,6 @@ export default function PublicRubros() {
           )}
         </div>
       </div>
-
       <div className="relative">
         <Footer />
       </div>

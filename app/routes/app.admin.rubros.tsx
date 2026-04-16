@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router";
+import { Link } from "react-router";
 import { useAuth } from "../lib/auth/AuthContext";
 import { ROLES } from "../lib/auth/roles";
 import { Badge } from "../components/ui/Badge";
@@ -16,17 +16,17 @@ export default function AdminRubrosPage() {
 
   const managementActions = [
     {
-      title: "Catalogo por sucursal",
+      title: "Catálogo por sucursal",
       description:
-        "Revisa que disciplinas se publican como rubros operativos, ajusta precio base y mantiene una configuracion consistente por sede.",
+        "Revisá qué disciplinas se publican como rubros operativos, ajustá precio base y mantené una configuración consistente por sede.",
       to: "/app/rubros",
-      cta: "Abrir catalogo operativo",
+      cta: "Abrir catálogo operativo",
     },
     !isDev
       ? {
           title: "Nueva solicitud",
           description:
-            "Canaliza pedidos para incorporar nuevas disciplinas al catalogo base o actualizar las existentes sin perder trazabilidad.",
+            "Canalizá pedidos para incorporar nuevas disciplinas al catálogo base o actualizar las existentes sin perder trazabilidad.",
           to: "/app/admin/requests/new",
           cta: "Crear solicitud",
         }
@@ -34,8 +34,8 @@ export default function AdminRubrosPage() {
     {
       title: "Bandeja administrativa",
       description: isDev
-        ? "Seguimiento centralizado de todas las solicitudes enviadas por administracion."
-        : "Seguimiento centralizado de las solicitudes enviadas y sus proximos pasos.",
+        ? "Seguimiento centralizado de todas las solicitudes enviadas por administración."
+        : "Seguimiento centralizado de las solicitudes enviadas y sus próximos pasos.",
       to: "/app/admin/requests",
       cta: "Ver solicitudes",
     },
@@ -44,58 +44,59 @@ export default function AdminRubrosPage() {
   return (
     <div className="space-y-6">
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
-        <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
-          <div className="h-24 bg-linear-to-r from-amber-500/15 via-cyan-500/10 to-transparent" />
+        <Card className="overflow-hidden border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
+          <div className="h-24 bg-linear-to-r from-amber-100 via-sky-50 to-transparent" />
           <CardHeader className="relative -mt-6 space-y-4">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="border-zinc-700 bg-zinc-900/80 text-zinc-200">Rubros</Badge>
-              <Badge className="border-zinc-800 bg-zinc-950/70 text-zinc-400">
+              <Badge tone="neutral">Rubros</Badge>
+              <Badge tone={hasBranch ? "success" : "warning"}>
                 {hasBranch ? "Sucursal activa" : "Falta seleccionar sucursal"}
               </Badge>
             </div>
             <div>
-              <CardTitle className="text-2xl tracking-tight text-zinc-100 md:text-3xl">
-                Catalogo operativo por sucursal
+              <CardTitle className="text-2xl tracking-tight text-slate-900 md:text-3xl">
+                Catálogo operativo por sucursal
               </CardTitle>
-              <CardDescription className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 md:text-base">
-                En este modulo administras como una disciplina base se transforma en oferta real dentro de una sede. El trabajo no es crear disciplinas nuevas, sino publicarlas con reglas claras por sucursal.
+              <CardDescription className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 md:text-base">
+                En este módulo administrás cómo una disciplina base se transforma en oferta real dentro de una sede.
+                El trabajo no es crear disciplinas nuevas, sino publicarlas con reglas claras por sucursal.
               </CardDescription>
             </div>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/65 px-4 py-4">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Empresa</div>
-              <div className="mt-2 text-base font-semibold text-zinc-100">{companyId ?? "Sin seleccionar"}</div>
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Empresa</div>
+              <div className="mt-2 text-base font-semibold text-slate-900">{companyId ?? "Sin seleccionar"}</div>
             </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/65 px-4 py-4">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Sucursal</div>
-              <div className="mt-2 text-base font-semibold text-zinc-100">{branchId ?? "Pendiente"}</div>
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Sucursal</div>
+              <div className="mt-2 text-base font-semibold text-slate-900">{branchId ?? "Pendiente"}</div>
             </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/65 px-4 py-4 sm:col-span-2 xl:col-span-1">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Estado</div>
-              <div className="mt-2 text-base font-semibold text-zinc-100">
-                {hasBranch ? "Listo para configurar" : "Elige una sucursal para continuar"}
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 sm:col-span-2 xl:col-span-1">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Estado</div>
+              <div className="mt-2 text-base font-semibold text-slate-900">
+                {hasBranch ? "Listo para configurar" : "Elegí una sucursal para continuar"}
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardHeader>
-            <CardTitle>Lectura rapida del flujo</CardTitle>
+            <CardTitle>Cómo funciona este flujo</CardTitle>
             <CardDescription>
-              Dejamos mucho mas clara la diferencia entre disciplina base, rubro operativo y solicitud administrativa.
+              La diferencia entre disciplina base, rubro operativo y solicitud queda clara en una sola lectura.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-zinc-400">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-              1. Disciplinas define el catalogo base de la plataforma.
+          <CardContent className="space-y-3 text-sm text-slate-600">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+              1. Disciplinas define el catálogo base de la plataforma.
             </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
               2. Rubros publica esa disciplina dentro de una sucursal concreta.
             </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-              3. Requests sirve para pedir altas o cambios cuando la base todavia no alcanza.
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+              3. Solicitudes sirve para pedir altas o cambios cuando la base todavía no alcanza.
             </div>
           </CardContent>
         </Card>
@@ -103,10 +104,13 @@ export default function AdminRubrosPage() {
 
       <section className={`grid gap-4 ${managementActions.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
         {managementActions.map((action) => (
-          <Card key={action.title} className="border-zinc-800 bg-zinc-950/80 transition hover:border-zinc-700 hover:bg-zinc-900/70">
+          <Card
+            key={action.title}
+            className="border-stone-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)] transition hover:border-sky-200 hover:bg-white"
+          >
             <CardHeader>
-              <CardTitle className="text-lg text-zinc-100">{action.title}</CardTitle>
-              <CardDescription className="text-sm leading-6 text-zinc-400">{action.description}</CardDescription>
+              <CardTitle className="text-lg text-slate-900">{action.title}</CardTitle>
+              <CardDescription className="text-sm leading-6 text-slate-600">{action.description}</CardDescription>
             </CardHeader>
             <CardContent>
               <Link to={action.to} className="block">
@@ -119,31 +123,6 @@ export default function AdminRubrosPage() {
         ))}
       </section>
 
-      <Card className="border-zinc-800 bg-zinc-950/80">
-        <CardHeader>
-          <CardTitle>Recomendacion operativa</CardTitle>
-          <CardDescription>
-            Para evitar duplicaciones y confusion, la ampliacion del catalogo base deberia pasar por solicitud y despues publicarse por sucursal solo cuando este validada.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
-          <p className="max-w-2xl leading-6">
-            {isDev
-              ? "Desde aqui puedes revisar el catalogo por sucursal y controlar la bandeja completa de solicitudes enviadas por administracion."
-              : "Si necesitas habilitar un nuevo rubro, primero registra la solicitud. Despues revisa el catalogo por sucursal y ajusta precio, duracion y visibilidad desde el flujo operativo principal."}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {!isDev ? (
-              <Link to="/app/admin/requests/new">
-                <Button variant="primary">Solicitar nueva disciplina</Button>
-              </Link>
-            ) : null}
-            <Link to="/app/rubros">
-              <Button variant="ghost">Ir a catalogo por sucursal</Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

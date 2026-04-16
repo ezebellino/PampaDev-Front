@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "~/components/ui/Badge";
 import { Button } from "~/components/ui/Button";
 import { Modal } from "~/components/ui/Modal";
@@ -36,62 +36,40 @@ export default function RequestDetailModal({
       <div className="space-y-5">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={statusTone(request.status)}>{statusLabel(request.status)}</Badge>
-          <span className="text-xs text-zinc-500">{formatRequestDate(request.createdAt)}</span>
+          <span className="text-xs text-stone-500">{formatRequestDate(request.createdAt)}</span>
         </div>
 
-        <div className="grid gap-3 rounded-3xl border border-zinc-800 bg-zinc-900/45 px-4 py-4 text-sm text-zinc-300">
-          <div>
-            <span className="text-zinc-500">Solicito:</span> {request.requestedBy}
-          </div>
-          <div>
-            <span className="text-zinc-500">Rol:</span> {request.requestedByRole}
-          </div>
-          {request.description ? (
-            <div>
-              <span className="text-zinc-500">Descripcion:</span> {request.description}
-            </div>
-          ) : null}
-          {request.exampleServices ? (
-            <div>
-              <span className="text-zinc-500">Servicios sugeridos:</span> {request.exampleServices}
-            </div>
-          ) : null}
-          {request.notes ? (
-            <div>
-              <span className="text-zinc-500">Notas de contexto:</span> {request.notes}
-            </div>
-          ) : null}
+        <div className="grid gap-3 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-4 text-sm text-slate-700">
+          <div><span className="text-stone-500">Solicitó:</span> {request.requestedBy}</div>
+          <div><span className="text-stone-500">Rol:</span> {request.requestedByRole}</div>
+          {request.description ? <div><span className="text-stone-500">Descripción:</span> {request.description}</div> : null}
+          {request.exampleServices ? <div><span className="text-stone-500">Servicios sugeridos:</span> {request.exampleServices}</div> : null}
+          {request.notes ? <div><span className="text-stone-500">Notas de contexto:</span> {request.notes}</div> : null}
           {request.reviewedBy && request.reviewedAt ? (
-            <div>
-              <span className="text-zinc-500">Ultima revision:</span> {request.reviewedBy} · {formatRequestDate(request.reviewedAt)}
-            </div>
+            <div><span className="text-stone-500">Última revisión:</span> {request.reviewedBy} · {formatRequestDate(request.reviewedAt)}</div>
           ) : null}
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm text-zinc-300">Feedback de Devs</label>
+          <label className="text-sm text-slate-700">Observación del equipo</label>
           <textarea
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             disabled={!canReview}
-            className="min-h-32 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none focus:border-zinc-600 disabled:cursor-default disabled:opacity-80"
+            className="min-h-32 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-sky-300 focus:bg-white disabled:cursor-default disabled:bg-stone-100 disabled:text-stone-500 disabled:opacity-100"
             placeholder={
               canReview
-                ? "Deja una observacion para aprobar o rechazar la solicitud"
-                : "El feedback interno aparecera aqui cuando Devs revise la solicitud"
+                ? "Dejá una observación para aprobar o rechazar la solicitud"
+                : "La observación interna aparecerá acá cuando el equipo revise la solicitud"
             }
           />
         </div>
 
         <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>
-            Cerrar
-          </Button>
+          <Button variant="secondary" onClick={onClose}>Cerrar</Button>
           {canAct ? (
             <>
-              <Button variant="secondary" onClick={() => onReject(request.id, trimmedNotes)}>
-                Rechazar
-              </Button>
+              <Button variant="secondary" onClick={() => onReject(request.id, trimmedNotes)}>Rechazar</Button>
               <Button onClick={() => onApprove(request.id, trimmedNotes)}>Aprobar</Button>
             </>
           ) : null}

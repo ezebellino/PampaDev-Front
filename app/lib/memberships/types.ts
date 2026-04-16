@@ -1,4 +1,4 @@
-﻿export const BILLING_CYCLE_OPTIONS = [
+export const BILLING_CYCLE_OPTIONS = [
   { value: "monthly", label: "Mensual", months: 1 },
   { value: "quarterly", label: "Trimestral", months: 3 },
   { value: "semiannual", label: "Semestral", months: 6 },
@@ -61,4 +61,5 @@ export type BranchMembershipCatalog = {
   privateClass: PrivateClassOffer;
   updatedAt?: string;
   hiddenPlanIds?: number[];
+  linkedApiPlanIds?: number[];
 };

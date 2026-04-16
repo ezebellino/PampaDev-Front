@@ -16,19 +16,19 @@ export function Modal({
 
   return (
     <div className="fixed inset-0 z-100">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-900/35 backdrop-blur-sm" onClick={onClose} />
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <div
           className={cn(
-            "w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950/95 backdrop-blur",
-            "shadow-[0_0_0_1px_rgba(255,255,255,0.03)]"
+            "w-full max-w-lg rounded-3xl border border-stone-200 bg-white/98 backdrop-blur",
+            "shadow-[0_32px_80px_-45px_rgba(69,70,77,0.32)]"
           )}
         >
-          <div className="flex items-center justify-between gap-3 border-b border-zinc-800 px-5 py-4">
-            <div className="font-semibold tracking-tight">{title}</div>
+          <div className="flex items-center justify-between gap-3 border-b border-stone-200 px-5 py-4">
+            <div className="font-semibold tracking-tight text-slate-900">{title}</div>
             <button
               onClick={onClose}
-              className="rounded-lg border border-zinc-800 px-2 py-1 hover:bg-zinc-900"
+              className="rounded-xl border border-stone-200 px-2.5 py-1.5 text-slate-600 transition hover:border-sky-200 hover:bg-[#eff4ff] hover:text-slate-900"
               aria-label="Cerrar"
             >
               ✕

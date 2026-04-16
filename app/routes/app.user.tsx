@@ -66,19 +66,19 @@ function UserActionCard({
       className={[
         "group block rounded-3xl border p-5 transition",
         featured
-          ? "border-cyan-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-zinc-900/85"
-          : "border-zinc-800 bg-zinc-950/80 hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/80",
+          ? "border-sky-200 bg-[linear-gradient(135deg,rgba(239,244,255,0.96),rgba(255,255,255,0.98)_48%,rgba(236,253,245,0.92)_100%)] hover:-translate-y-1 hover:border-sky-300"
+          : "border-slate-200 bg-white/96 shadow-[0_24px_60px_-42px_rgba(69,70,77,0.18)] hover:-translate-y-1 hover:border-sky-200 hover:bg-white",
       ].join(" ")}
     >
       <div className="space-y-3">
         <div>
-          <div className="text-lg font-semibold tracking-tight text-zinc-100">{title}</div>
-          <div className="mt-2 text-sm leading-6 text-zinc-400">{description}</div>
+          <div className="text-lg font-semibold tracking-tight text-slate-900">{title}</div>
+          <div className="mt-2 text-sm leading-6 text-slate-600">{description}</div>
         </div>
         <div
           className={[
             "inline-flex rounded-2xl px-4 py-2 text-sm font-medium transition",
-            featured ? "bg-cyan-300 text-slate-950 group-hover:bg-cyan-200" : "bg-zinc-100 text-zinc-950 group-hover:bg-white",
+            featured ? "bg-slate-900 text-white group-hover:bg-slate-800" : "bg-[#eff4ff] text-slate-900 group-hover:bg-white",
           ].join(" ")}
         >
           {cta}
@@ -90,9 +90,9 @@ function UserActionCard({
 
 function ContextStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 px-4 py-3">
-      <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
-      <div className="mt-2 text-sm font-medium text-zinc-100">{value}</div>
+    <div className="rounded-2xl border border-slate-200 bg-white/92 px-4 py-3 shadow-sm">
+      <div className="text-xs uppercase tracking-wider text-stone-500">{label}</div>
+      <div className="mt-2 text-sm font-medium text-slate-900">{value}</div>
     </div>
   );
 }
@@ -115,14 +115,14 @@ export default function User() {
   return (
     <Protected allowRoles={[ROLES.USER, ROLES.DEVS]}>
       <div className="space-y-6">
-        <section className="overflow-hidden rounded-3xl border border-zinc-800 bg-linear-to-br from-zinc-950 via-zinc-950 to-zinc-900 p-6 md:p-8">
+        <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-[linear-gradient(135deg,rgba(239,244,255,0.96),rgba(255,255,255,0.98)_48%,rgba(236,253,245,0.92)_100%)] p-6 shadow-[0_28px_80px_-48px_rgba(69,70,77,0.2)] md:p-8">
           <div className="space-y-4">
-            <div className="text-xs uppercase tracking-widest text-zinc-500">Mi cuenta</div>
+            <div className="text-xs uppercase tracking-widest text-sky-700/70">Mi cuenta</div>
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 md:text-3xl">
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">
                 Hola{user?.name ? `, ${user.name}` : ""}.
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 md:text-base">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 md:text-base">
                 Acá tenés primero lo importante: tus reservas, el próximo paso recomendado y accesos directos para seguir operando sin perder tiempo.
               </p>
             </div>
@@ -137,7 +137,7 @@ export default function User() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)]">
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-slate-200 bg-white/96 shadow-[0_24px_60px_-42px_rgba(69,70,77,0.18)]">
             <CardHeader>
               <CardTitle>Lo más importante hoy</CardTitle>
               <CardDescription>Las tres acciones que más vas a usar en tu recorrido normal.</CardDescription>
@@ -149,26 +149,26 @@ export default function User() {
             </CardContent>
           </Card>
 
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-slate-200 bg-white/96 shadow-[0_24px_60px_-42px_rgba(69,70,77,0.18)]">
             <CardHeader>
               <CardTitle>Tu estado actual</CardTitle>
               <CardDescription>Resumen simple para entender rápido cómo está tu actividad.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-3">
-                  <div className="text-xs uppercase tracking-wider text-zinc-500">Pendientes</div>
-                  <div className="mt-2 text-2xl font-semibold text-amber-200">{pendingCount}</div>
+                <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+                  <div className="text-xs uppercase tracking-wider text-stone-500">Pendientes</div>
+                  <div className="mt-2 text-2xl font-semibold text-amber-600">{pendingCount}</div>
                 </div>
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-3">
-                  <div className="text-xs uppercase tracking-wider text-zinc-500">Confirmadas</div>
-                  <div className="mt-2 text-2xl font-semibold text-emerald-200">{confirmedCount}</div>
+                <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+                  <div className="text-xs uppercase tracking-wider text-stone-500">Confirmadas</div>
+                  <div className="mt-2 text-2xl font-semibold text-emerald-600">{confirmedCount}</div>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
-                <div className="text-sm font-medium text-zinc-100">Próximo movimiento recomendado</div>
-                <div className="mt-2 text-sm leading-6 text-zinc-400">
+              <div className="rounded-2xl border border-slate-200 bg-stone-50 p-4">
+                <div className="text-sm font-medium text-slate-900">Próximo paso recomendado</div>
+                <div className="mt-2 text-sm leading-6 text-slate-600">
                   {nextTurno
                     ? `Ya tenés una reserva para ${nextTurno.date ?? "fecha a confirmar"} a las ${nextTurno.time ?? "hora a confirmar"}. Si querés más detalle, entrá a Mis turnos.`
                     : "Todavía no tenés reservas activas en esta sucursal. Lo más útil ahora es explorar rubros y elegir un horario disponible."}
@@ -178,7 +178,7 @@ export default function User() {
               <div className="flex flex-wrap gap-2">
                 <Link
                   to={nextTurno ? "/app/bookings" : "/app/rubros"}
-                  className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+                  className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
                 >
                   {nextTurno ? "Ver mis turnos" : "Explorar rubros"}
                 </Link>
@@ -188,28 +188,28 @@ export default function User() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-slate-200 bg-white/96 shadow-[0_24px_60px_-42px_rgba(69,70,77,0.18)]">
             <CardHeader>
               <CardTitle>Agenda disponible</CardTitle>
               <CardDescription>Horarios publicados para reservar desde esta sucursal.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {nextPublishedSlots.length === 0 ? (
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-4 text-sm text-zinc-400">
-                  Todavia no hay horarios publicados.
+                <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-4 text-sm text-slate-600">
+Todavía no hay horarios publicados.
                 </div>
               ) : (
                 nextPublishedSlots.map((slot) => (
                   <Link
                     key={slot.id}
                     to={`/app/rubros/${slot.rubroId}`}
-                    className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm transition hover:bg-zinc-900"
+                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm transition hover:bg-[#eff4ff]"
                   >
                     <div>
-                      <div className="font-medium text-zinc-100">{String(slot.rubroName ?? slot.disciplineName ?? slot.rubroId)}</div>
-                      <div className="mt-1 text-xs text-zinc-500">{slot.date} - {slot.time}</div>
+                      <div className="font-medium text-slate-900">{String(slot.rubroName ?? slot.disciplineName ?? slot.rubroId)}</div>
+                      <div className="mt-1 text-xs text-stone-500">{slot.date} - {slot.time}</div>
                     </div>
-                    <div className="text-xs text-cyan-200">{slot.available}/{slot.capacity}</div>
+                    <div className="text-xs text-sky-700">{slot.available}/{slot.capacity}</div>
                   </Link>
                 ))
               )}
@@ -223,32 +223,32 @@ export default function User() {
           </section>
         </section>
 
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-slate-200 bg-white/96 shadow-[0_24px_60px_-42px_rgba(69,70,77,0.18)]">
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <CardTitle>Mis solicitudes y próximos turnos</CardTitle>
                 <CardDescription>
-                  Acá ves lo que ya pediste a la sucursal activa, incluso si todavía está pendiente de sincronizarse con backend.
+Acá ves tus solicitudes y próximos turnos de la sucursal activa en una sola lista.
                 </CardDescription>
               </div>
               <Link
                 to="/app/bookings"
-                className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 transition hover:bg-zinc-900"
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-[#eff4ff]"
               >
                 Ver vista completa
               </Link>
             </div>
           </CardHeader>
 
-          <div className="border-t border-zinc-800" />
+          <div className="border-t border-slate-200" />
           <CardContent className="space-y-4 pt-6">
-            {turnosLoading && <p className="text-sm text-zinc-400">Cargando tus turnos...</p>}
+            {turnosLoading && <p className="text-sm text-slate-600">Cargando tus turnos...</p>}
 
-            {turnosError && <p className="text-sm text-orange-300">Error cargando turnos: {(turnosError as Error).message}</p>}
+            {turnosError && <p className="text-sm text-rose-700">Error cargando turnos: {(turnosError as Error).message}</p>}
 
             {!turnosLoading && !turnosError && turnos.length === 0 && (
-              <p className="text-sm text-zinc-400">Todavía no tenés solicitudes enviadas en esta sucursal.</p>
+              <p className="text-sm text-slate-600">Todavía no tenés solicitudes enviadas en esta sucursal.</p>
             )}
 
             {!turnosLoading && !turnosError && turnos.length > 0 && (
@@ -256,11 +256,11 @@ export default function User() {
                 {turnos.map((slot) => (
                   <div
                     key={slot.id}
-                    className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-3 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-stone-50 p-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <div className="text-sm font-medium text-zinc-100">{slot.rubroName ?? slot.rubroId}</div>
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-sm font-medium text-slate-900">{slot.rubroName ?? slot.rubroId}</div>
+                      <div className="text-xs text-stone-500">
                         {slot.date ?? "Fecha a confirmar"} • {slot.time ?? "Hora a confirmar"}
                       </div>
                     </div>
@@ -269,7 +269,7 @@ export default function User() {
                         {slot.status === "confirmed" ? "Confirmada" : slot.status === "rejected" ? "Rechazada" : "Pendiente"}
                       </Badge>
                       <Badge tone={slot.syncStatus === "synced" ? "success" : "neutral"}>
-                        {slot.syncStatus === "synced" ? "Sincronizada" : "Lista para backend"}
+                        {slot.syncStatus === "synced" ? "Registrada" : "Pendiente de confirmar"}
                       </Badge>
                     </div>
                   </div>
@@ -277,10 +277,10 @@ export default function User() {
               </div>
             )}
 
-            <div className="mt-2 border-t border-zinc-800 pt-2">
+            <div className="mt-2 border-t border-slate-200 pt-2">
               <Link
                 to="/app/rubros"
-                className="block rounded-2xl bg-zinc-100 px-4 py-3 text-center text-sm font-medium text-zinc-950 hover:bg-white"
+                className="block rounded-2xl bg-slate-900 px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-slate-800"
               >
                 Agendar nuevo turno
               </Link>
@@ -291,3 +291,6 @@ export default function User() {
     </Protected>
   );
 }
+
+
+

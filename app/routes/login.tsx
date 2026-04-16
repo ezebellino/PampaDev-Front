@@ -5,9 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { useAuth } from "../lib/auth/AuthContext";
 
 const LOGIN_POINTS = [
-  "Ingres? a tu panel",
-  "Retom? tu sucursal activa",
-  "Segu? con tus turnos y gesti?n",
+  "Ingresá a tu panel",
+  "Retomá tu sucursal activa",
+  "Seguí con tus turnos y gestión",
 ];
 
 export default function LoginPage() {
@@ -32,10 +32,10 @@ export default function LoginPage() {
     } catch (err: any) {
       const message =
         err?.status === 500
-          ? "El servidor no respondi? bien. Prob? de nuevo m?s tarde."
+          ? "El servidor no respondió bien. Probá de nuevo más tarde."
           : err?.message === "Failed to fetch"
             ? "No pudimos conectarnos con el servidor."
-            : err?.message ?? "No se pudo iniciar sesi?n.";
+            : err?.message ?? "No se pudo iniciar sesión.";
 
       setError(message);
     } finally {
@@ -44,21 +44,21 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-zinc-950 text-zinc-100">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.10),transparent_26%),linear-gradient(180deg,rgba(24,24,27,0.2),rgba(9,9,11,0.96))]" />
+    <main className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-[#f8f9ff] text-slate-900">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(163,230,53,0.10),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,244,236,0.96),rgba(239,246,245,0.98))]" />
 
       <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-5xl items-center gap-10 px-4 py-10 md:px-6 lg:grid-cols-[0.95fr_1.05fr]">
         <section className="space-y-6">
-          <div className="inline-flex rounded-full border border-zinc-800 bg-zinc-900/75 px-3 py-1 text-xs font-medium text-zinc-300">
+          <div className="inline-flex rounded-full border border-sky-200 bg-[#eff4ff] px-3 py-1 text-xs font-medium text-sky-700">
             Acceso
           </div>
 
           <div className="space-y-3">
-            <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-white md:text-5xl md:leading-tight">
-              Ingres? y segu? donde quedaste.
+            <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl md:leading-tight">
+              Ingresá y seguí donde quedaste.
             </h1>
-            <p className="max-w-md text-base leading-7 text-zinc-400">
-              Entr? a tu panel y continu? con tu trabajo.
+            <p className="max-w-md text-base leading-7 text-slate-600">
+              Entrá a tu panel y continuá con tu trabajo.
             </p>
           </div>
 
@@ -66,7 +66,7 @@ export default function LoginPage() {
             {LOGIN_POINTS.map((point) => (
               <div
                 key={point}
-                className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-300"
+                className="rounded-2xl border border-slate-200 bg-white/88 px-4 py-3 text-sm text-slate-700 shadow-sm"
               >
                 {point}
               </div>
@@ -74,39 +74,39 @@ export default function LoginPage() {
           </div>
         </section>
 
-        <Card className="border-zinc-800 bg-zinc-950/88 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+        <Card className="border-slate-200 bg-white/96 shadow-[0_24px_60px_-42px_rgba(69,70,77,0.2)]">
           <CardHeader className="space-y-2 pb-2">
-            <CardTitle className="text-2xl text-zinc-100">Iniciar sesi?n</CardTitle>
-            <CardDescription>Us? tu email y contrase?a.</CardDescription>
+            <CardTitle className="text-2xl text-slate-900">Iniciar sesión</CardTitle>
+            <CardDescription>Usá tu email y contraseña.</CardDescription>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm text-zinc-300">Email</label>
+                <label className="text-sm text-slate-700">Email</label>
                 <input
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-cyan-500/50"
+                  className="w-full rounded-xl border border-slate-200 bg-stone-50 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:bg-white"
                   placeholder="devs@example.com"
                   autoComplete="email"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-zinc-300">Contrase?a</label>
+                <label className="text-sm text-slate-700">Contraseña</label>
                 <input
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   type="password"
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-cyan-500/50"
-                  placeholder="????????"
+                  className="w-full rounded-xl border border-slate-200 bg-stone-50 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:bg-white"
+                  placeholder="Tu contraseña"
                   autoComplete="current-password"
                 />
               </div>
 
               {error ? (
-                <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                   {error}
                 </div>
               ) : null}
@@ -133,12 +133,12 @@ export default function LoginPage() {
                   disabled={loading}
                   onClick={() => navigate("/forgot-password")}
                 >
-                  Olvid? mi contrase?a
+                  Olvidé mi contraseña
                 </Button>
 
                 <Link
                   to="/"
-                  className="inline-flex w-full items-center justify-center rounded-2xl border border-zinc-800 px-4 py-3 text-sm text-zinc-300 transition hover:bg-zinc-900"
+                  className="inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:bg-[#eff4ff] hover:text-slate-900"
                 >
                   Volver al sitio
                 </Link>

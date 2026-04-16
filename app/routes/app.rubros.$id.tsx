@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { Badge } from "../components/ui/Badge";
@@ -21,6 +21,16 @@ function formatARS(n: number) {
 
 function slotLabel(date: string, time: string) {
   return `${date} - ${time}`;
+}
+
+function resolveSlotAvailability(slot: { available?: number }) {
+  if (typeof slot.available === "number" && Number.isFinite(slot.available)) return slot.available;
+  return null;
+}
+
+function resolveSlotCapacity(slot: { capacity?: number }) {
+  if (typeof slot.capacity === "number" && Number.isFinite(slot.capacity)) return slot.capacity;
+  return null;
 }
 
 export default function RubroDetailPage() {
@@ -52,7 +62,7 @@ export default function RubroDetailPage() {
       <div className="space-y-6">
         <PageHeader title="Cargando..." subtitle="Preparando agenda" />
         <Card>
-          <CardContent className="py-6 text-sm text-zinc-400">Preparando la vista...</CardContent>
+          <CardContent className="py-6 text-sm text-slate-600">Preparando la vista...</CardContent>
         </Card>
       </div>
     );
@@ -83,7 +93,7 @@ export default function RubroDetailPage() {
   if (!branchId) {
     return (
       <div className="space-y-4">
-        <PageHeader title="Elegi una sucursal" subtitle="Necesitamos una sede activa para mostrar horarios." />
+        <PageHeader title="Elegí una sucursal" subtitle="Necesitamos una sede activa para mostrar horarios." />
         <Link to="/app/branches">
           <Button>Elegir sucursal</Button>
         </Link>
@@ -96,7 +106,7 @@ export default function RubroDetailPage() {
       <div className="space-y-4">
         <PageHeader title="No pudimos cargar la agenda" subtitle="Intenta nuevamente en unos instantes." />
         <Card>
-          <CardContent className="py-6 text-sm text-red-400">
+          <CardContent className="py-6 text-sm text-rose-700">
             {apiError instanceof Error ? apiError.message : "Error desconocido al cargar horarios."}
           </CardContent>
         </Card>
@@ -108,7 +118,7 @@ export default function RubroDetailPage() {
     <div className="space-y-6">
       <PageHeader
         title={rubro.name}
-        subtitle="Elegi un horario y reserva."
+        subtitle="Elegí un horario y reservá de forma clara, sin pasos de más."
         right={
           <Link to="/app/rubros">
             <Button variant="secondary">Volver</Button>
@@ -117,33 +127,33 @@ export default function RubroDetailPage() {
       />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardContent className="grid gap-3 py-5 sm:grid-cols-3">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Duracion</div>
-              <div className="mt-2 text-lg font-semibold text-zinc-100">{rubro.durationMin} min</div>
+            <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Duración</div>
+              <div className="mt-2 text-lg font-semibold text-slate-900">{rubro.durationMin} min</div>
             </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Precio base</div>
-              <div className="mt-2 text-lg font-semibold text-zinc-100">{formatARS(rubro.basePrice)}</div>
+            <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Precio base</div>
+              <div className="mt-2 text-lg font-semibold text-slate-900">{formatARS(rubro.basePrice)}</div>
             </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Agenda</div>
-              <div className="mt-2 text-sm font-medium text-zinc-100">
+            <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Agenda</div>
+              <div className="mt-2 text-sm font-medium text-slate-900">
                 {hasBackendSlots ? "Clases reales" : usingFallbackSlots ? "Publicada" : "Sin horarios"}
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
           <CardHeader>
             <CardTitle>Resumen</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-zinc-400">
+          <CardContent className="space-y-3 text-sm text-slate-600">
             <div className="flex flex-wrap gap-2">
               {rubro.tags.map((tag) => (
-                <Badge key={tag} className="text-zinc-400">
+                <Badge key={tag} className="text-slate-600">
                   #{tag}
                 </Badge>
               ))}
@@ -158,46 +168,52 @@ export default function RubroDetailPage() {
         </Card>
       </section>
 
-      <Card className="border-zinc-800 bg-zinc-950/80">
+      <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
         <CardHeader>
           <CardTitle>Agenda disponible</CardTitle>
         </CardHeader>
 
-        {infoMessage ? <CardContent className="pt-0 text-sm text-emerald-400">{infoMessage}</CardContent> : null}
-        {errorMessage ? <CardContent className="pt-0 text-sm text-red-400">{errorMessage}</CardContent> : null}
+        {infoMessage ? <CardContent className="pt-0 text-sm text-emerald-700">{infoMessage}</CardContent> : null}
+        {errorMessage ? <CardContent className="pt-0 text-sm text-rose-700">{errorMessage}</CardContent> : null}
 
         <CardContent className="space-y-4">
           {usingFallbackSlots ? (
-            <div className="rounded-2xl border border-cyan-800/70 bg-cyan-950/20 px-4 py-3 text-sm text-cyan-100">
-              Horarios publicados desde la planificacion de la sucursal.
+            <div className="rounded-2xl border border-sky-200 bg-[#eff4ff] px-4 py-3 text-sm text-sky-700">
+              Horarios publicados desde la planificación de la sucursal.
             </div>
           ) : null}
 
           {slots.length === 0 ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-4 text-sm text-zinc-400">
-              Todavia no hay horarios disponibles.
+            <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-4 text-sm text-slate-600">
+              Todavía no hay horarios disponibles.
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {slots.map((slot) => {
-                const full = slot.available <= 0;
-                const syncReady =
-                  slot.bookingSource === "api" &&
-                  Number.isFinite(
-                    Number((slot as Record<string, unknown>).idBranchDiscipline ?? (slot as Record<string, unknown>)["branchDisciplineId"])
-                  );
+                const available = resolveSlotAvailability(slot);
+                const capacity = resolveSlotCapacity(slot);
+                const full = available != null ? available <= 0 : false;
+                const syncReady = slot.bookingSource === "api";
 
                 return (
                   <div
                     key={slot.id}
                     className={[
-                      "rounded-2xl border border-zinc-800 bg-zinc-950 p-4 transition hover:bg-zinc-900/30",
+                      "rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-sky-200 hover:bg-[#fdfefe]",
                       full ? "opacity-60" : "",
                     ].join(" ")}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <div className="font-medium text-zinc-100">{slotLabel(slot.date, slot.time)}</div>
-                      <Badge tone={full ? "warning" : "success"}>{full ? "Sin cupo" : `${slot.available}/${slot.capacity}`}</Badge>
+                      <div className="font-medium text-slate-900">{slotLabel(slot.date, slot.time)}</div>
+                      <Badge tone={full ? "warning" : available == null ? "neutral" : "success"}>
+                        {full
+                          ? "Sin cupo"
+                          : available != null && capacity != null
+                            ? `${available}/${capacity}`
+                            : capacity != null
+                              ? `Capacidad ${capacity}`
+                              : "Cupo a confirmar"}
+                      </Badge>
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -207,8 +223,8 @@ export default function RubroDetailPage() {
                       <Badge tone={syncReady ? "success" : "warning"}>{syncReady ? "API" : "Local"}</Badge>
                     </div>
 
-                    <div className="mt-3 text-xs text-zinc-500">
-                      {slot.duration ? `${slot.duration} min` : "Duracion a confirmar"}
+                    <div className="mt-3 text-xs text-stone-500">
+                      {slot.duration ? `${slot.duration} min` : "Duración a confirmar"}
                     </div>
 
                     <div className="mt-3">
@@ -222,7 +238,7 @@ export default function RubroDetailPage() {
                           setErrorMessage(null);
 
                           if (!user) {
-                            setErrorMessage("Debes iniciar sesion para reservar.");
+                            setErrorMessage("Debés iniciar sesión para reservar.");
                             return;
                           }
 
@@ -231,7 +247,7 @@ export default function RubroDetailPage() {
                             setInfoMessage(
                               result.syncStatus === "synced"
                                 ? "Reserva enviada y sincronizada."
-                                : "Reserva enviada. Quedo lista para seguimiento."
+                                : "Reserva enviada. Quedó lista para seguimiento."
                             );
                           } catch (err) {
                             const message = err instanceof Error ? err.message : "Error al reservar turno";

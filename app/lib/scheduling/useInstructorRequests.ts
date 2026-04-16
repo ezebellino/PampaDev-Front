@@ -1,5 +1,13 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { releasePublishedAgendaSlot } from "./publishedAgenda";
+import {
+  cancelBooking,
+  confirmBooking,
+  getBookingsByBranch,
+  getBookingsByUser,
+  rejectBooking,
+  type BookingApiRecord,
+} from "../api/services/bookings";
 
 export type InstructorReservationStatus = "pending" | "confirmed" | "rejected" | "cancelled";
 export type InstructorReservationSyncStatus = "synced" | "pending-backend";
@@ -14,6 +22,7 @@ export type InstructorReservationRequest = {
   slotLabel?: string;
   userId: string;
   userName?: string;
+  backendBookingId?: string | number;
   backendClassId?: string | number;
   branchDisciplineId?: number;
   date?: string;
@@ -30,6 +39,69 @@ const REQUESTS_CHANGED_EVENT = "pampadev:instructor-reservation-requests:changed
 function emitRequestsChanged() {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent(REQUESTS_CHANGED_EVENT));
+}
+
+function readNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeBookingStatus(value: unknown): InstructorReservationStatus {
+  if (typeof value === "number") {
+    if (value === 1) return "confirmed";
+    if (value === 2) return "cancelled";
+    if (value === 3) return "rejected";
+    return "pending";
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized.includes("confirm")) return "confirmed";
+    if (normalized.includes("cancel")) return "cancelled";
+    if (normalized.includes("reject") || normalized.includes("rech")) return "rejected";
+    if (normalized.includes("reserv") || normalized.includes("pend")) return "pending";
+  }
+
+  return "pending";
+}
+
+function buildSlotLabel(date?: string, time?: string) {
+  const parts = [date, time].filter(Boolean);
+  return parts.length > 0 ? parts.join(" · ") : undefined;
+}
+
+function buildSyncedRequest(record: BookingApiRecord, fallbackBranchId?: number | null, fallbackUserId?: string | null): InstructorReservationRequest {
+  const bookingId = readNumber(record.idBooking) ?? Date.now();
+  const branchId = readNumber(record.idBranch) ?? readNumber(fallbackBranchId) ?? 0;
+  const userId = readNumber(record.idUser)?.toString() ?? fallbackUserId ?? `booking-${bookingId}`;
+  const date = typeof record.date === "string" ? record.date : undefined;
+  const time = typeof record.time === "string" ? record.time : undefined;
+  const disciplineName =
+    typeof record.disciplineName === "string" && record.disciplineName.trim().length > 0
+      ? record.disciplineName.trim()
+      : undefined;
+
+  return {
+    id: `booking-${bookingId}`,
+    branchId,
+    rubroId: disciplineName ?? `Reserva #${bookingId}`,
+    rubroName: disciplineName,
+    slotId: String(readNumber(record.idClass) ?? bookingId),
+    slotLabel: buildSlotLabel(date, time),
+    userId,
+    userName: typeof record.userName === "string" && record.userName.trim().length > 0 ? record.userName.trim() : undefined,
+    backendBookingId: bookingId,
+    backendClassId: readNumber(record.idClass) ?? undefined,
+    date,
+    time,
+    status: normalizeBookingStatus(record.bookingStatus),
+    bookingSource: "api",
+    syncStatus: "synced",
+    createdAt:
+      (typeof record.cancellationDate === "string" && record.cancellationDate) ||
+      (typeof record.date === "string" && record.date) ||
+      new Date().toISOString(),
+  };
 }
 
 function readRequestsFromStorage(): InstructorReservationRequest[] {
@@ -58,6 +130,32 @@ function sortRequests(requests: InstructorReservationRequest[]) {
     const bTime = new Date(b.createdAt).getTime();
     return bTime - aTime;
   });
+}
+
+function getUnsyncedRequests(branchId?: number, userId?: string | null) {
+  return sortRequests(
+    readRequestsFromStorage().filter((item) => {
+      if (item.syncStatus === "synced") return false;
+      if (branchId != null && item.branchId !== branchId) return false;
+      if (userId != null && item.userId !== userId) return false;
+      return true;
+    })
+  );
+}
+
+async function readSyncedBranchRequests(branchId: number) {
+  const records = await getBookingsByBranch(branchId);
+  return sortRequests(records.map((record) => buildSyncedRequest(record, branchId, null)));
+}
+
+async function readSyncedUserRequests(userId: string, branchId: number | null) {
+  const numericUserId = readNumber(userId);
+  if (numericUserId == null) {
+    return [] as InstructorReservationRequest[];
+  }
+
+  const records = await getBookingsByUser(numericUserId);
+  return sortRequests(records.map((record) => buildSyncedRequest(record, branchId, userId)));
 }
 
 export function persistInstructorReservationRequest(request: InstructorReservationRequest) {
@@ -138,30 +236,70 @@ export function updateInstructorReservationStatus(requestId: string, status: Ins
 export function useInstructorReservationRequests(branchId: number | null) {
   const [requests, setRequests] = useState<InstructorReservationRequest[]>([]);
 
-  const refresh = useCallback(() => {
-    const items = getInstructorReservationRequests(branchId ?? undefined);
-    setRequests(sortRequests(items));
+  const refresh = useCallback(async () => {
+    const localItems = getUnsyncedRequests(branchId ?? undefined);
+
+    if (branchId == null) {
+      setRequests(localItems);
+      return localItems;
+    }
+
+    try {
+      const synced = await readSyncedBranchRequests(branchId);
+      const next = sortRequests([...synced, ...localItems]);
+      setRequests(next);
+      return next;
+    } catch {
+      setRequests(localItems);
+      return localItems;
+    }
   }, [branchId]);
 
   useEffect(() => {
-    refresh();
-    return subscribeToInstructorReservationRequests(refresh);
+    void refresh();
+    return subscribeToInstructorReservationRequests(() => {
+      void refresh();
+    });
   }, [refresh]);
 
   const confirmRequest = useCallback(
-    (requestId: string) => {
+    async (requestId: string) => {
+      const request = requests.find((item) => item.id === requestId);
+      if (!request) return;
+
+      if (request.syncStatus === "synced" && request.backendBookingId != null) {
+        try {
+          await confirmBooking(Number(request.backendBookingId));
+        } finally {
+          await refresh();
+        }
+        return;
+      }
+
       const next = updateInstructorReservationStatus(requestId, "confirmed");
       setRequests(next.filter((item) => (branchId == null ? true : item.branchId === branchId)));
     },
-    [branchId]
+    [branchId, refresh, requests]
   );
 
   const rejectRequest = useCallback(
-    (requestId: string) => {
+    async (requestId: string) => {
+      const request = requests.find((item) => item.id === requestId);
+      if (!request) return;
+
+      if (request.syncStatus === "synced" && request.backendBookingId != null) {
+        try {
+          await rejectBooking(Number(request.backendBookingId));
+        } finally {
+          await refresh();
+        }
+        return;
+      }
+
       const next = updateInstructorReservationStatus(requestId, "rejected");
       setRequests(next.filter((item) => (branchId == null ? true : item.branchId === branchId)));
     },
-    [branchId]
+    [branchId, refresh, requests]
   );
 
   const pending = useMemo(() => requests.filter((item) => item.status === "pending"), [requests]);
@@ -173,13 +311,30 @@ export function useInstructorReservationRequests(branchId: number | null) {
 export function useMyReservationRequests(userId: string | null | undefined, branchId: number | null) {
   const [requests, setRequests] = useState<InstructorReservationRequest[]>([]);
 
-  const refresh = useCallback(() => {
-    setRequests(sortRequests(getUserReservationRequests(userId, branchId)));
+  const refresh = useCallback(async () => {
+    const localItems = getUnsyncedRequests(branchId ?? undefined, userId ?? null);
+
+    if (!userId) {
+      setRequests(localItems);
+      return localItems;
+    }
+
+    try {
+      const synced = await readSyncedUserRequests(userId, branchId);
+      const next = sortRequests([...synced, ...localItems]);
+      setRequests(next);
+      return next;
+    } catch {
+      setRequests(localItems);
+      return localItems;
+    }
   }, [userId, branchId]);
 
   useEffect(() => {
-    refresh();
-    return subscribeToInstructorReservationRequests(refresh);
+    void refresh();
+    return subscribeToInstructorReservationRequests(() => {
+      void refresh();
+    });
   }, [refresh]);
 
   const pending = useMemo(() => requests.filter((item) => item.status === "pending"), [requests]);
@@ -188,11 +343,23 @@ export function useMyReservationRequests(userId: string | null | undefined, bran
   const rejected = useMemo(() => requests.filter((item) => item.status === "rejected"), [requests]);
 
   const cancelRequest = useCallback(
-    (requestId: string) => {
+    async (requestId: string) => {
+      const request = requests.find((item) => item.id === requestId);
+      if (!request) return;
+
+      if (request.syncStatus === "synced" && request.backendBookingId != null) {
+        try {
+          await cancelBooking(Number(request.backendBookingId));
+        } finally {
+          await refresh();
+        }
+        return;
+      }
+
       const next = updateInstructorReservationStatus(requestId, "cancelled");
       setRequests(sortRequests(next.filter((item) => item.userId === userId && (branchId == null ? true : item.branchId === branchId))));
     },
-    [userId, branchId]
+    [userId, branchId, refresh, requests]
   );
 
   return { requests, pending, confirmed, cancelled, rejected, refresh, cancelRequest };

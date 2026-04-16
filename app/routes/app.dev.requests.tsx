@@ -41,8 +41,8 @@ function DevRequests() {
     return (
       <div className="space-y-6">
         <PageHeader title="Solicitudes para Devs" subtitle="No pudimos cargar la bandeja técnica en este momento." />
-        <Card className="border-rose-500/20 bg-rose-500/10">
-          <CardContent className="space-y-2 py-5 text-sm text-rose-100">
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="space-y-2 py-5 text-sm text-rose-700">
             <div className="font-medium">Ocurrió un problema al cargar las solicitudes.</div>
             <div>Volvé a intentar en unos instantes. Si persiste, revisamos storage local y sincronización del dominio.</div>
           </CardContent>
@@ -84,24 +84,24 @@ function DevRequests() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/95 shadow-sm">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Pendientes</div>
-            <div className="mt-2 text-3xl font-semibold text-zinc-100">{pendingCount}</div>
+            <div className="text-xs uppercase tracking-wider text-stone-500">Pendientes</div>
+            <div className="mt-2 text-3xl font-semibold text-slate-900">{pendingCount}</div>
           </CardContent>
         </Card>
-        <Card className="border-zinc-800 bg-zinc-950/80">
+        <Card className="border-stone-200 bg-white/95 shadow-sm">
           <CardContent className="py-5">
-            <div className="text-xs uppercase tracking-wider text-zinc-500">Aprobadas</div>
-            <div className="mt-2 text-3xl font-semibold text-zinc-100">{approvedCount}</div>
+            <div className="text-xs uppercase tracking-wider text-stone-500">Aprobadas</div>
+            <div className="mt-2 text-3xl font-semibold text-slate-900">{approvedCount}</div>
           </CardContent>
         </Card>
       </div>
 
 
       {actionError ? (
-        <Card className="border-rose-500/20 bg-rose-500/10">
-          <CardContent className="py-4 text-sm text-rose-100">{actionError}</CardContent>
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="py-4 text-sm text-rose-700">{actionError}</CardContent>
         </Card>
       ) : null}
 

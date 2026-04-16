@@ -104,8 +104,8 @@ export default function Instructor() {
   if (loading || disciplinesLoading || scheduleLoading) {
     return (
       <Protected allowRoles={[ROLES.INSTRUCTOR, ROLES.DEVS]}>
-        <Card className="border-zinc-800 bg-zinc-950/80">
-          <CardContent className="py-10 text-sm text-zinc-400">Cargando agenda operativa...</CardContent>
+        <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
+          <CardContent className="py-10 text-sm text-slate-600">Cargando agenda operativa...</CardContent>
         </Card>
       </Protected>
     );
@@ -114,71 +114,71 @@ export default function Instructor() {
   return (
     <Protected allowRoles={[ROLES.INSTRUCTOR, ROLES.DEVS]}>
       <div className="space-y-6">
-        <section className="overflow-hidden rounded-3xl border border-zinc-800 bg-linear-to-br from-zinc-950 via-zinc-950 to-zinc-900 p-6 md:p-8">
+        <section className="overflow-hidden rounded-3xl border border-slate-200/70 bg-[linear-gradient(135deg,rgba(239,244,255,0.94),rgba(255,255,255,0.98)_44%,rgba(236,253,245,0.9)_100%)] p-6 shadow-[0_28px_80px_-48px_rgba(69,70,77,0.2)] md:p-8">
           <div className="space-y-4">
-            <div className="text-xs uppercase tracking-widest text-zinc-500">Panel instructor</div>
+            <div className="text-xs uppercase tracking-widest text-stone-500">Panel instructor</div>
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 md:text-3xl">
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">
                 Gestión operativa de turnos
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 md:text-base">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 md:text-base">
                 Esta vista combina la planificación semanal definida por administración con las reservas de usuarios y las clases reales creadas para la sucursal activa.
               </p>
             </div>
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Instructor</div>
-              <div className="mt-2 text-sm font-medium text-zinc-100">{user?.name ?? "Cuenta activa"}</div>
+            <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Instructor</div>
+              <div className="mt-2 text-sm font-medium text-slate-900">{user?.name ?? "Cuenta activa"}</div>
             </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Rol</div>
-              <div className="mt-2 text-sm font-medium text-zinc-100">{user?.role ?? ROLES.INSTRUCTOR}</div>
+            <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Rol</div>
+              <div className="mt-2 text-sm font-medium text-slate-900">{user?.role ?? ROLES.INSTRUCTOR}</div>
             </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Empresa</div>
-              <div className="mt-2 text-sm font-medium text-zinc-100">{companyId ?? "Sin seleccionar"}</div>
+            <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Empresa</div>
+              <div className="mt-2 text-sm font-medium text-slate-900">{companyId ?? "Sin seleccionar"}</div>
             </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-zinc-500">Sucursal</div>
-              <div className="mt-2 text-sm font-medium text-zinc-100">{branchId ?? "Pendiente"}</div>
+            <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-stone-500">Sucursal</div>
+              <div className="mt-2 text-sm font-medium text-slate-900">{branchId ?? "Pendiente"}</div>
             </div>
           </div>
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
             <CardHeader>
               <CardTitle>Resumen</CardTitle>
-              <CardDescription>Lo esencial del d?a.</CardDescription>
+              <CardDescription>Lo esencial del día.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-3">
               <Link
                 to={hasBranch ? "/app/instructor" : "/app/branches"}
-                className="rounded-3xl border border-amber-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-amber-400/30 hover:bg-zinc-900/85"
+                className="rounded-3xl border border-amber-200 bg-[linear-gradient(135deg,rgba(255,251,235,0.98),rgba(255,255,255,0.98))] p-5 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.14)] transition hover:-translate-y-1 hover:border-amber-300"
               >
-                <div className="text-lg font-semibold text-zinc-100">Reservas pendientes</div>
-                <div className="mt-2 text-3xl font-semibold text-amber-200">{pending.length}</div>
-                <div className="mt-2 text-sm leading-6 text-zinc-400">Lo que a?n espera respuesta.</div>
+                <div className="text-lg font-semibold text-slate-900">Reservas pendientes</div>
+                <div className="mt-2 text-3xl font-semibold text-amber-700">{pending.length}</div>
+                <div className="mt-2 text-sm leading-6 text-slate-600">Lo que aún espera respuesta.</div>
               </Link>
 
               <Link
                 to={hasBranch ? "/app/rubros" : "/app/branches"}
-                className="rounded-3xl border border-cyan-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-zinc-900/85"
+                className="rounded-3xl border border-sky-200 bg-[linear-gradient(135deg,rgba(239,244,255,0.98),rgba(255,255,255,0.98))] p-5 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.14)] transition hover:-translate-y-1 hover:border-sky-300"
               >
-                <div className="text-lg font-semibold text-zinc-100">Agenda y rubros</div>
-                <div className="mt-2 text-3xl font-semibold text-cyan-200">{classes.length}</div>
-                <div className="mt-2 text-sm leading-6 text-zinc-400">Clases activas en esta sede.</div>
+                <div className="text-lg font-semibold text-slate-900">Agenda y rubros</div>
+                <div className="mt-2 text-3xl font-semibold text-sky-700">{classes.length}</div>
+                <div className="mt-2 text-sm leading-6 text-slate-600">Clases activas en esta sede.</div>
               </Link>
 
               <Link
                 to="/app/branches"
-                className="rounded-3xl border border-emerald-500/15 bg-linear-to-br from-zinc-950 via-zinc-950 to-slate-950 p-5 transition hover:-translate-y-1 hover:border-emerald-400/30 hover:bg-zinc-900/85"
+                className="rounded-3xl border border-emerald-200 bg-[linear-gradient(135deg,rgba(236,253,245,0.98),rgba(255,255,255,0.98))] p-5 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.14)] transition hover:-translate-y-1 hover:border-emerald-300"
               >
-                <div className="text-lg font-semibold text-zinc-100">Contexto de trabajo</div>
-                <div className="mt-2 text-sm font-medium text-emerald-200">{branchId ?? "Elegi sucursal"}</div>
-                <div className="mt-2 text-sm leading-6 text-zinc-400">Sucursal activa para operar.</div>
+                <div className="text-lg font-semibold text-slate-900">Contexto de trabajo</div>
+                <div className="mt-2 text-sm font-medium text-emerald-700">{branchId ?? "Elegí sucursal"}</div>
+                <div className="mt-2 text-sm leading-6 text-slate-600">Sucursal activa para operar.</div>
               </Link>
             </CardContent>
           </Card>
@@ -188,22 +188,22 @@ export default function Instructor() {
         {hasBranch ? (
           <>
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-            <Card className="border-zinc-800 bg-zinc-950/80">
+            <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
               <CardHeader>
                 <CardTitle>Agenda publicada</CardTitle>
                 <CardDescription>Horarios visibles para el usuario.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {publishedAgenda.items.length === 0 ? (
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-4 text-sm text-zinc-400">
-                    Todavia no hay horarios publicados.
+                  <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-4 text-sm text-slate-600">
+                    Todavía no hay horarios publicados.
                   </div>
                 ) : (
                   publishedAgenda.items.slice(0, 8).map((item) => (
-                    <div key={item.id} className="flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div key={item.id} className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-stone-50 p-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
-                        <div className="text-sm font-medium text-zinc-100">{String(item.rubroName ?? item.disciplineName ?? item.rubroId)}</div>
-                        <div className="mt-1 text-xs text-zinc-500">{item.date} - {item.time} - {item.available}/{item.capacity}</div>
+                        <div className="text-sm font-medium text-slate-900">{String(item.rubroName ?? item.disciplineName ?? item.rubroId)}</div>
+                        <div className="mt-1 text-xs text-stone-500">{item.date} - {item.time} - {item.available}/{item.capacity}</div>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge tone={getPublishedAgendaSlotStatusTone(item)}>{getPublishedAgendaSlotStatusLabel(item)}</Badge>
@@ -217,33 +217,33 @@ export default function Instructor() {
               </CardContent>
             </Card>
 
-            <Card className="border-zinc-800 bg-zinc-950/80">
+            <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
               <CardHeader>
                 <CardTitle>Resumen de agenda</CardTitle>
                 <CardDescription>Disponibilidad de hoy.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                    <div className="text-xs uppercase tracking-wider text-zinc-500">Publicados</div>
-                    <div className="mt-2 text-2xl font-semibold text-zinc-100">{publishedAgenda.openCount}</div>
+                  <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+                    <div className="text-xs uppercase tracking-wider text-stone-500">Publicados</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{publishedAgenda.openCount}</div>
                   </div>
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                    <div className="text-xs uppercase tracking-wider text-zinc-500">Cerrados</div>
-                    <div className="mt-2 text-2xl font-semibold text-zinc-100">{publishedAgenda.closedCount}</div>
+                  <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
+                    <div className="text-xs uppercase tracking-wider text-stone-500">Cerrados</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{publishedAgenda.closedCount}</div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   {agendaByDay.length === 0 ? (
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-4 text-sm text-zinc-400">
-                      Sin dias publicados por ahora.
+                    <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-4 text-sm text-slate-600">
+                      Sin días publicados por ahora.
                     </div>
                   ) : (
                     agendaByDay.slice(0, 6).map((day) => (
-                      <div key={day.date} className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm">
-                        <span className="text-zinc-200">{day.date}</span>
-                        <span className="text-zinc-400">{day.open}/{day.count} disponibles</span>
+                      <div key={day.date} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3 text-sm">
+                        <span className="text-slate-900">{day.date}</span>
+                        <span className="text-slate-600">{day.open}/{day.count} disponibles</span>
                       </div>
                     ))
                   )}
@@ -252,11 +252,11 @@ export default function Instructor() {
             </Card>
           </section>
 
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-950/80 p-5">
+          <section className="rounded-3xl border border-slate-200 bg-white/80 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-zinc-100">Reservas de usuarios</h2>
-                <p className="text-sm text-zinc-400">
+                <h2 className="text-lg font-semibold text-slate-900">Reservas de usuarios</h2>
+                <p className="text-sm text-slate-600">
                   Acá recibís las reservas que llegan desde rubros y podés confirmar, rechazar o detectar rápido qué sigue pendiente de backend.
                 </p>
               </div>
@@ -265,24 +265,6 @@ export default function Instructor() {
               </Button>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                <div className="text-xs uppercase tracking-wider text-zinc-500">Total</div>
-                <div className="mt-2 text-2xl font-semibold text-zinc-100">{requests.length}</div>
-              </div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                <div className="text-xs uppercase tracking-wider text-zinc-500">Pendientes</div>
-                <div className="mt-2 text-2xl font-semibold text-amber-200">{pending.length}</div>
-              </div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                <div className="text-xs uppercase tracking-wider text-zinc-500">Confirmadas</div>
-                <div className="mt-2 text-2xl font-semibold text-emerald-200">{confirmed.length}</div>
-              </div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/55 px-4 py-3">
-                <div className="text-xs uppercase tracking-wider text-zinc-500">Pendientes backend</div>
-                <div className="mt-2 text-2xl font-semibold text-cyan-200">{syncBacklog.length}</div>
-              </div>
-            </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
               {[
@@ -297,8 +279,8 @@ export default function Instructor() {
                   className={[
                     "inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm transition",
                     requestFilter === item.id
-                      ? "border-cyan-500/35 bg-cyan-400/10 text-cyan-50"
-                      : "border-zinc-800 bg-zinc-900/45 text-zinc-300 hover:bg-zinc-900",
+                      ? "border-cyan-500/35 bg-cyan-400/10 text-sky-700"
+                      : "border-slate-200 bg-stone-50 text-slate-600 hover:bg-[#eff4ff]",
                   ].join(" ")}
                 >
                   <span>{item.label}</span>
@@ -308,7 +290,7 @@ export default function Instructor() {
             </div>
 
             {visibleRequests.length === 0 ? (
-              <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-900/65 p-4 text-sm text-zinc-400">
+              <div className="mt-4 rounded-2xl border border-slate-200 bg-stone-50 p-4 text-sm text-slate-600">
                 No hay reservas para este filtro en la sucursal activa.
               </div>
             ) : (
@@ -319,34 +301,34 @@ export default function Instructor() {
                   return (
                     <div
                       key={request.id}
-                      className="rounded-[1.75rem] border border-zinc-800 bg-zinc-900/55 p-4 shadow-[0_14px_34px_rgba(0,0,0,0.14)]"
+                      className="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-34px_rgba(69,70,77,0.18)]"
                     >
                       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                         <div className="space-y-3">
                           <div>
-                            <div className="text-base font-semibold text-zinc-100">{request.userName ?? request.userId}</div>
-                            <div className="mt-1 text-sm text-zinc-300">
+                            <div className="text-base font-semibold text-slate-900">{request.userName ?? request.userId}</div>
+                            <div className="mt-1 text-sm text-slate-600">
                               {request.rubroName ?? request.rubroId} · {request.date ?? "Fecha a confirmar"} · {request.time ?? "Hora a confirmar"}
                             </div>
                           </div>
 
                           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
-                              <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Estado</div>
+                            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                              <div className="text-[11px] uppercase tracking-[0.24em] text-stone-500">Estado</div>
                               <div className="mt-2">
                                 <Badge tone={getReservationStatusTone(request.status)}>{getReservationStatusLabel(request.status)}</Badge>
                               </div>
                             </div>
-                            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
-                              <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Origen</div>
+                            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                              <div className="text-[11px] uppercase tracking-[0.24em] text-stone-500">Origen</div>
                               <div className="mt-2">
                                 <Badge tone={getReservationSourceTone(request.bookingSource)}>
                                   {getReservationSourceLabel(request.bookingSource)}
                                 </Badge>
                               </div>
                             </div>
-                            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3">
-                              <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Sincronización</div>
+                            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                              <div className="text-[11px] uppercase tracking-[0.24em] text-stone-500">Sincronización</div>
                               <div className="mt-2">
                                 <Badge tone={getReservationSyncTone(request.syncStatus)}>
                                   {getReservationSyncLabel(request.syncStatus)}
@@ -355,10 +337,10 @@ export default function Instructor() {
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-sm text-zinc-400">
-                            <div className="font-medium text-zinc-200">Detalle de la reserva</div>
+                          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                            <div className="font-medium text-slate-900">Detalle de la reserva</div>
                             <div className="mt-1">{request.slotLabel ?? "Reserva enviada desde agenda de rubro"}</div>
-                            <div className="mt-2 text-xs text-zinc-500">{getReservationOperationalCopy(request)}</div>
+                            <div className="mt-2 text-xs text-stone-500">{getReservationOperationalCopy(request)}</div>
                           </div>
                         </div>
 
@@ -376,7 +358,7 @@ export default function Instructor() {
 
                           <Link
                             to="/app/rubros"
-                            className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 transition hover:bg-zinc-900"
+                            className="block rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm text-slate-700 transition hover:bg-[#eff4ff]"
                           >
                             Ver agenda pública
                           </Link>
@@ -392,7 +374,7 @@ export default function Instructor() {
         ) : null}
 
         {!hasBranch ? (
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
             <CardHeader>
               <CardTitle>Elegí una sucursal para continuar</CardTitle>
               <CardDescription>
@@ -402,18 +384,18 @@ export default function Instructor() {
             <CardContent>
               <Link
                 to="/app/branches"
-                className="inline-flex rounded-2xl bg-zinc-100 px-4 py-3 text-sm font-medium text-zinc-950 hover:bg-white"
+                className="inline-flex rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white hover:bg-slate-800"
               >
                 Seleccionar sucursal
               </Link>
             </CardContent>
           </Card>
         ) : error ? (
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
             <CardContent className="py-6 text-sm text-red-300">{error}</CardContent>
           </Card>
         ) : unavailable ? (
-          <Card className="border-zinc-800 bg-zinc-950/80">
+          <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
             <CardHeader>
               <CardTitle>Agenda no disponible</CardTitle>
               <CardDescription>
@@ -424,42 +406,42 @@ export default function Instructor() {
         ) : (
           <>
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <Card className="border-zinc-800 bg-zinc-950/80">
+              <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
                 <CardContent className="py-5">
-                  <div className="text-xs uppercase tracking-wider text-zinc-500">Clases</div>
-                  <div className="mt-3 text-3xl font-semibold text-zinc-100">{classes.length}</div>
-                  <div className="mt-1 text-sm text-zinc-400">Turnos base detectados en la agenda</div>
+                  <div className="text-xs uppercase tracking-wider text-stone-500">Clases</div>
+                  <div className="mt-3 text-3xl font-semibold text-slate-900">{classes.length}</div>
+                  <div className="mt-1 text-sm text-slate-600">Turnos base detectados en la agenda</div>
                 </CardContent>
               </Card>
 
-              <Card className="border-zinc-800 bg-zinc-950/80">
+              <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
                 <CardContent className="py-5">
-                  <div className="text-xs uppercase tracking-wider text-zinc-500">Activas</div>
-                  <div className="mt-3 text-3xl font-semibold text-zinc-100">{openClasses}</div>
-                  <div className="mt-1 text-sm text-zinc-400">Clases listas para operar</div>
+                  <div className="text-xs uppercase tracking-wider text-stone-500">Activas</div>
+                  <div className="mt-3 text-3xl font-semibold text-slate-900">{openClasses}</div>
+                  <div className="mt-1 text-sm text-slate-600">Clases listas para operar</div>
                 </CardContent>
               </Card>
 
-              <Card className="border-zinc-800 bg-zinc-950/80">
+              <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
                 <CardContent className="py-5">
-                  <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplinas</div>
-                  <div className="mt-3 text-3xl font-semibold text-zinc-100">{uniqueDisciplines}</div>
-                  <div className="mt-1 text-sm text-zinc-400">Rubros con agenda activa</div>
+                  <div className="text-xs uppercase tracking-wider text-stone-500">Disciplinas</div>
+                  <div className="mt-3 text-3xl font-semibold text-slate-900">{uniqueDisciplines}</div>
+                  <div className="mt-1 text-sm text-slate-600">Rubros con agenda activa</div>
                 </CardContent>
               </Card>
 
-              <Card className="border-zinc-800 bg-zinc-950/80">
+              <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
                 <CardContent className="py-5">
-                  <div className="text-xs uppercase tracking-wider text-zinc-500">Cupos libres</div>
-                  <div className="mt-3 text-3xl font-semibold text-zinc-100">{pendingCapacity}</div>
-                  <div className="mt-1 text-sm text-zinc-400">Disponibilidad informada por backend</div>
+                  <div className="text-xs uppercase tracking-wider text-stone-500">Cupos libres</div>
+                  <div className="mt-3 text-3xl font-semibold text-slate-900">{pendingCapacity}</div>
+                  <div className="mt-1 text-sm text-slate-600">Disponibilidad informada por backend</div>
                 </CardContent>
               </Card>
             </section>
 
             <section className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-              <Card className="overflow-hidden border-zinc-800 bg-zinc-950/80">
-                <div className="h-20 bg-linear-to-r from-cyan-500/12 to-transparent" />
+              <Card className="overflow-hidden border-slate-200 bg-white/92 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.16)]">
+                <div className="h-20 bg-linear-to-r from-sky-100 via-lime-50 to-transparent" />
                 <CardHeader className="relative -mt-4">
                   <CardTitle>Agenda operativa</CardTitle>
                   <CardDescription>
@@ -468,26 +450,26 @@ export default function Instructor() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {classes.length === 0 ? (
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-5 text-sm text-zinc-400">
+                    <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-5 text-sm text-slate-600">
                       No hay clases cargadas todavía para esta sucursal.
                     </div>
                   ) : (
                     grouped.map((group) => (
                       <div key={group.day} className="space-y-3">
                         <div className="flex items-center gap-3">
-                          <div className="text-base font-semibold text-zinc-100">{group.day}</div>
-                          <span className="rounded-full border border-zinc-800 px-3 py-1 text-xs text-zinc-400">
+                          <div className="text-base font-semibold text-slate-900">{group.day}</div>
+                          <span className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600">
                             {group.items.length} clase{group.items.length === 1 ? "" : "s"}
                           </span>
                         </div>
 
                         <div className="space-y-3">
                           {group.items.map((item) => (
-                            <div key={item.id} className="rounded-3xl border border-zinc-800 bg-zinc-900/45 p-4">
+                            <div key={item.id} className="rounded-3xl border border-slate-200 bg-stone-50 p-4">
                               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
-                                  <div className="text-lg font-semibold text-zinc-100">{item.title}</div>
-                                  <div className="mt-1 text-sm text-zinc-500">{buildClassTimeRange(item)}</div>
+                                  <div className="text-lg font-semibold text-slate-900">{item.title}</div>
+                                  <div className="mt-1 text-sm text-stone-500">{buildClassTimeRange(item)}</div>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                   {item.status ? <Badge tone={classStatusTone(item.status)}>{item.status}</Badge> : null}
@@ -495,32 +477,32 @@ export default function Instructor() {
                                 </div>
                               </div>
 
-                              <div className="mt-4 grid gap-3 text-sm text-zinc-300 sm:grid-cols-2 xl:grid-cols-3">
-                                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                                  <div className="text-xs uppercase tracking-wider text-zinc-500">Disciplina</div>
-                                  <div className="mt-2 text-zinc-100">{item.discipline ?? "Sin dato"}</div>
+                              <div className="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-2 xl:grid-cols-3">
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <div className="text-xs uppercase tracking-wider text-stone-500">Disciplina</div>
+                                  <div className="mt-2 text-slate-900">{item.discipline ?? "Sin dato"}</div>
                                 </div>
-                                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                                  <div className="text-xs uppercase tracking-wider text-zinc-500">Duración</div>
-                                  <div className="mt-2 text-zinc-100">{item.duration != null ? `${item.duration} min` : "No informada"}</div>
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <div className="text-xs uppercase tracking-wider text-stone-500">Duración</div>
+                                  <div className="mt-2 text-slate-900">{item.duration != null ? `${item.duration} min` : "No informada"}</div>
                                 </div>
-                                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                                  <div className="text-xs uppercase tracking-wider text-zinc-500">Instructor</div>
-                                  <div className="mt-2 text-zinc-100">{item.instructor ?? "Sin asignar"}</div>
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <div className="text-xs uppercase tracking-wider text-stone-500">Instructor</div>
+                                  <div className="mt-2 text-slate-900">{item.instructor ?? "Sin asignar"}</div>
                                 </div>
-                                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                                  <div className="text-xs uppercase tracking-wider text-zinc-500">Capacidad</div>
-                                  <div className="mt-2 text-zinc-100">{item.capacity != null ? item.capacity : "No informada"}</div>
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <div className="text-xs uppercase tracking-wider text-stone-500">Capacidad</div>
+                                  <div className="mt-2 text-slate-900">{item.capacity != null ? item.capacity : "No informada"}</div>
                                 </div>
-                                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                                  <div className="text-xs uppercase tracking-wider text-zinc-500">Créditos</div>
-                                  <div className="mt-2 text-zinc-100">
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <div className="text-xs uppercase tracking-wider text-stone-500">Créditos</div>
+                                  <div className="mt-2 text-slate-900">
                                     {item.creditUsage != null ? `${item.creditUsage} uso / ${item.creditRefund ?? 0}% reintegro` : "Sin dato"}
                                   </div>
                                 </div>
-                                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-                                  <div className="text-xs uppercase tracking-wider text-zinc-500">Disponibles</div>
-                                  <div className="mt-2 text-zinc-100">{item.available != null ? item.available : "Sin dato"}</div>
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                  <div className="text-xs uppercase tracking-wider text-stone-500">Disponibles</div>
+                                  <div className="mt-2 text-slate-900">{item.available != null ? item.available : "Sin dato"}</div>
                                 </div>
                               </div>
                             </div>
@@ -533,7 +515,7 @@ export default function Instructor() {
               </Card>
 
               <div className="space-y-4">
-                <Card className="border-zinc-800 bg-zinc-950/80">
+                <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
                   <CardHeader>
                     <CardTitle>Planificación de administración</CardTitle>
                     <CardDescription>Base semanal definida por admin.</CardDescription>
@@ -544,12 +526,12 @@ export default function Instructor() {
                         const closed = scheduleConfig?.days[day].closed ?? false;
                         const reason = scheduleConfig?.days[day].reason ?? "";
                         return (
-                          <div key={day} className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3 text-sm text-zinc-300">
+                          <div key={day} className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3 text-sm text-slate-600">
                             <div className="flex items-center justify-between gap-3">
-                              <span className="font-medium text-zinc-100">{DAY_NAMES[day]}</span>
+                              <span className="font-medium text-slate-900">{DAY_NAMES[day]}</span>
                               <Badge tone={closed ? "warning" : "success"}>{closed ? "Cerrado" : "Abierto"}</Badge>
                             </div>
-                            <div className="mt-2 text-xs text-zinc-500">
+                            <div className="mt-2 text-xs text-stone-500">
                               {closed ? reason || "Sin motivo informado" : "Disponible para organizar turnos"}
                             </div>
                           </div>
@@ -557,24 +539,24 @@ export default function Instructor() {
                       })}
                     </div>
 
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 p-4">
-                      <div className="text-sm font-medium text-zinc-100">Franjas habilitadas por disciplina</div>
+                    <div className="rounded-2xl border border-slate-200 bg-stone-50 p-4">
+                      <div className="text-sm font-medium text-slate-900">Franjas habilitadas por disciplina</div>
                       <div className="mt-3 space-y-3">
                         {enabledSchedules.length === 0 ? (
-                          <div className="text-sm text-zinc-400">Todavía no hay disciplinas habilitadas en la planificación semanal.</div>
+                          <div className="text-sm text-slate-600">Todavía no hay disciplinas habilitadas en la planificación semanal.</div>
                         ) : (
                           enabledSchedules.map((item) => {
                             const disciplineName = disciplines.find((discipline) => discipline.idDiscipline === item.idDiscipline)?.name ?? `Disciplina ${item.idDiscipline}`;
                             return (
-                              <div key={item.idDiscipline} className="rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3">
+                              <div key={item.idDiscipline} className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
                                 <div className="flex items-center justify-between gap-3">
-                                  <div className="text-sm font-medium text-zinc-100">{disciplineName}</div>
+                                  <div className="text-sm font-medium text-slate-900">{disciplineName}</div>
                                   <Badge tone="neutral">{item.slotDuration} min</Badge>
                                 </div>
-                                <div className="mt-2 text-sm text-zinc-400">
+                                <div className="mt-2 text-sm text-slate-600">
                                   {item.openTime} a {item.closeTime}
                                 </div>
-                                {item.notes ? <div className="mt-2 text-xs text-zinc-500">{item.notes}</div> : null}
+                                {item.notes ? <div className="mt-2 text-xs text-stone-500">{item.notes}</div> : null}
                               </div>
                             );
                           })
@@ -583,37 +565,37 @@ export default function Instructor() {
                     </div>
 
                     {closedDays.length > 0 ? (
-                      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 p-4 text-sm text-zinc-400">
+                      <div className="rounded-2xl border border-slate-200 bg-stone-50 p-4 text-sm text-slate-600">
                         Días cerrados: {closedDays.map((item) => DAY_NAMES[item.day]).join(", ")}.
                       </div>
                     ) : null}
                   </CardContent>
                 </Card>
 
-                <Card className="border-zinc-800 bg-zinc-950/80">
+                <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
                   <CardHeader>
                     <CardTitle>Referencia operativa</CardTitle>
                     <CardDescription>
                       Mientras el backend solo exponga `GET`, esta vista sirve para validar la agenda vigente y trabajar sobre ella.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3 text-sm text-zinc-400">
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                  <CardContent className="space-y-3 text-sm text-slate-600">
+                    <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
                       1. Revisar si el día está abierto según la planificación del Admin.
                     </div>
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                    <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
                       2. Confirmar cupos, duración y créditos antes de asignar.
                     </div>
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/45 px-4 py-3">
+                    <div className="rounded-2xl border border-slate-200 bg-stone-50 px-4 py-3">
                       3. Contrastar la clase real del backend con la franja habilitada por disciplina.
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-zinc-800 bg-zinc-950/80">
+                <Card className="border-slate-200 bg-white/96 shadow-[0_22px_50px_-40px_rgba(69,70,77,0.18)]">
                   <CardHeader>
                     <CardTitle>Acciones rápidas</CardTitle>
-                    <CardDescription>Lo m?s usado.</CardDescription>
+                    <CardDescription>Lo más usado.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <Button variant="secondary" className="w-full" onClick={() => refresh()}>
@@ -621,7 +603,7 @@ export default function Instructor() {
                     </Button>
                     <Link
                       to="/app/rubros"
-                      className="block rounded-2xl border border-zinc-800 px-4 py-3 text-center text-sm text-zinc-200 hover:bg-zinc-900"
+                      className="block rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm text-slate-700 hover:bg-[#eff4ff]"
                     >
                       Ver catálogo por sucursal
                     </Link>

@@ -76,7 +76,7 @@ export function useCompanies() {
     );
 
     if (!fallback) {
-      throw new Error("La empresa se creó, pero no pudimos recuperar sus datos desde la API.");
+      throw new Error("La empresa se creÃ³, pero no pudimos recuperar sus datos desde la API.");
     }
 
     return enrichCompany(fallback, input);
